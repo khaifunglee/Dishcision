@@ -27,8 +27,11 @@ const Home = () => {
                 <Text>Test Card</Text>
             </View>
 
-            <Link href="/about" asChild style={styles.link}>
-                <ThemedText>Click to go to About page</ThemedText>
+            <Link href="/register" asChild style={styles.link}>
+                <ThemedText>Register page</ThemedText>
+            </Link>
+            <Link href="/login" asChild style={styles.link}>
+                <ThemedText>Login page</ThemedText>
             </Link>
         </ThemedView>
 

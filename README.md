@@ -9,3 +9,4 @@ Framework: React Native + Expo (Frontend), Spring Boot (Backend)
 - Installed Expo Router to enable easy navigation between pages
 - Created colour scheme for light/dark themed colours
 - Created themed components to allow for easier templating for the app's text, cards, images, etc.
+- Added route groups & nested layouts by creating Login & Register page

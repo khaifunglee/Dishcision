@@ -19,7 +19,7 @@ export default function RootLayout() {
             }}>
                 {/* Register each screen as a stack to allow for customizability in 'options', e.g title, headerShown: true/false */}
                 <Stack.Screen name="index" options={{ title: 'Home' }} />
-                <Stack.Screen name="about" options={{ title: 'About' }} />
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             </Stack>
         </>
     )
