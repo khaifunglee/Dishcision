@@ -1,5 +1,5 @@
 // Entry point for app, represents homepage component
-import { StyleSheet, Text, View, Image, Pressable } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 import { Link } from 'expo-router' // Expo router component to link to other pages
 
 // Themed components
