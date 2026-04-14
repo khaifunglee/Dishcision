@@ -1,8 +1,8 @@
-// This layout page wraps all auth pages with a stack by rendering the text on top of all pages (e.g by a header/footer)
+// This auth layout page wraps all auth pages with a stack by rendering the text on top of all pages (e.g by a header/footer)
 import { Stack } from 'expo-router'
 import { StatusBar } from 'react-native'
 
-export default function RootLayout() {
+const AuthLayout = () => {
 
     return (
         <>
@@ -14,3 +14,4 @@ export default function RootLayout() {
         </>
     )
 }
+export default AuthLayout

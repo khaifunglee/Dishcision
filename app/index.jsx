@@ -33,6 +33,9 @@ const Home = () => {
             <Link href="/login" asChild style={styles.link}>
                 <ThemedText>Login page</ThemedText>
             </Link>
+            <Link href="/home" asChild style={styles.link}>
+                <ThemedText>Home Dashboard</ThemedText>
+            </Link>
         </ThemedView>
 
     )
