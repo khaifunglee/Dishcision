@@ -5,14 +5,24 @@ import { Link } from 'expo-router' // Expo router component to link to other pag
 // Themed components
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
+import ThemedButton from "../../components/ThemedButton"
 import Spacer from "../../components/Spacer"
 
 const Register = () => {
 
+    const handleSubmit = () => {
+        console.log('Register form submitted')
+    }
     return (
         <ThemedView style={[styles.container]}>
             <ThemedText title={true}>Register an Account</ThemedText>
-            <Spacer height={80} />
+            <Spacer height={100} />
+
+            <ThemedButton onPress={handleSubmit}>
+                <Text style={{ color: '#f2f2f2' }}>Register</Text>
+            </ThemedButton>
+
+            <Spacer />
 
             <Link href="/login" asChild>
                 <ThemedText style={{ textAlign: 'center' }}>Login Instead</ThemedText>
