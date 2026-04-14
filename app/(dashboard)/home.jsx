@@ -7,7 +7,8 @@ import ThemedText from "../../components/ThemedText"
 
 const Home = () => {
     return (
-        <ThemedView style={styles.container}>
+        <ThemedView style={styles.container} safe={true}>
+            {/* Use safe=true for safeAreaView */}
 
             <ThemedText title={true} style={styles.heading}>
                 This is the Home Page.
@@ -23,7 +24,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'center', // comment this out to test safe area view
     },
     heading: {
         textAlign: 'center',
