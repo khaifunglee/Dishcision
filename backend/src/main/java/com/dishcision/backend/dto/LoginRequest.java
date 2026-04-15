@@ -1,5 +1,15 @@
+// This class defines the DTO shape of incoming login requests.
 package com.dishcision.backend.dto;
 
-public class LoginRequest {
+import lombok.Data;
+import jakarta.validation.constraints.*;;
 
+@Data
+// Logins only require email + password
+public class LoginRequest {
+    @Email
+    @NotBlank
+    private String email;
+    @NotBlank
+    private String password;
 }
