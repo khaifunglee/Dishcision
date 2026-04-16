@@ -1,13 +1,28 @@
-// This root layout page wraps all pages with a stack by rendering the text on top of all pages (e.g by a header/footer)
+// Root layout of app: wrap all pages with a stack (e.g header) and handle navigation based on auth state
 // Stack also allows for navigation (e.g adds back button to return to most recent page)
-import { Stack } from 'expo-router'
+import { useEffect } from 'react'
+import { Stack, router } from 'expo-router'
 import { StatusBar, useColorScheme } from 'react-native' // used to return light/dark themed pages on device with userInterfaceSytle in app.json
 import { Colors } from "../constants/colors"
+import { AuthProvider, useAuth } from '../context/AuthContext' // used to check user logged in state in every page
 
-const RootLayout = () => {
+function RootLayout = () => {
     const colorScheme = useColorScheme()
     // Select light/dark colour theme from colors.js (?? means if colorScheme == null then select Colors.light)
     const theme = Colors[colorScheme] ?? Colors.light
+
+    const { isLoggedIn, loading } = useAuth()
+
+    // Hook to check if user is logged in
+    useEffect(() => {
+        if (loading) return // Still checking stored token, wait
+        // If already logged in, redirect to home page, otherwise redirect to login page
+        if (isLoggedIn) {
+            router.replace('/(dashboard)/home')
+        } else {
+            router.replace('/(auth)/login')
+        }
+    }, [isLoggedIn, loading])
 
     return (
         <>
@@ -25,4 +40,10 @@ const RootLayout = () => {
         </>
     )
 }
-export default RootLayout
+export default function Layout() {
+    return (
+        <AuthProvider>
+            <RootLayout />
+        </AuthProvider>
+    )
+}

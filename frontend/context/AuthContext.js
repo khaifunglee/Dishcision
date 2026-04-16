@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         // Context: use const { isLoggedIn, login, logout } = useAuth()
         <AuthContext.Provider value={{
             token,
-            loading, // false = token loaded
+            loading, // true = token loaded, false = still checking if token exists
             isLoggedIn: !!token, // true = token exists, false = no token present
             login: handleLogin,
             register: handleRegister,
