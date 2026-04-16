@@ -6,7 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository; // automatically g
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    // Define custom queries
+    // Define custom queries (Spring Data JPA reads the method names and
+    // automatically generates the SQL queries)
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

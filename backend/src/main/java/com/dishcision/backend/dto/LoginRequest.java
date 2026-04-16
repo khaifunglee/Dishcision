@@ -1,4 +1,4 @@
-// This class defines the DTO shape of incoming login requests.
+// This class defines the shape (DTO) of incoming login requests.
 package com.dishcision.backend.dto;
 
 import lombok.Data;

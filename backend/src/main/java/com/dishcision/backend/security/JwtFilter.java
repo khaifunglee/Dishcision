@@ -26,16 +26,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
+            // Extract token
             String token = header.substring(7);
 
+            // Validate token by verifying the signature matches
             if (jwtUtil.isTokenValid(token)) {
                 String email = jwtUtil.extractEmail(token);
+                // Authenticates request and forwards to AuthController.java
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null,
                         List.of());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
-        chain.doFilter(request, response);
+        chain.doFilter(request, response); // Always continue to next request
     }
 }

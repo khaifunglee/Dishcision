@@ -1,4 +1,4 @@
-// This file creates and validates JWTs
+// This file creates and validates JWTs for user sessions
 package com.dishcision.backend.security;
 
 import io.jsonwebtoken.*;
@@ -17,10 +17,12 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    // Encrypt JWT secret
     private SecretKey getKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
+    // Build and sign the token
     public String generateToken(String email) {
         return Jwts.builder()
                 .subject(email)
@@ -30,6 +32,7 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Extracts email from token after verifying signature
     public String extractEmail(String token) {
         return Jwts.parser().verifyWith(getKey()).build()
                 .parseSignedClaims(token).getPayload().getSubject();

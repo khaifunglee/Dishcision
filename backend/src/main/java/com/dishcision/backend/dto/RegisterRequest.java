@@ -1,4 +1,4 @@
-// This class defines the DTO shape of incoming register requests.
+// This class defines the shape (DTO) of incoming register requests.
 package com.dishcision.backend.dto;
 
 import lombok.Data;

@@ -1,4 +1,4 @@
-// This file handles business logic of user authentication
+// This file handles business logic of user authentication requests
 package com.dishcision.backend.service;
 
 import com.dishcision.backend.dto.*;
