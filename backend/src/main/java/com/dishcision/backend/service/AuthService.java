@@ -6,9 +6,6 @@ import com.dishcision.backend.model.User;
 import com.dishcision.backend.repository.UserRepository;
 import com.dishcision.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-
-import javax.management.RuntimeErrorException;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

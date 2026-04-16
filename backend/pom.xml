@@ -90,6 +90,11 @@
 			<version>0.12.3</version>
 			<scope>runtime</scope>			
 		</dependency>		
+		<!-- PostgreSQL dependency -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
