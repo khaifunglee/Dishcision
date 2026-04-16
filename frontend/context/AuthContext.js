@@ -1,4 +1,4 @@
-// This file uses React Context to determine logged in state of the user and share that state across all screens
+// This file uses React Context to determine global auth state for the whole app
 import { createContext, useContext, useEffect, useState } from "react"
 import { login, register, logout, getToken } from '../api/auth'
 

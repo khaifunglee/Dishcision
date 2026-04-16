@@ -6,7 +6,7 @@ import { StatusBar, useColorScheme } from 'react-native' // used to return light
 import { Colors } from "../constants/colors"
 import { AuthProvider, useAuth } from '../context/AuthContext' // used to check user logged in state in every page
 
-function RootLayout = () => {
+function RootLayout() {
     const colorScheme = useColorScheme()
     // Select light/dark colour theme from colors.js (?? means if colorScheme == null then select Colors.light)
     const theme = Colors[colorScheme] ?? Colors.light

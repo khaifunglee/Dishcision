@@ -1,5 +1,5 @@
 // This file serves as an API client by attaching the JWT token to every outgoing request
-import axios from 'axios' // HTTP client
+import axios from 'axios' // used to create HTTP client
 import * as SecureStore from 'expo-secure-store' // stores JWT token securely on device
 
 // Address to reach Spring Boot server
