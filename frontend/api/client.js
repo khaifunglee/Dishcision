@@ -1,4 +1,4 @@
-// This file serves as an API client by attaching the JWT token to every outgoing request
+// This file serves as an API client to send requests and attach the JWT token to every outgoing request
 import axios from 'axios' // used to create HTTP client
 import * as SecureStore from 'expo-secure-store' // stores JWT token securely on device
 
@@ -10,7 +10,7 @@ const client = axios.create({
     headers: { 'Content-Type': 'application/json' }
 })
 
-// Automatically attach JWT token to every request if present
+// Interceptor to attach JWT token to every request header if present
 client.interceptors.request.use(async (config) => {
     const token = await SecureStore.getItemAsync('jwt_token')
     if (token) {
