@@ -2,7 +2,6 @@
 import { useState } from "react"
 import { StyleSheet, Text, TextInput, Pressable, Alert } from "react-native"
 import { Link } from 'expo-router' // Expo router component to link to other pages
-import { Colors } from "../../constants/colors"
 import { useAuth } from "../../context/AuthContext"
 
 // Themed components
@@ -16,7 +15,7 @@ const Login = () => {
     const { login } = useAuth()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [loading, setLoading] = useState(false) // prevent duplicate running of login function
+    const [loading, setLoading] = useState(false) // signals login function is running
 
     // Business logic for login function
     const handleLogin = async () => {
@@ -26,7 +25,7 @@ const Login = () => {
         }
         setLoading(true)
         try {
-            await login(email, password)
+            await login(email, password) // _layout.jsx handles navigation on success
         } catch (error) {
             Alert.alert('Login failed', 'Invalid email or password')
         } finally {
@@ -34,10 +33,6 @@ const Login = () => {
         }
     }
 
-    // Button press function
-    const handleSubmit = () => {
-        console.log('Login form submitted')
-    }
     return (
         <ThemedView style={[styles.container]}>
             <ThemedText style={styles.title} title={true}>Login to Your Account</ThemedText>
@@ -51,7 +46,6 @@ const Login = () => {
                 keyboardType="email-address"
                 autoCapitalize="none"
             />
-            <Spacer height={15} />
             <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -83,5 +77,14 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
         fontSize: 18
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        padding: 15,
+        marginBottom: 16,
+        fontSize: 16,
+        width: 240
     }
 })

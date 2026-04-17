@@ -22,3 +22,16 @@ Framework: React Native + Expo (Frontend), Spring Boot (Backend)
 - Created PostgreSQL database and setup Spring Boot backend
 - Added essential dependencies for user authentication
 - Configured database connection to connect to backend server
+
+### 16-04-2026
+**Completed Backend Setup**:
+- Created business logic for user authentication and handle incoming auth requests
+- Configured Spring Security to filter and clean incoming HTTP requests for security practices
+- Resolved minor startup issues for Spring Boot
+
+### 17-04-2026
+**Integrated React Native with Spring Boot**:
+- Created API client and REST APIs to call for frontend to communicate with backend
+- Implemented React Context to determine global user auth state 
+- Added automatic navigation handling based on user auth state
+- Added register, login, and logout functions on the respective pages

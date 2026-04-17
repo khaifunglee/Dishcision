@@ -6,13 +6,13 @@ import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
 
 const Pantry = () => {
+
     return (
         <ThemedView style={styles.container}>
 
             <ThemedText title={true} style={styles.heading}>
                 This is the Pantry Page.
             </ThemedText>
-            <Spacer />
 
         </ThemedView>
     )
