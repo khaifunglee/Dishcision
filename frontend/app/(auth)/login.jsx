@@ -1,6 +1,6 @@
 // This file represents the Login page component inside the route group 'auth'
 import { useState } from "react"
-import { StyleSheet, Text, TextInput, Alert } from "react-native"
+import { StyleSheet, Text, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from "react-native"
 import { Link } from 'expo-router' // Expo router component to link to other pages
 import { useAuth } from "../../context/AuthContext"
 
@@ -34,34 +34,36 @@ const Login = () => {
     }
 
     return (
-        <ThemedView style={[styles.container]}>
-            <ThemedText style={styles.title} title={true}>Login to Your Account</ThemedText>
-            <Spacer height={100} />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ThemedView style={[styles.container]}>
+                <ThemedText style={styles.title} title={true}>Login to Your Account</ThemedText>
+                <Spacer height={100} />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-            <Spacer />
-            <ThemedButton onPress={handleLogin} disabled={loading}>
-                <Text style={{ color: '#f2f2f2' }}>{loading ? 'Logging in...' : 'Login'}</Text>
-            </ThemedButton>
-            <Spacer />
-            <Link href="/register" asChild>
-                <ThemedText style={{ textAlign: 'center' }}>Don't have an account? Register</ThemedText>
-            </Link>
-        </ThemedView>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                />
+                <Spacer />
+                <ThemedButton onPress={handleLogin} disabled={loading}>
+                    <Text style={{ color: '#f2f2f2' }}>{loading ? 'Logging in...' : 'Login'}</Text>
+                </ThemedButton>
+                <Spacer />
+                <Link href="/register" asChild>
+                    <ThemedText style={{ textAlign: 'center' }}>Don't have an account? Register</ThemedText>
+                </Link>
+            </ThemedView>
+        </TouchableWithoutFeedback>
     )
 }
 

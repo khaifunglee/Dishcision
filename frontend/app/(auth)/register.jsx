@@ -1,6 +1,6 @@
 // This file represents the Register page component inside the route group 'auth'
 import { useState } from "react"
-import { StyleSheet, Text, TextInput, Pressable, Alert } from "react-native"
+import { StyleSheet, Text, TextInput, Keyboard, Alert, TouchableWithoutFeedback } from "react-native"
 import { Link } from 'expo-router' // Expo router component to link to other pages
 import { useAuth } from "../../context/AuthContext"
 
@@ -39,48 +39,50 @@ const Register = () => {
         }
     }
     return (
-        <ThemedView style={[styles.container]}>
-            <ThemedText title={true}>Register an Account</ThemedText>
-            <Spacer height={100} />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ThemedView style={[styles.container]}>
+                <ThemedText title={true}>Register an Account</ThemedText>
+                <Spacer height={100} />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Name"
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-            <Spacer />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Name"
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                />
+                <Spacer />
 
-            <ThemedButton onPress={handleRegister} disabled={loading}>
-                <Text style={{ color: '#f2f2f2' }}>{loading ? 'Creating account...' : 'Register'}</Text>
-            </ThemedButton>
+                <ThemedButton onPress={handleRegister} disabled={loading}>
+                    <Text style={{ color: '#f2f2f2' }}>{loading ? 'Creating account...' : 'Register'}</Text>
+                </ThemedButton>
 
-            <Spacer />
+                <Spacer />
 
-            <Link href="/login" asChild>
-                <ThemedText style={{ textAlign: 'center' }}>Login Instead</ThemedText>
-            </Link>
-            <Spacer />
-            <Link href="/" asChild>
-                <ThemedText style={{ textAlign: 'center' }}>Back to Index Page</ThemedText>
-            </Link>
-        </ThemedView>
+                <Link href="/login" asChild>
+                    <ThemedText style={{ textAlign: 'center' }}>Login Instead</ThemedText>
+                </Link>
+                <Spacer />
+                <Link href="/" asChild>
+                    <ThemedText style={{ textAlign: 'center' }}>Back to Index Page</ThemedText>
+                </Link>
+            </ThemedView>
+        </TouchableWithoutFeedback>
     )
 }
 export default Register
