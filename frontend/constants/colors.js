@@ -1,64 +1,58 @@
 // This file stores all main theme colours of the app to allow any component to load
 export const Colors = {
-    primary: "#6849a7",
-    warning: "#cc475a",
 
     // Imported colours
     dark: {
-        cream: '#FBF7F2',
-        creamDark: '#F2EBE1',
-        green: '#243D1A',
-        greenMid: '#3A5E28',
-        greenLight: '#EBF2E6',
-        terracotta: '#C05C2A',
-        terracottaLight: '#FAEEE7',
-        warmGray: '#8A7E74',
-        text: '#1C1915',
-        textSoft: '#6B6259',
-        surface: '#FFFFFF',
-        border: '#EAE3DC',
-        red: '#C94040',
-        redLight: '#FDEAEA',
-        amber: '#D97E20',
-        amberLight: '#FEF3E6',
-        fresh: '#4A8A2E',
-        freshLight: '#EAF4E4',
-
-        text: "#d4d4d4",
-        title: "#fff",
-        background: "#252231",
-        navBackground: "#201e2b",
-        iconColor: "#9591a5",
-        iconColorFocused: "#fff",
-        uiBackground: "#2f2b3d",
+        background: '#1A1F14',      // dark green
+        uiBackground: '#242B1D',    // darker green
+        iconColor: "#9591a5",       // light blue
+        iconColorFocused: "#fff",   // white
+        text: '#F0EBE3',            // beighe
+        title: '#F0EBE3',
+        textSoft: '#9A9088',        // grey
+        border: '#2E3828',          // dark green
+        green: '#4A7A35',           // lighter green
+        greenLight: '#1E2D18',
+        terracotta: '#D4703A',
+        terracottaLight: '#2D1F18',
+        red: '#E05555',
+        redLight: '#2D1818',
+        amber: '#E08B30',
+        amberLight: '#2D2010',
+        fresh: '#5FA040',
+        freshLight: '#1A2D14',
+        warmGray: '#6B6259',
+        creamDark: '#1F2419',
     },
     light: {
-        cream: '#FBF7F2',
-        creamDark: '#F2EBE1',
+        background: '#FBF7F2',      // cream
+        uiBackground: '#F2EBE1',    // white
+        iconColor: "#686477",       // light blue
+        iconColorFocused: "#201e2b",// dark blue
+        text: '#1C1915',            // dark grey
+        title: '#1C1915',
+        textSoft: '#6B6259',        // light grey
+        border: '#EAE3DC',          // beige
         green: '#243D1A',
-        greenMid: '#3A5E28',
         greenLight: '#EBF2E6',
         terracotta: '#C05C2A',
         terracottaLight: '#FAEEE7',
-        warmGray: '#8A7E74',
-        text: '#1C1915',
-        textSoft: '#6B6259',
-        surface: '#FFFFFF',
-        border: '#EAE3DC',
         red: '#C94040',
         redLight: '#FDEAEA',
         amber: '#D97E20',
         amberLight: '#FEF3E6',
         fresh: '#4A8A2E',
         freshLight: '#EAF4E4',
+        warmGray: '#8A7E74',
+        creamDark: '#F2EBE1',
 
-        title: "#201e2b",
-        background: "#e0dfe8",
         navBackground: "#e8e7ef",
-        iconColor: "#686477",
-        iconColorFocused: "#201e2b",
-        uiBackground: "#d6d5e1",
     }
+}
+// Use this for brand colours (same regardless of theme)
+export const palette = {
+    terracotta: '#C05C2A',
+    green: '#243D1A',            // forest green
 }
 
 export const radius = {

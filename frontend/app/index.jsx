@@ -1,7 +1,7 @@
 // Entry point for app, this file represents the app's welcome screen component
 import { StyleSheet, Text, View, Pressable } from "react-native"
-import { Link, router } from 'expo-router' // Expo router component to link to other pages
-import { Colors, radius } from "../constants/colors"
+import { router } from 'expo-router' // Expo router component to link to other pages
+import { radius, palette } from "../constants/colors"
 
 // Themed components
 import ThemedView from "../components/ThemedView"
@@ -12,21 +12,20 @@ import ThemedButton from "../components/ThemedButton"
 
 const WelcomeScreen = () => {
     return (
-        <View style={styles.container} >
+        <ThemedView style={styles.container} safe={true}>
             {/* Similar to CSS, <View> is like <div> */}
             <View style={styles.bg} />
-            <View style={styles.content} />
 
             <View style={styles.top}>
                 <View style={styles.logoMark}>
-                    <Text style={styles.logoEmoji}>🍽️</Text>
+                    <ThemedText style={styles.logoEmoji}>🍽️</ThemedText>
                 </View>
-                <Text style={styles.title}>
-                    Dish<Text style={styles.titleAccent}>cision</Text>
-                </Text>
-                <Text style={styles.tagline}>
+                <ThemedText style={styles.title} title={true} serif={true}>
+                    Dish<ThemedText style={styles.titleAccent}>cision</ThemedText>
+                </ThemedText>
+                <ThemedText style={styles.tagline}>
                     Cook smarter, waste less. Recipes built around what you already have.
-                </Text>
+                </ThemedText>
             </View>
 
             <View style={styles.bottom}>
@@ -38,7 +37,7 @@ const WelcomeScreen = () => {
                 </Pressable>
             </View>
 
-        </View >
+        </ThemedView >
     )
 }
 
@@ -46,28 +45,18 @@ export default WelcomeScreen
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#243D1A',
         flex: 1,
-        paddingTop: 56,
-        paddingBottom: 56,
-        paddingLeft: 24,
-        paddingRight: 24,
+        paddingBottom: 64,
+        paddingHorizontal: 36,
     },
     bg: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#243D1A',
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: 36,
-        paddingTop: 100,
-        paddingBottom: 60,
-        justifyContent: 'space-between'
+        backgroundColor: palette.green,
     },
     top: {
         flex: 1,
         justifyContent: 'center',
-        marginBottom: 100,
+        marginTop: 60,
     },
     logoMark: {
         width: 72, height: 72,
@@ -77,32 +66,30 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 32,
+        marginBottom: 24,
     },
     logoEmoji: { fontSize: 32 },
     title: {
-        fontWeight: 'Fraunces_600SemiBold',
-        fontSize: 52,
         color: '#fff',
-        letterSpacing: -1,
+        fontSize: 52,
         marginBottom: 16,
+        letterSpacing: -1,
     },
     titleAccent: {
-        color: '#C05C2A',
+        color: palette.terracotta,
         fontFamily: 'Fraunces_400Regular_Italic',
     },
     tagline: {
-        fontFamily: 'DMSans_400Regular',
         fontSize: 16,
         color: 'rgba(255,255,255,0.65)',
         lineHeight: 24,
         maxWidth: 280,
     },
-    bottom: { gap: 12 },
+    bottom: { gap: 24 },
     btnPrimary: {
-        backgroundColor: '#C05C2A',
-        borderRadius: radius.md,
-        padding: 17,
+        backgroundColor: palette.terracotta,
+        borderRadius: radius.medium,
+        padding: 16,
         alignItems: 'center',
     },
     btnPrimaryText: {
@@ -111,15 +98,15 @@ const styles = StyleSheet.create({
         color: '#fff'
     },
     btnOutline: {
-        borderRadius: radius.md,
+        borderRadius: radius.medium,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.25)',
+        borderColor: 'rgba(255,255,255,0.45)',
         padding: 16,
         alignItems: 'center',
     },
     btnOutlineText: {
         fontFamily: 'DMSans_500Medium',
         fontSize: 16,
-        color: 'rgba(255,255,255,0.8)',
+        color: '#fff',
     }
 })
