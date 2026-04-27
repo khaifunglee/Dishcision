@@ -5,7 +5,6 @@ import { radius, palette } from "../constants/colors"
 
 // Themed components
 import ThemedView from "../components/ThemedView"
-import ThemedLogo from "../components/ThemedLogo"
 import ThemedText from "../components/ThemedText"
 
 const WelcomeScreen = () => {

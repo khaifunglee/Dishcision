@@ -9,7 +9,6 @@ import { palette, radius } from "../../constants/colors"
 // Themed components
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
-import ThemedButton from "../../components/ThemedButton"
 import Spacer from "../../components/Spacer"
 
 const Register = () => {
@@ -70,66 +69,64 @@ const Register = () => {
 
                 <Spacer height={30} />
 
-                <View style={styles.content}>
-                    <ThemedText style={styles.subHeader} title>YOUR NAME</ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Name"
-                        value={name}
-                        onChangeText={setName}
-                        autoCapitalize="words"
-                    />
-                    <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-                    <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Min. 8 characters"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                    />
+                <ThemedText style={styles.subHeader} title>YOUR NAME</ThemedText>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Name"
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
+                />
+                <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                />
+                <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Min. 8 characters"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                />
 
-                    <Spacer height={10} />
+                <Spacer height={10} />
 
-                    {/* Dietary preferences chips */}
-                    <ThemedText style={styles.subHeader} title>
-                        DIETARY PREFERENCES <ThemedText style={styles.subHeaderAccent}>(optional)</ThemedText>
-                    </ThemedText>
+                {/* Dietary preferences chips */}
+                <ThemedText style={styles.subHeader} title>
+                    DIETARY PREFERENCES <ThemedText style={styles.subHeaderAccent}>(optional)</ThemedText>
+                </ThemedText>
 
-                    <View style={styles.chipsRow}>
-                        {[
-                            '🥦 Vegetarian', '🌱 Vegan', '🐟 Pescatarian', '🌾 Gluten-free', '🥛 Dairy-free', '🥜 Nut-free'
-                        ].map(chip => (
-                            <Pressable
-                                key={chip}
-                                style={[styles.chip, selected.includes(chip) && styles.chipActive]}
-                                onPress={() => toggle(chip)}
-                            >
-                                <ThemedText style={[styles.chipText, selected.includes(chip) && styles.chipTextActive]}>
-                                    {chip}
-                                </ThemedText>
-                            </Pressable>
-                        ))}
-                    </View>
+                <View style={styles.chipsRow}>
+                    {[
+                        '🥦 Vegetarian', '🌱 Vegan', '🐟 Pescatarian', '🌾 Gluten-free', '🥛 Dairy-free', '🥜 Nut-free'
+                    ].map(chip => (
+                        <Pressable
+                            key={chip}
+                            style={[styles.chip, selected.includes(chip) && styles.chipActive]}
+                            onPress={() => toggle(chip)}
+                        >
+                            <ThemedText style={[styles.chipText, selected.includes(chip) && styles.chipTextActive]}>
+                                {chip}
+                            </ThemedText>
+                        </Pressable>
+                    ))}
                 </View>
 
                 <View style={styles.bottom}>
                     <Pressable style={styles.btn} onPress={handleRegister} disabled={loading}>
-                        <Text style={{ color: '#f2f2f2' }}>{loading ? 'Creating account...' : 'Create Account'}</Text>
+                        <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>{loading ? 'Creating account...' : 'Create Account'}</ThemedText>
                     </Pressable>
 
                     <ThemedText style={{ textAlign: 'center' }}>
                         Already have an account?
                         <Link href="/login" asChild>
-                            <ThemedText style={{ fontWeight: 'bold', color: palette.green }}> Log in</ThemedText>
+                            <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: palette.green }}> Log in</ThemedText>
                         </Link>
                     </ThemedText>
                 </View>
@@ -157,8 +154,6 @@ const styles = StyleSheet.create({
         height: 44,
         width: 44,
         alignItems: 'center',
-        fontSize: 14,
-        fontFamily: 'DMSans_400Regular',
     },
     title: {
         fontSize: 28,
@@ -168,7 +163,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'rgba(0,0,0,0.65)',
     },
-
     subHeader: {
         fontSize: 12,
         fontFamily: 'DMSans_600SemiBold',

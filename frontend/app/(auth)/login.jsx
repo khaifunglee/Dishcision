@@ -1,8 +1,11 @@
 // This file represents the Login page component inside the route group 'auth'
 import { useState } from "react"
-import { StyleSheet, Text, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from "react-native"
-import { Link } from 'expo-router' // Expo router component to link to other pages
+import { StyleSheet, Text, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View } from "react-native"
+import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { useAuth } from "../../context/AuthContext"
+import { Feather } from "@expo/vector-icons"
+import { Checkbox } from '@futurejj/react-native-checkbox'
+import { palette, radius } from "../../constants/colors"
 
 // Themed components
 import ThemedView from "../../components/ThemedView"
@@ -16,6 +19,7 @@ const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false) // signals login function is running
+    const [checked, setChecked] = useState(false) // remember password
 
     // Business logic for login function
     const handleLogin = async () => {
@@ -33,12 +37,31 @@ const Login = () => {
         }
     }
 
+    // Remember password function (placeholder for now)
+    const toggleCheckbox = () => {
+        setChecked(!checked)
+    }
+
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ThemedView style={styles.container} safe={true}>
-                <ThemedText style={styles.title} title={true}>Login to Your Account</ThemedText>
-                <Spacer height={100} />
 
+                <View style={styles.header}>
+                    <Pressable style={styles.btnOutline} onPress={() => router.push('/')}>
+                        <Feather name={'chevron-left'} size={22} color={'black'} />
+                    </Pressable>
+
+                    <ThemedText style={styles.title} title serif >
+                        Sign In to your Account
+                    </ThemedText>
+                    <ThemedText style={styles.tagline}>
+                        Time to cook smarter.
+                    </ThemedText>
+                </View>
+
+                <Spacer height={16} />
+
+                <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
                 <TextInput
                     style={styles.input}
                     placeholder="Email"
@@ -47,6 +70,7 @@ const Login = () => {
                     keyboardType="email-address"
                     autoCapitalize="none"
                 />
+                <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
                 <TextInput
                     style={styles.input}
                     placeholder="Password"
@@ -54,14 +78,34 @@ const Login = () => {
                     onChangeText={setPassword}
                     secureTextEntry
                 />
-                <Spacer />
-                <ThemedButton onPress={handleLogin} disabled={loading}>
-                    <Text style={{ color: '#f2f2f2' }}>{loading ? 'Logging in...' : 'Login'}</Text>
-                </ThemedButton>
-                <Spacer />
-                <Link href="/register" asChild>
-                    <ThemedText style={{ textAlign: 'center' }}>Don't have an account? Register</ThemedText>
-                </Link>
+                <Spacer height={8} />
+                <View style={styles.inputRow}>
+                    <View style={styles.rmbMe}>
+                        <Checkbox
+                            status={checked ? 'checked' : 'unchecked'}
+                            onPress={toggleCheckbox}
+                            color={palette.green}
+                            uncheckedColor={palette.green}
+                        />
+                        <ThemedText>Remember me</ThemedText>
+                    </View>
+                    <Link href="/" asChild>
+                        <ThemedText style={{ textDecorationLine: 'underline', color: palette.green }}>Forgot Password?</ThemedText>
+                    </Link>
+                </View>
+
+                <Spacer height={216} />
+
+                <Pressable style={styles.btn} onPress={handleLogin} disabled={loading}>
+                    <ThemedText style={{ color: '#fff' }}>{loading ? 'Logging In...' : 'Log In'}</ThemedText>
+                </Pressable>
+
+                <ThemedText style={{ textAlign: 'center' }}>
+                    Don't have an account?
+                    <Link href="/register" asChild>
+                        <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: palette.green }}> Register</ThemedText>
+                    </Link>
+                </ThemedText>
             </ThemedView>
         </TouchableWithoutFeedback>
     )
@@ -72,21 +116,62 @@ export default Login
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        paddingHorizontal: 36,
+        paddingTop: 56,
+        //alignItems: 'center',
+        //justifyContent: 'center',
+    },
+    header: {
+        gap: 16,
+        //flex: 1,
+        //justifyContent: 'space-around',
+        //alignItems: 'left',
+    },
+    btnOutline: {
+        borderWidth: 0.6,
+        borderColor: '#ccc',
+        borderRadius: radius.medium,
+        padding: 10,
+        height: 44,
+        width: 44,
         alignItems: 'center',
-        justifyContent: 'center',
     },
     title: {
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: 18
+        fontSize: 28,
+    },
+    tagline: {
+        fontSize: 14,
+        color: 'rgba(0,0,0,0.65)',
+    },
+    subHeader: {
+        fontSize: 12,
+        fontFamily: 'DMSans_600SemiBold',
+        marginBottom: 6
     },
     input: {
-        borderWidth: 1,
+        borderWidth: 0.6,
         borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 15,
-        marginBottom: 16,
-        fontSize: 16,
-        width: 240
+        borderRadius: radius.medium,
+        padding: 16,
+        marginBottom: 12,
+        fontSize: 14,
+        fontFamily: 'DMSans_400Regular',
+    },
+    inputRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    rmbMe: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginLeft: -8,
+    },
+    btn: {
+        backgroundColor: palette.green,
+        borderRadius: radius.medium,
+        padding: 16,
+        marginVertical: 16,
+        alignItems: 'center',
     }
 })

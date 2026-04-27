@@ -12,6 +12,7 @@
     "@expo-google-fonts/dm-sans": "^0.4.2",
     "@expo-google-fonts/fraunces": "^0.4.1",
     "@expo/vector-icons": "^15.1.1",
+    "@futurejj/react-native-checkbox": "^1.0.7",
     "axios": "^1.15.0",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
