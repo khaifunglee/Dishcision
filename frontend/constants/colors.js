@@ -52,6 +52,7 @@ export const Colors = {
 // Use this for brand colours (same regardless of theme)
 export const palette = {
     terracotta: '#C05C2A',
+    greenLight: '#EBF2E6',
     green: '#243D1A',            // forest green
     warmGray: '#6B6259',
 }

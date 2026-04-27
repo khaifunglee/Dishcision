@@ -7,8 +7,8 @@ import { useAuth } from "../../context/AuthContext"
 // Themed components
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
-import ThemedButton from "../../components/ThemedButton"
 import Spacer from "../../components/Spacer"
+import ThemedButton from "../../components/ThemedButton"
 
 const Login = () => {
 
@@ -35,7 +35,7 @@ const Login = () => {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ThemedView style={[styles.container]}>
+            <ThemedView style={styles.container} safe={true}>
                 <ThemedText style={styles.title} title={true}>Login to Your Account</ThemedText>
                 <Spacer height={100} />
 
