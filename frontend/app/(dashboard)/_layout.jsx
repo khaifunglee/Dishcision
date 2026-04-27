@@ -1,8 +1,26 @@
 // This dashboard layout page wraps all dashboard pages with a bottom nav bar tab
 import { Tabs } from 'expo-router'
-import { useColorScheme } from 'react-native'
-import { Colors } from '../../constants/colors'
-import { Ionicons } from '@expo/vector-icons'
+import { View, Text, useColorScheme, StyleSheet } from 'react-native'
+import { Colors, palette } from '../../constants/colors'
+import { Feather } from '@expo/vector-icons'
+
+function TabIcon({ name, label, focused }) {
+    const colorScheme = useColorScheme()
+    const theme = Colors[colorScheme] ?? Colors.light
+    return (
+        <View style={styles.tabItem}>
+            {/* Dynamic icon, use home when tab selected (focused == true), home-outline when not */}
+            <Feather
+                name={name}
+                size={22}
+                color={focused ? theme.green : theme.warmGray}
+            />
+            <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
+                {label}
+            </Text>
+        </View>
+    )
+}
 
 const DashboardLayout = () => {
     const colorScheme = useColorScheme()
@@ -11,21 +29,22 @@ const DashboardLayout = () => {
         <Tabs
             screenOptions={{
                 headerShown: false,
-                tabBarStyle: { backgroundColor: theme.navBackground, paddingTop: 10, height: 90 },
+                tabBarStyle: {
+                    backgroundColor: theme.navBackground,
+                    borderTopColor: theme.border,
+                    borderTopWidth: 1,
+                    paddingTop: 14, height: 90
+                },
                 tabBarActiveTintColor: theme.iconColorFocused,
-                tabBarInactiveTintColor: theme.iconColor
+                tabBarInactiveTintColor: theme.iconColor,
+                tabBarShowLabel: false,
             }}
         >
-            {/* Dynamic icon, use home when tab selected (focused == true), home-outline when not */}
             <Tabs.Screen
                 name="home"
                 options={{
                     title: "Home", tabBarIcon: ({ focused }) => (
-                        <Ionicons
-                            size={24}
-                            name={focused ? 'home' : 'home-outline'}
-                            color={focused ? theme.iconColorFocused : theme.iconColor}
-                        />
+                        <TabIcon name="home" label="Home" focused={focused} />
                     )
                 }}
             />
@@ -33,11 +52,7 @@ const DashboardLayout = () => {
                 name="pantry"
                 options={{
                     title: "Pantry", tabBarIcon: ({ focused }) => (
-                        <Ionicons
-                            size={24}
-                            name={focused ? 'folder' : 'folder-outline'}
-                            color={focused ? theme.iconColorFocused : theme.iconColor}
-                        />
+                        <TabIcon name="folder" label="Pantry" focused={focused} />
                     )
                 }}
             />
@@ -45,11 +60,7 @@ const DashboardLayout = () => {
                 name="recipes"
                 options={{
                     title: "Recipes", tabBarIcon: ({ focused }) => (
-                        <Ionicons
-                            size={24}
-                            name={focused ? 'book' : 'book-outline'}
-                            color={focused ? theme.iconColorFocused : theme.iconColor}
-                        />
+                        <TabIcon name="book-open" label="Recipes" focused={focused} />
                     )
                 }}
             />
@@ -57,11 +68,7 @@ const DashboardLayout = () => {
                 name="profile"
                 options={{
                     title: "Profile", tabBarIcon: ({ focused }) => (
-                        <Ionicons
-                            size={24}
-                            name={focused ? 'person' : 'person-outline'}
-                            color={focused ? theme.iconColorFocused : theme.iconColor}
-                        />
+                        <TabIcon name="user" label="Profile" focused={focused} />
                     )
                 }}
             />
@@ -69,3 +76,19 @@ const DashboardLayout = () => {
     )
 }
 export default DashboardLayout
+
+const styles = StyleSheet.create({
+    tabItem: {
+        alignItems: 'center',
+        width: 48,
+        gap: 6,
+    },
+    tabLabel: {
+        fontFamily: 'DMSans_500Medium',
+        fontSize: 10,
+        color: palette.warmGray,
+    },
+    tabLabelActive: {
+        color: palette.green,
+    }
+})
