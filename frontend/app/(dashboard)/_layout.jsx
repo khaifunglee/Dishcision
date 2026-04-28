@@ -33,7 +33,8 @@ const DashboardLayout = () => {
                     backgroundColor: theme.background,
                     borderTopColor: theme.border,
                     borderTopWidth: 1,
-                    paddingTop: 14, height: 90
+                    paddingTop: 14, height: 90,
+                    marginTop: -34,
                 },
                 tabBarActiveTintColor: theme.iconColorFocused,
                 tabBarInactiveTintColor: theme.iconColor,
