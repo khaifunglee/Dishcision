@@ -13,7 +13,9 @@ export const register = async (name, email, password) => {
 
 // Login POST API
 export const login = async (email, password) => {
+    //console.log('2. calling API')
     const response = await client.post('/auth/login', { email, password })
+    //console.log('response: ', response.data)
     const { token } = response.data
     // Store JWT token on device
     await SecureStore.setItemAsync('jwt_token', token)

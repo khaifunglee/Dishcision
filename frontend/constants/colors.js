@@ -55,6 +55,12 @@ export const palette = {
     greenLight: '#EBF2E6',
     green: '#243D1A',            // forest green
     warmGray: '#6B6259',
+    amberLight: '#FEF3E6',
+    terracottaLight: '#FAEEE7',
+    freshLight: '#EAF4E4',
+    redLight: '#FDEAEA',
+    red: '#C94040',
+    beige: '#EAE3DC',
 }
 
 export const radius = {

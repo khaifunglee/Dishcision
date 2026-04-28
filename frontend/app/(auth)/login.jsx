@@ -29,8 +29,11 @@ const Login = () => {
         }
         setLoading(true)
         try {
+            //console.log('1. handleLogin called')
             await login(email, password) // _layout.jsx handles navigation on success
+            //console.log('3. login succeeded')
         } catch (error) {
+            //console.log('error found')
             Alert.alert('Login failed', 'Invalid email or password')
         } finally {
             setLoading(false)
@@ -133,10 +136,9 @@ const styles = StyleSheet.create({
         borderWidth: 0.6,
         borderColor: '#ccc',
         borderRadius: radius.medium,
-        padding: 10,
-        height: 44,
-        width: 44,
-        alignItems: 'center',
+        //padding: 10,
+        height: 44, width: 44,
+        justifyContent: 'center', alignItems: 'center',
     },
     title: {
         fontSize: 28,

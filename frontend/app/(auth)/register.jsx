@@ -152,10 +152,8 @@ const styles = StyleSheet.create({
         borderWidth: 0.6,
         borderColor: '#ccc',
         borderRadius: radius.medium,
-        padding: 10,
-        height: 44,
-        width: 44,
-        alignItems: 'center',
+        height: 44, width: 44,
+        justifyContent: 'center', alignItems: 'center',
     },
     title: {
         fontSize: 28,
