@@ -26,10 +26,12 @@ const WelcomeScreen = () => {
             </View>
 
             <View style={styles.bottom}>
-                <Pressable style={styles.btnPrimary} onPress={() => router.push('/register')}>
+                <Pressable style={({ pressed }) => [styles.btnPrimary, pressed && styles.pressed]}
+                    onPress={() => router.push('/register')}>
                     <Text style={styles.btnPrimaryText}>Get Started</Text>
                 </Pressable>
-                <Pressable style={styles.btnOutline} onPress={() => router.push('/login')}>
+                <Pressable style={({ pressed }) => [styles.btnOutline, pressed && styles.pressed]}
+                    onPress={() => router.push('/login')}>
                     <Text style={styles.btnOutlineText}>Log In</Text>
                 </Pressable>
             </View>
@@ -105,5 +107,6 @@ const styles = StyleSheet.create({
         fontFamily: 'DMSans_500Medium',
         fontSize: 16,
         color: '#fff',
-    }
+    },
+    pressed: { opacity: 0.7 },
 })

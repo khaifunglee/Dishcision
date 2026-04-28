@@ -47,7 +47,8 @@ const Login = () => {
             <ThemedView style={styles.container} safe={true}>
 
                 <View style={styles.header}>
-                    <Pressable style={styles.btnOutline} onPress={() => router.push('/')}>
+                    <Pressable style={({ pressed }) => [styles.btnOutline, pressed && styles.pressed]}
+                        onPress={() => router.push('/')}>
                         <Feather name={'chevron-left'} size={22} color={'black'} />
                     </Pressable>
 
@@ -96,7 +97,8 @@ const Login = () => {
 
                 <Spacer height={216} />
 
-                <Pressable style={styles.btn} onPress={handleLogin} disabled={loading}>
+                <Pressable style={({ pressed }) => [styles.btn, pressed && styles.pressed]}
+                    onPress={handleLogin} disabled={loading}>
                     <ThemedText style={{ color: '#fff' }}>{loading ? 'Logging In...' : 'Log In'}</ThemedText>
                 </Pressable>
 
@@ -173,5 +175,6 @@ const styles = StyleSheet.create({
         padding: 16,
         marginVertical: 16,
         alignItems: 'center',
-    }
+    },
+    pressed: { opacity: 0.7 },
 })

@@ -17,9 +17,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 5
     },
-    pressed: {
-        opacity: 0.7
-    }
+    pressed: { opacity: 0.7 },
 })
 
 export default ThemedButton

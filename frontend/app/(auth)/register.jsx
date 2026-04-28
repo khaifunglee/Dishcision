@@ -55,7 +55,8 @@ const Register = () => {
             <ThemedView style={styles.container} safe>
 
                 <View style={styles.header}>
-                    <Pressable style={styles.btnOutline} onPress={() => router.push('/')}>
+                    <Pressable style={({ pressed }) => [styles.btnOutline, pressed && styles.pressed]}
+                        onPress={() => router.push('/')}>
                         <Feather name={'chevron-left'} size={22} color={'black'} />
                     </Pressable>
 
@@ -119,7 +120,8 @@ const Register = () => {
                 </View>
 
                 <View style={styles.bottom}>
-                    <Pressable style={styles.btn} onPress={handleRegister} disabled={loading}>
+                    <Pressable style={({ pressed }) => [styles.btn, pressed && styles.pressed]}
+                        onPress={handleRegister} disabled={loading}>
                         <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>{loading ? 'Creating account...' : 'Create Account'}</ThemedText>
                     </Pressable>
 
@@ -214,4 +216,5 @@ const styles = StyleSheet.create({
         marginVertical: 16,
         alignItems: 'center',
     },
+    pressed: { opacity: 0.7 },
 })
