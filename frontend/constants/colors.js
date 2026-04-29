@@ -65,6 +65,7 @@ export const palette = {
     fresh: '#4A8A2E',
     freshLight: '#EAF4E4',
     beige: '#EAE3DC',            // beige
+    creamDark: '#F2EBE1',
 }
 
 export const radius = {
