@@ -64,7 +64,7 @@ export const palette = {
     amberLight: '#FEF3E6',
     fresh: '#4A8A2E',
     freshLight: '#EAF4E4',
-    beige: '#EAE3DC',
+    beige: '#EAE3DC',            // beige
 }
 
 export const radius = {
