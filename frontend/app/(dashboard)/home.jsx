@@ -19,7 +19,7 @@ const Home = () => {
         <ThemedView style={styles.container} safe>
             {/* Use safe=true for safeAreaView */}
             <ScrollView
-                contentContainerStyle={[styles.scroll, { paddingTop: 16 }]}
+                contentContainerStyle={[styles.scroll, { paddingTop: 16, }]}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
@@ -34,7 +34,8 @@ const Home = () => {
                 </View>
 
                 {/* Expiry Alert */}
-                <Pressable style={({ pressed }) => [styles.expiryAlert, pressed && styles.pressed]}>
+                <Pressable style={({ pressed }) => [styles.expiryAlert, pressed && styles.pressed]}
+                    onPress={() => router.push('/pantry')}>
                     <View style={styles.expiryIcon}>
                         <ThemedText style={{ fontSize: 16 }}>⏰</ThemedText>
                     </View>
