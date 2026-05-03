@@ -61,81 +61,45 @@ function RecipeCard({ recipe }) {
 
 const Suggestions = () => {
     return (
-        <ThemedView style={styles.container} safe>
+        <ThemedView style={styles.container} >
             {/* Use safe=true for safeAreaView */}
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header */}
-                <View style={[styles.header, { paddingTop: 16, }]}>
+                <View style={[styles.header, { paddingTop: 52, }]}>
                     <Pressable style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
                         onPress={() => router.back()}>
-                        <Feather name={'chevron-left'} size={22} color={'black'} />
+                        <Feather name={'chevron-left'} size={22} color={'white'} />
                     </Pressable>
                     <View>
                         <ThemedText style={styles.headerTitle} serif >Today's Dishcisions 🍽️</ThemedText>
                         <ThemedText style={styles.headerSub}>Based on your 12 pantry items</ThemedText>
                     </View>
-                    <View style={styles.avatar}>
-                        <ThemedText style={styles.avatarText} serif>A</ThemedText>
-                    </View>
                 </View>
 
-                {/* Expiry Alert */}
-                <Pressable style={({ pressed }) => [styles.expiryAlert, pressed && styles.pressed]}
-                    onPress={() => router.push('/pantry')}>
-                    <View style={styles.expiryIcon}>
-                        <ThemedText style={{ fontSize: 16 }}>⏰</ThemedText>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <ThemedText style={styles.expiryTitle}>3 items expiring soon</ThemedText>
-                        <ThemedText style={styles.expirySub}>Spinach, Chicken, Tomatoes · Tap to View</ThemedText>
-                    </View>
-                    <ThemedText style={styles.expiryArrow}>›</ThemedText>
-                </Pressable>
-
-                {/* Tonight's Dishcisions Card */}
-                <Pressable style={({ pressed }) => [styles.headerCard, pressed && styles.pressed]}
-                    onPress={() => router.push('/suggestions')}>
+                <View style={styles.body}>
+                    {/* Cook Now */}
                     <View>
-                        <ThemedText style={styles.cardEyebrow}>◊ YOUR PANTRY · 12 ITEMS</ThemedText>
-                        <ThemedText style={styles.cardTitle} serif > Tonight's{'\n'}
-                            <ThemedText style={styles.cardTitleAccent} serif>Dishcisions</ThemedText>
-                        </ThemedText>
-                        <ThemedText style={styles.cardSub}>5 recipes you can cook right now</ThemedText>
-                    </View>
-                    <View style={styles.cardCta}>
-                        <ThemedText style={styles.cardCtaText}>See what's cooking ›</ThemedText>
-                    </View>
-                </Pressable>
-
-                {/* Stats Row */}
-                <View style={styles.statsRow}>
-                    {[
-                        { emoji: '🥦', value: '12', label: 'Pantry items' },
-                        { emoji: '📖', value: '38', label: 'Recipes' },
-                        { emoji: '♻️', value: '$24', label: 'Saved this week' },
-                    ].map((stat) => (
-                        <View key={stat.label} style={styles.statCard}>
-                            <ThemedText style={styles.statIcon}>{stat.emoji}</ThemedText>
-                            <ThemedText style={styles.statValue} serif >{stat.value}</ThemedText>
-                            <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
+                        <View style={styles.sectionTitleRow}>
+                            <ThemedText style={styles.sectionTitle} serif>Cook Now</ThemedText>
+                            <View style={styles.badge}>
+                                <ThemedText style={styles.badgeText}>5 recipes</ThemedText>
+                            </View>
                         </View>
-                    ))}
-                </View>
-
-                {/* Quick Add */}
-                <Pressable style={({ pressed }) => [styles.quickAdd, pressed && styles.pressed]}>
-                    <View style={styles.quickAddIcon}>
-                        <ThemedText style={{ fontSize: 18, color: palette.green }}>+</ThemedText>
+                        {COOK_NOW.map((r) => <RecipeCard key={r.name} recipe={r} />)}
                     </View>
-                    <ThemedText style={styles.quickAddText}>
-                        <ThemedText style={styles.quickAddBold}>Quick-add </ThemedText>
-                        an ingredient to your pantry
-                    </ThemedText>
-                    <ThemedText style={{ color: palette.warmGray, fontSize: 18 }}>›</ThemedText>
-                </Pressable>
 
+                    {/* Almost There */}
+                    <View>
+                        <View style={styles.sectionTitleRow}>
+                            <ThemedText style={styles.sectionTitle} serif>Almost There</ThemedText>
+                            <View style={[styles.badge, styles.badgeAmber]}>
+                                <ThemedText style={[styles.badgeText, styles.badgeTextAmber]}>3 recipes</ThemedText>
+                            </View>
+                        </View>
+                        {ALMOST.map((r) => <RecipeCard key={r.name} recipe={r} />)}
+                    </View>
+                </View>
             </ScrollView>
-
         </ThemedView>
     )
 }
@@ -143,101 +107,71 @@ export default Suggestions
 
 const styles = StyleSheet.create({
     container: { flex: 1, },
-    scroll: { paddingHorizontal: 24, gap: 12 },
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        backgroundColor: palette.green,
+        paddingHorizontal: 24,
+        paddingBottom: 28,
     },
-    greetingSub: { fontSize: 13, },
+    backBtn: {
+        borderWidth: 0.6,
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderRadius: radius.medium,
+        height: 44, width: 44,
+        justifyContent: 'center', alignItems: 'center',
+        marginBottom: 20,
+    },
+    headerTitle: { fontSize: 26, color: '#F5A675', letterSpacing: -0.5, },
+    headerSub: { fontSize: 14, color: 'rgba(255,255,255,0.6)', },
     greetingMain: { fontSize: 24, letterSpacing: -0.5, },
-    avatar: {
-        width: 44, height: 44,
-        backgroundColor: palette.green,
-        borderRadius: radius.small,
-        alignItems: 'center', justifyContent: 'center',
-    },
-    avatarText: { fontSize: 18, color: '#fff' },
 
-    expiryAlert: {
-        backgroundColor: palette.redLight,
-        borderWidth: 1, borderColor: '#FABEBE',
-        borderRadius: radius.small,
-        padding: 16,
-        flexDirection: 'row', alignItems: 'center', gap: 16,
-    },
-    expiryIcon: {
-        width: 36, height: 36,
-        backgroundColor: palette.red,
-        borderRadius: radius.small,
-        alignItems: 'center', justifyContent: 'center',
-    },
-    expiryTitle: { fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: palette.red },
-    expirySub: { fontSize: 10, color: 'rgba(0,0,0,0.45)', marginTop: 2 },
-    expiryArrow: { fontSize: 16, color: palette.red, opacity: 0.6 },
+    body: { padding: 24, gap: 24 },
+    sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12, },
+    sectionTitle: { fontSize: 20, letterSpacing: -0.5, },
 
-    headerCard: {
-        backgroundColor: palette.green,
-        borderRadius: radius.large,
-        padding: 24,
-        minHeight: 180,
-        justifyContent: 'space-between',
-        ...shadow.large,
-    },
-    cardEyebrow: { fontFamily: 'DMSans_600SemiBold', fontSize: 11, color: 'rgba(255,255,255,0.5)', },
-    cardTitle: { fontSize: 28, color: '#fff', letterSpacing: -1, marginTop: 8, lineHeight: 32 },
-    cardTitleAccent: { fontFamily: 'Fraunces_400Regular_Italic', color: '#F5A675' },
-    cardSub: { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 },
-    cardCta: {
-        backgroundColor: palette.terracotta,
+    badge: {
+        backgroundColor: palette.freshLight,
+        paddingVertical: 4, paddingHorizontal: 8,
         borderRadius: radius.full,
-        paddingVertical: 10, paddingHorizontal: 16,
-        alignSelf: 'flex-start', marginTop: 16,
     },
-    cardCtaText: { fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: '#fff' },
+    badgeAmber: { backgroundColor: palette.amberLight },
+    badgeText: { fontFamily: 'DMSans_600SemiBold', fontSize: 10, color: palette.fresh },
+    badgeTextAmber: { color: palette.amber },
 
-    statsRow: { flexDirection: 'row', gap: 12 },
-    statCard: {
-        flex: 1,
+    recipeCard: {
         backgroundColor: '#fff',
-        borderRadius: radius.small,
-        borderWidth: 1, borderColor: palette.beige,
-        padding: 12, //gap: 4
-    },
-    statIcon: { fontSize: 22, marginBottom: 4 },
-    statValue: { fontSize: 24 },
-    statLabel: { fontSize: 10, color: 'rgba(0,0,0,0.5)', },
-
-    quickAdd: {
-        flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6,
-        backgroundColor: '#fff',
-        borderWidth: 1.5, borderColor: palette.beige, borderStyle: 'dashed',
-        borderRadius: radius.small, padding: 12
-    },
-    quickAddIcon: {
-        width: 32, height: 32,
-        backgroundColor: palette.greenLight,
-        borderRadius: 10,
-        alignItems: 'center', justifyContent: 'center',
-    },
-    quickAddText: { flex: 1, fontSize: 14, color: 'rgba(0,0,0,0.5)', },
-    quickAddBold: { fontFamily: 'DMSans_600SemiBold', color: palette.green },
-
-    sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
-    sectionTitle: { fontSize: 18 },
-    sectionAction: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: palette.green, },
-
-    hScroll: { gap: 16, paddingVertical: 4 },
-    recipeCardMini: {
-        width: 140,
-        backgroundColor: '#fff',
-        borderRadius: radius.small,
+        borderRadius: radius.large,
         borderWidth: 1, borderColor: palette.beige,
         overflow: 'hidden',
+        marginBottom: 12,
     },
-    recipeCardImg: { height: 90, alignItems: 'center', justifyContent: 'center', },
-    recipeCardName: { fontFamily: 'DMSans_600SemiBold', fontSize: 13, lineHeight: 18 },
-    recipeCardMeta: { fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 4 },
+    recipeHero: {
+        height: 120,
+        alignItems: 'center', justifyContent: 'center',
+    },
+    matchBadge: {
+        position: 'absolute', top: 12, right: 12,
+        paddingVertical: 5, paddingHorizontal: 10,
+        borderRadius: radius.full,
+    },
+    matchBadgeFull: { backgroundColor: palette.fresh },
+    matchBadgePartial: { backgroundColor: palette.amber },
+    matchBadgeText: { fontFamily: 'DMSans_600SemiBold', fontSize: 10, color: '#fff', },
+
+    recipeInfo: { padding: 16 },
+    recipeName: { fontSize: 18, letterSpacing: -0.5, marginBottom: 6, },
+    tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
+    tag: {
+        paddingVertical: 3, paddingHorizontal: 10,
+        backgroundColor: palette.creamDark,
+        borderWidth: 1, borderColor: palette.beige,
+        borderRadius: radius.full,
+    },
+    tagUrgent: { backgroundColor: palette.redLight, borderColor: '#FABEBE', },
+    tagText: { fontFamily: 'DMSans_500Medium', fontSize: 10, color: palette.warmGray },
+    tagTextUrgent: { color: palette.red },
+    recipeMeta: { fontSize: 12, color: palette.warmGray },
+    missingText: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: palette.amber, },
 
     pressed: { opacity: 0.7 }
 })
