@@ -1,12 +1,12 @@
-// This page serves as the home dashboard page (accessible by bottom nav dashboard) for the app
+// This page serves as the recipe suggestions page (accessible by home page) for the app
 import { router } from 'expo-router'
 import { Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { Feather } from '@expo/vector-icons'
-import { palette, radius, shadow } from "../constants/colors"
+import { palette, radius } from "../constants/colors"
 // Themed components
 import ThemedText from "../components/ThemedText"
 import ThemedView from "../components/ThemedView"
-import Spacer from '../components/Spacer'
+
 // Placeholder data for recipes
 const COOK_NOW = [
     { emoji: '🍝', name: 'Pasta Arrabiata', tags: ['Italian', 'Vegetarian', '25 min'], meta: '2 servings · 25 min · ~$3.20/serve', bg: ['#EBF2E6', '#C8E0BC'], badge: '✓ Full match', badgeType: 'full' },
@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
     },
     headerTitle: { fontSize: 26, color: '#F5A675', letterSpacing: -0.5, },
     headerSub: { fontSize: 14, color: 'rgba(255,255,255,0.6)', },
-    greetingMain: { fontSize: 24, letterSpacing: -0.5, },
 
     body: { padding: 24, gap: 24 },
     sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12, },
