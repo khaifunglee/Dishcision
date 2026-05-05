@@ -19,7 +19,7 @@ const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false) // signals login function is running
-    const [checked, setChecked] = useState(false) // remember password
+    const [rememberMe, setRememberMe] = useState(false) // remember password
 
     // Business logic for login function
     const handleLogin = async () => {
@@ -30,7 +30,7 @@ const Login = () => {
         setLoading(true)
         try {
             console.log('1. handleLogin called')
-            await login(email, password) // _layout.jsx handles navigation on success
+            await login(email, password, rememberMe) // _layout.jsx handles navigation on success
             console.log('3. login succeeded')
         } catch (error) {
             console.log('error found')
@@ -40,9 +40,10 @@ const Login = () => {
         }
     }
 
-    // Remember password function (placeholder for now)
+    // Remember password function (toggle to change rememberMe boolean value sent in token)
     const toggleCheckbox = () => {
-        setChecked(!checked)
+        console.log('Auto login')
+        setRememberMe(prev => !prev)
     }
 
     return (
@@ -86,7 +87,7 @@ const Login = () => {
                 <View style={styles.inputRow}>
                     <View style={styles.rmbMe}>
                         <Checkbox
-                            status={checked ? 'checked' : 'unchecked'}
+                            status={rememberMe ? 'checked' : 'unchecked'}
                             onPress={toggleCheckbox}
                             color={palette.green}
                             uncheckedColor={palette.green}

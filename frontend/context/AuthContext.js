@@ -18,8 +18,8 @@ export const AuthProvider = ({ children }) => {
         loadToken()
     }, [])
     // Otherwise, set token during login/register
-    const handleLogin = async (email, password) => {
-        const t = await login(email, password)
+    const handleLogin = async (email, password, rememberMe) => {
+        const t = await login(email, password, rememberMe)
         setToken(t)
     }
 
