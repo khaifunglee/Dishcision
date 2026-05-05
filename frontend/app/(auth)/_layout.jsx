@@ -9,7 +9,7 @@ const AuthLayout = () => {
             {/* Status bar automatically changes colour of device's header icons along with light/dark theme (e.g service bar, wifi signs, battery) */}
             <StatusBar value="auto" />
             <Stack screenOptions={{
-                headerShown: false, animation: "fade_from_bottom"
+                headerShown: false,
             }} />
         </>
     )

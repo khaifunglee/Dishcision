@@ -22,7 +22,7 @@ function RootLayout() {
 
     const { isLoggedIn, loading } = useAuth()
 
-    const [fontsLoaded] = useFonts({
+    const [fontsLoaded, fontError] = useFonts({
         Fraunces_400Regular,
         Fraunces_600SemiBold,
         Fraunces_400Regular_Italic,
@@ -30,10 +30,12 @@ function RootLayout() {
         DMSans_500Medium,
         DMSans_600SemiBold,
     })
-
+    // Hide splash once fonts are loaded/failed
     useEffect(() => {
-        if (fontsLoaded) SplashScreen.hideAsync()
-    }, [fontsLoaded])
+        if (fontsLoaded || fontError) {
+            SplashScreen.hideAsync()
+        }
+    }, [fontsLoaded, fontError])
 
     // Hook to check if user is logged in
     useEffect(() => {
@@ -44,17 +46,21 @@ function RootLayout() {
         } else {
             router.replace('/')
         }
-    }, [isLoggedIn, loading])
+    }, [isLoggedIn, loading, fontsLoaded])
+
+    if (!fontsLoaded && !fontError) return null
 
     return (
         <>
             {/* Status bar automatically changes colour of device's header icons along with light/dark theme (e.g service bar, wifi signs, battery) */}
             <StatusBar value="auto" />
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={{ headerShown: false, animation: "default", animationDuration: 200, }}>
                 {/* Register each screen as a stack to allow for customizability in 'options', e.g title, headerShown: true/false */}
                 <Stack.Screen name="index" />
                 <Stack.Screen name="(auth)" />
                 <Stack.Screen name="(dashboard)" />
+                <Stack.Screen name="recipe-detail" />
+                <Stack.Screen name="suggestions" />
             </Stack>
         </>
     )

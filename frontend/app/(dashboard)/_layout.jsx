@@ -29,6 +29,7 @@ const DashboardLayout = () => {
         <Tabs
             screenOptions={{
                 headerShown: false,
+                animation: 'shift',
                 tabBarStyle: {
                     backgroundColor: theme.background,
                     borderTopColor: theme.border,
