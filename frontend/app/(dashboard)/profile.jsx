@@ -11,7 +11,7 @@ import ThemedText from "../../components/ThemedText"
 function SettingsItem({ icon, iconBg, label, value, isToggle, isDanger }) {
 
     const [isEnabled, setIsEnabled] = useState(false)
-    const toggleSwitch = () => setIsEnabled(previousState => !previousState)
+    const toggleSwitch = () => setIsEnabled(prev => !prev)
 
     return (
         <View style={styles.settingsItem}>
