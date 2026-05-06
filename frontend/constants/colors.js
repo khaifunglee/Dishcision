@@ -1,36 +1,13 @@
 // This file stores all main theme colours of the app to allow any component to load
+import { useTheme } from "../context/ThemeContext"
+
 export const Colors = {
 
     // Imported colours
-    dark: {
-        background: '#1A1F14',      // dark green
-        uiBackground: '#242B1D',    // darker green
-        iconColor: "#9591a5",       // light blue
-        iconColorFocused: "#fff",   // white
-        text: '#F0EBE3',            // beighe
-        title: '#F0EBE3',
-        textSoft: '#9A9088',        // grey
-        border: '#2E3828',          // dark green
-        green: '#4A7A35',           // lighter green
-        greenLight: '#1E2D18',
-        terracotta: '#D4703A',
-        terracottaLight: '#2D1F18',
-        red: '#E05555',
-        redLight: '#2D1818',
-        amber: '#E08B30',
-        amberLight: '#2D2010',
-        fresh: '#5FA040',
-        freshLight: '#1A2D14',
-        warmGray: '#6B6259',
-        creamDark: '#1F2419',
-    },
     light: {
         background: '#FBF7F2',      // cream
-        uiBackground: '#F2EBE1',    // white
-        iconColor: "#686477",       // light blue
-        iconColorFocused: "#201e2b",// dark blue
+        uiBackground: '#FFF',       // white
         text: '#1C1915',            // dark grey
-        title: '#1C1915',
         textSoft: '#6B6259',        // light grey
         border: '#EAE3DC',          // beige
         green: '#243D1A',
@@ -46,8 +23,31 @@ export const Colors = {
         warmGray: '#8A7E74',
         creamDark: '#F2EBE1',
 
+        iconColor: "#686477",       // light blue
+        iconColorFocused: "#201e2b",// dark blue
         navBackground: "#e8e7ef",
-    }
+    },
+    dark: {
+        background: '#161B11',      // dark green
+        uiBackground: '#000',    // darker green
+        text: '#F2EDE4',            // beige
+        textSoft: '#8A8078',        // grey
+        border: '#2A3422',          // dark green
+        green: '#4A7A35',           // lighter green
+        greenLight: '#1E2D18',
+        terracotta: '#D4703A',
+        terracottaLight: '#2D1F18',
+        red: '#E05555',
+        redLight: '#2D1818',
+        amber: '#E08B30',
+        amberLight: '#2D2010',
+        fresh: '#5FA040',
+        freshLight: '#1A2D14',
+        warmGray: '#6B6259',
+        creamDark: '#1F2419',
+        iconColor: "#9591a5",       // light blue
+        iconColorFocused: "#fff",   // white
+    },
 }
 // Use this for brand colours (same regardless of theme)
 export const palette = {
@@ -90,4 +90,10 @@ export const shadow = {
         shadowRadius: 16,
         elevation: 6,
     }
+}
+
+// Hook for every screen to use correct colour theme based on ThemeContext
+export const useAppColors = () => {
+    const { isDark } = useTheme()
+    return isDark ? Colors.dark : Colors.light
 }

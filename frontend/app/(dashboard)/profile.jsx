@@ -1,8 +1,9 @@
 // This page serves as a profile page (accessible by bottom nav dashboard) for the app
 import { View, StyleSheet, ScrollView, Pressable, Switch } from "react-native"
-import { useState } from "react"
-import { radius, palette } from "../../constants/colors"
+import { useMemo } from "react"
+import { radius, palette, useAppColors } from "../../constants/colors"
 import { useAuth } from "../../context/AuthContext"
+import { useTheme } from "../../context/ThemeContext"
 // Themed components
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
@@ -10,11 +11,24 @@ import ThemedText from "../../components/ThemedText"
 // Settings item
 function SettingsItem({ icon, iconBg, label, value, isToggle, isDanger }) {
 
-    const [isEnabled, setIsEnabled] = useState(false)
-    const toggleSwitch = () => setIsEnabled(prev => !prev)
+    //const [isEnabled, setIsEnabled] = useState(false)
+    const { isDark, toggleTheme } = useTheme()
+
+    const c = useAppColors()
+
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        settingsCard: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        },
+        subtitle: {
+            //backgroundColor: 
+        }
+    }))
 
     return (
-        <View style={styles.settingsItem}>
+        <View style={[styles.settingsItem, themed.settingsCard]}>
             <View style={styles.settingsLeft}>
                 <View style={[styles.settingsIcon, { backgroundColor: iconBg }]}>
                     <ThemedText style={{ fontSize: 16 }}>{icon}</ThemedText>
@@ -24,10 +38,10 @@ function SettingsItem({ icon, iconBg, label, value, isToggle, isDanger }) {
             {isToggle ? (
                 <Switch style={styles.toggle}
                     trackColor={{ false: '#FBF7F2', true: palette.green }}
-                    thumbColor={isEnabled ? '#fff' : '#fff'}
+                    thumbColor={isDark ? '#fff' : '#fff'}
                     ios_backgroundColor={'#FBF7F2'}
-                    onValueChange={toggleSwitch}
-                    value={isEnabled}
+                    onValueChange={toggleTheme}
+                    value={isDark}
                 />
             ) : (
                 <ThemedText style={styles.settingsValue}>{value || '›'}</ThemedText>
@@ -37,6 +51,19 @@ function SettingsItem({ icon, iconBg, label, value, isToggle, isDanger }) {
 }
 
 const Profile = () => {
+
+    const c = useAppColors()
+
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        settingsCard: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        },
+        subtitle: {
+            //backgroundColor: 
+        }
+    }))
 
     const { logout } = useAuth()
     // Business logic for logout function
@@ -55,20 +82,20 @@ const Profile = () => {
                         <ThemedText style={styles.avatarText} serif >A</ThemedText>
                     </View>
                     <View>
-                        <ThemedText style={styles.profileName} serif >Alex Chen</ThemedText>
+                        <ThemedText style={styles.profileName} serif>Alex Chen</ThemedText>
                         <ThemedText style={styles.profileEmail}>alex@email.com</ThemedText>
                     </View>
                 </View>
 
                 {/* Dietary */}
-                <View style={styles.settingsGroup}>
+                <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>DIETARY</ThemedText>
                     <SettingsItem icon="🥗" iconBg={palette.freshLight} label="Diet Type" value="No Restrictions ›" />
                     <SettingsItem icon="🚫" iconBg={palette.terracottaLight} label="Allergies" value="None ›" />
                 </View>
 
                 {/* Notifications */}
-                <View style={styles.settingsGroup}>
+                <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>NOTIFICATIONS</ThemedText>
                     <SettingsItem icon="⏰" iconBg={palette.redLight} label="Expiry Alerts" isToggle />
                     <SettingsItem icon="🍽️" iconBg={palette.greenLight} label="Daily Suggestions" isToggle />
@@ -76,14 +103,14 @@ const Profile = () => {
                 </View>
 
                 {/* Appearance */}
-                <View style={styles.settingsGroup}>
+                <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>APPEARANCE</ThemedText>
                     <SettingsItem icon="🌙" iconBg={palette.creamDark} label="Dark Mode" isToggle />
                     <SettingsItem icon="Aa" iconBg={palette.greenLight} label="Text Size" value="Medium ›" />
                 </View>
 
                 {/* Account */}
-                <View style={styles.settingsGroup}>
+                <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>ACCOUNT</ThemedText>
                     <SettingsItem icon="✏️" iconBg={palette.greenLight} label="Edit Profile" />
                     <SettingsItem icon="🔒" iconBg={palette.creamDark} label="Change Password" />
@@ -125,9 +152,9 @@ const styles = StyleSheet.create({
 
     settingsGroup: {
         marginHorizontal: 24, marginBottom: 24,
-        backgroundColor: '#fff',
+        //backgroundColor: '#fff',
         borderRadius: radius.large,
-        borderWidth: 1, borderColor: palette.beige,
+        borderWidth: 1, //borderColor: palette.beige,
         overflow: 'hidden',
     },
     groupLabel: {

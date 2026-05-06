@@ -1,6 +1,6 @@
 // This file represents the Login page component inside the route group 'auth'
 import { useState } from "react"
-import { StyleSheet, Text, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View } from "react-native"
+import { StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View } from "react-native"
 import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { useAuth } from "../../context/AuthContext"
 import { Feather } from "@expo/vector-icons"
@@ -11,7 +11,6 @@ import { palette, radius } from "../../constants/colors"
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
 import Spacer from "../../components/Spacer"
-import ThemedButton from "../../components/ThemedButton"
 
 const Login = () => {
 

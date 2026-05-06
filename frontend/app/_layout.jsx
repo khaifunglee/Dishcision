@@ -2,8 +2,9 @@
 // Stack also allows for navigation (e.g adds back button to return to most recent page)
 import { useEffect } from 'react'
 import { Stack, router } from 'expo-router'
-import { StatusBar, useColorScheme } from 'react-native' // used to return light/dark themed pages on device with userInterfaceSytle in app.json
+import { StatusBar, useColorScheme } from 'react-native'
 import { AuthProvider, useAuth } from '../context/AuthContext' // used to check user logged in state in every page
+import { ThemeProvider } from '../context/ThemeContext' // used to return light/dark themed pages on device with userInterfaceSytle in app.json
 
 // Design
 import { Colors } from "../constants/colors"
@@ -16,9 +17,6 @@ import * as SplashScreen from 'expo-splash-screen'
 SplashScreen.preventAutoHideAsync()
 
 function RootLayout() {
-    const colorScheme = useColorScheme()
-    // Select light/dark colour theme from colors.js (?? means if colorScheme == null then select Colors.light)
-    const theme = Colors[colorScheme] ?? Colors.light
 
     const { isLoggedIn, loading } = useAuth()
 
@@ -67,8 +65,10 @@ function RootLayout() {
 }
 export default function Layout() {
     return (
-        <AuthProvider>
-            <RootLayout />
-        </AuthProvider>
+        <ThemeProvider>
+            <AuthProvider>
+                <RootLayout />
+            </AuthProvider>
+        </ThemeProvider>
     )
 }

@@ -1,7 +1,8 @@
 // This page serves as the home dashboard page (accessible by bottom nav dashboard) for the app
 import { router } from 'expo-router'
 import { Pressable, ScrollView, StyleSheet, View } from "react-native"
-import { palette, radius, shadow } from "../../constants/colors"
+import { palette, radius, shadow, useAppColors } from "../../constants/colors"
+import { useMemo } from 'react'
 // Themed components
 import ThemedText from "../../components/ThemedText"
 import ThemedView from "../../components/ThemedView"
@@ -15,6 +16,22 @@ const SAVED_RECIPES = [
 ]
 
 const Home = () => {
+
+    const c = useAppColors()
+
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        card: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        },
+        //expiryAlert: {
+        //backgroundColor: c.redLight,
+        //}
+        //title: { color: c.text },
+        //badge: { backgroundColor: c.greenLight }
+    }))
+
     return (
         <ThemedView style={styles.container} safe>
             {/* Use safe=true for safeAreaView */}
@@ -68,7 +85,7 @@ const Home = () => {
                         { emoji: '📖', value: '38', label: 'Recipes' },
                         { emoji: '♻️', value: '$24', label: 'Saved this week' },
                     ].map((stat) => (
-                        <View key={stat.label} style={styles.statCard}>
+                        <View key={stat.label} style={[styles.statCard, themed.card]}>
                             <ThemedText style={styles.statIcon}>{stat.emoji}</ThemedText>
                             <ThemedText style={styles.statValue} serif >{stat.value}</ThemedText>
                             <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
@@ -77,7 +94,7 @@ const Home = () => {
                 </View>
 
                 {/* Quick Add */}
-                <Pressable style={({ pressed }) => [styles.quickAdd, pressed && styles.pressed]}>
+                <Pressable style={({ pressed }) => [styles.quickAdd, themed.card, pressed && styles.pressed]}>
                     <View style={styles.quickAddIcon}>
                         <ThemedText style={{ fontSize: 18, color: palette.green }}>+</ThemedText>
                     </View>
@@ -182,7 +199,7 @@ const styles = StyleSheet.create({
     statsRow: { flexDirection: 'row', gap: 12 },
     statCard: {
         flex: 1,
-        backgroundColor: '#fff',
+        //backgroundColor: '#fff',
         borderRadius: radius.small,
         borderWidth: 1, borderColor: palette.beige,
         padding: 12, //gap: 4
@@ -193,7 +210,7 @@ const styles = StyleSheet.create({
 
     quickAdd: {
         flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6,
-        backgroundColor: '#fff',
+        //backgroundColor: '#fff',
         borderWidth: 1.5, borderColor: palette.beige, borderStyle: 'dashed',
         borderRadius: radius.small, padding: 12
     },
