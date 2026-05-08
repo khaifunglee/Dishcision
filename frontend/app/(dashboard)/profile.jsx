@@ -1,5 +1,5 @@
 // This page serves as a profile page (accessible by bottom nav dashboard) for the app
-import { View, StyleSheet, ScrollView, Pressable, Switch } from "react-native"
+import { View, Text, StyleSheet, ScrollView, Pressable, Switch } from "react-native"
 import { useMemo } from "react"
 import { radius, palette, useAppColors } from "../../constants/colors"
 import { useAuth } from "../../context/AuthContext"
@@ -31,7 +31,7 @@ function SettingsItem({ icon, iconBg, label, value, isToggle, isDanger }) {
         <View style={[styles.settingsItem, themed.settingsCard]}>
             <View style={styles.settingsLeft}>
                 <View style={[styles.settingsIcon, { backgroundColor: iconBg }]}>
-                    <ThemedText style={{ fontSize: 16 }}>{icon}</ThemedText>
+                    <Text style={{ fontSize: 16 }}>{icon}</Text>
                 </View>
                 <ThemedText style={[styles.settingsLabel, isDanger && { color: palette.red }]}>{label}</ThemedText>
             </View>
@@ -60,8 +60,8 @@ const Profile = () => {
             backgroundColor: c.uiBackground,
             borderColor: c.border,
         },
-        subtitle: {
-            //backgroundColor: 
+        red: {
+            color: c.red,
         }
     }))
 
@@ -83,7 +83,7 @@ const Profile = () => {
                     </View>
                     <View>
                         <ThemedText style={styles.profileName} serif>Alex Chen</ThemedText>
-                        <ThemedText style={styles.profileEmail}>alex@email.com</ThemedText>
+                        <ThemedText style={styles.profileEmail} subtitle>alex@email.com</ThemedText>
                     </View>
                 </View>
 
@@ -120,7 +120,7 @@ const Profile = () => {
                             <View style={[styles.settingsIcon, { backgroundColor: palette.redLight }]}>
                                 <ThemedText style={{ fontSize: 16 }}>↩️</ThemedText>
                             </View>
-                            <ThemedText style={[styles.settingsLabel, { color: palette.red }]}>Log Out</ThemedText>
+                            <ThemedText style={[styles.settingsLabel, themed.red]}>Log Out</ThemedText>
                         </View>
                     </Pressable>
                 </View>
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     profileName: {
         fontSize: 22, letterSpacing: -0.5,
     },
-    profileEmail: { fontSize: 12, color: palette.warmGray, marginTop: 2 },
+    profileEmail: { fontSize: 12, marginTop: 2 },
 
     settingsGroup: {
         marginHorizontal: 24, marginBottom: 24,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     },
     groupLabel: {
         fontFamily: 'DMSans_600SemiBold', fontSize: 10,
-        color: palette.warmGray, letterSpacing: 1,
+        letterSpacing: 1,
         paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6,
     },
     settingsItem: {

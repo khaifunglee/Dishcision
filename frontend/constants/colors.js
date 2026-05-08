@@ -28,16 +28,19 @@ export const Colors = {
         navBackground: "#e8e7ef",
     },
     dark: {
-        background: '#161B11',      // dark green
-        uiBackground: '#000',    // darker green
-        text: '#F2EDE4',            // beige
-        textSoft: '#8A8078',        // grey
-        border: '#2A3422',          // dark green
-        green: '#4A7A35',           // lighter green
-        greenLight: '#1E2D18',
+        background: '#161B11',      // screen bg (deep green)
+        uiBackground: '#759141',    // card bg (warmer green)
+        border: '#BFEA6E',          // card border (dark green)
+
+        text: '#F2EDE4',            // normal text (cream)
+        textSoft: '#d2cec6',        // subtitles (warm grey)
+
+        // Key colours
+        green: '#5A8F42',           // success colour (richer green)
+        greenLight: '#1C2D16',      // compliments green
         terracotta: '#D4703A',
         terracottaLight: '#2D1F18',
-        red: '#E05555',
+        red: '#f76460',
         redLight: '#2D1818',
         amber: '#E08B30',
         amberLight: '#2D2010',
