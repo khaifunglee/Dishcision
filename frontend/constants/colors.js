@@ -33,23 +33,25 @@ export const Colors = {
         border: '#BFEA6E',          // card border (dark green)
 
         text: '#F2EDE4',            // normal text (cream)
-        textSoft: '#d2cec6',        // subtitles (warm grey)
+        textSoft: '#D2CEC6',        // subtitles (warm grey)
 
         // Key colours
-        green: '#5A8F42',           // success colour (richer green)
-        greenLight: '#1C2D16',      // compliments green
+        green: '#C05C2A',           // signature colour (flip to terracotta)
+        greenLight: '#56923e',      // compliments green
         terracotta: '#D4703A',
         terracottaLight: '#2D1F18',
-        red: '#f76460',
-        redLight: '#2D1818',
-        amber: '#E08B30',
-        amberLight: '#2D2010',
-        fresh: '#5FA040',
-        freshLight: '#1A2D14',
+
+        red: '#F76460',             // failure colour
+        redLight: '#2D1818',        // compliments failure colour
+        amber: '#E08B30',           // partial match colour
+        amberLight: '#2D2010',      // compliments partial match colour
+
+        fresh: '#5FA040',           // match colour
+        freshLight: '#1A2D14',      // compliments match colour
         warmGray: '#6B6259',
-        creamDark: '#1F2419',
-        iconColor: "#9591a5",       // light blue
-        iconColorFocused: "#fff",   // white
+        creamDark: '#43413E',
+        iconColor: "#9591A5",       // light blue
+        iconColorFocused: "#FFF",   // white
     },
 }
 // Use this for brand colours (same regardless of theme)

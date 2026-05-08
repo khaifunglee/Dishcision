@@ -21,11 +21,9 @@ function SettingsItem({ icon, iconBg, label, value, isToggle, isDanger }) {
         settingsCard: {
             backgroundColor: c.uiBackground,
             borderColor: c.border,
+            borderTopColor: c.border,
         },
-        subtitle: {
-            //backgroundColor: 
-        }
-    }))
+    }), [c])
 
     return (
         <View style={[styles.settingsItem, themed.settingsCard]}>
@@ -63,7 +61,7 @@ const Profile = () => {
         red: {
             color: c.red,
         }
-    }))
+    }), [c])
 
     const { logout } = useAuth()
     // Business logic for logout function
@@ -90,34 +88,34 @@ const Profile = () => {
                 {/* Dietary */}
                 <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>DIETARY</ThemedText>
-                    <SettingsItem icon="🥗" iconBg={palette.freshLight} label="Diet Type" value="No Restrictions ›" />
-                    <SettingsItem icon="🚫" iconBg={palette.terracottaLight} label="Allergies" value="None ›" />
+                    <SettingsItem icon="🥗" iconBg={c.freshLight} label="Diet Type" value="No Restrictions ›" />
+                    <SettingsItem icon="🚫" iconBg={c.terracottaLight} label="Allergies" value="None ›" />
                 </View>
 
                 {/* Notifications */}
                 <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>NOTIFICATIONS</ThemedText>
-                    <SettingsItem icon="⏰" iconBg={palette.redLight} label="Expiry Alerts" isToggle />
-                    <SettingsItem icon="🍽️" iconBg={palette.greenLight} label="Daily Suggestions" isToggle />
-                    <SettingsItem icon="⚙️" iconBg={palette.amberLight} label="Alert Timing" value="3 days before ›" />
+                    <SettingsItem icon="⏰" iconBg={c.redLight} label="Expiry Alerts" isToggle />
+                    <SettingsItem icon="🍽️" iconBg={c.greenLight} label="Daily Suggestions" isToggle />
+                    <SettingsItem icon="⚙️" iconBg={c.amberLight} label="Alert Timing" value="3 days before ›" />
                 </View>
 
                 {/* Appearance */}
                 <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>APPEARANCE</ThemedText>
-                    <SettingsItem icon="🌙" iconBg={palette.creamDark} label="Dark Mode" isToggle />
-                    <SettingsItem icon="Aa" iconBg={palette.greenLight} label="Text Size" value="Medium ›" />
+                    <SettingsItem icon="🌙" iconBg={c.creamDark} label="Dark Mode" isToggle />
+                    <SettingsItem icon="Aa" iconBg={c.greenLight} label="Text Size" value="Medium ›" />
                 </View>
 
                 {/* Account */}
                 <View style={[styles.settingsGroup, themed.settingsCard]}>
                     <ThemedText style={styles.groupLabel}>ACCOUNT</ThemedText>
-                    <SettingsItem icon="✏️" iconBg={palette.greenLight} label="Edit Profile" />
-                    <SettingsItem icon="🔒" iconBg={palette.creamDark} label="Change Password" />
-                    <Pressable style={({ pressed }) => [styles.settingsItem, pressed && styles.pressed]}
+                    <SettingsItem icon="✏️" iconBg={c.greenLight} label="Edit Profile" />
+                    <SettingsItem icon="🔒" iconBg={c.creamDark} label="Change Password" />
+                    <Pressable style={({ pressed }) => [styles.settingsItem, themed.settingsCard, pressed && styles.pressed]}
                         onPress={handleLogout}>
                         <View style={styles.settingsLeft}>
-                            <View style={[styles.settingsIcon, { backgroundColor: palette.redLight }]}>
+                            <View style={[styles.settingsIcon, { backgroundColor: c.redLight }]}>
                                 <ThemedText style={{ fontSize: 16 }}>↩️</ThemedText>
                             </View>
                             <ThemedText style={[styles.settingsLabel, themed.red]}>Log Out</ThemedText>
@@ -152,9 +150,8 @@ const styles = StyleSheet.create({
 
     settingsGroup: {
         marginHorizontal: 24, marginBottom: 24,
-        //backgroundColor: '#fff',
         borderRadius: radius.large,
-        borderWidth: 1, //borderColor: palette.beige,
+        borderWidth: 1,
         overflow: 'hidden',
     },
     groupLabel: {
@@ -165,7 +162,7 @@ const styles = StyleSheet.create({
     settingsItem: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         padding: 14,
-        borderTopWidth: 1, borderTopColor: palette.beige,
+        borderTopWidth: 1, //borderTopColor: palette.beige,
     },
     settingsLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, },
     settingsIcon: {

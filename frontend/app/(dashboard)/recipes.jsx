@@ -1,26 +1,52 @@
 // This page serves as a recipe page (accessible by bottom nav dashboard) for the app
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from "react-native"
 import { router } from "expo-router"
-import { palette, radius } from "../../constants/colors"
+import { palette, radius, useAppColors } from "../../constants/colors"
+import { useMemo } from "react"
 
 // Themed components
-import Spacer from "../../components/Spacer"
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
 
-// Placeholder data
-const RECIPES = [
-    { emoji: '🍝', name: 'Pasta Arrabiata', meta: 'Italian · 25 min · ~$3.20/serve', match: '100%', matchType: 'full', bg: palette.greenLight },
-    { emoji: '🥘', name: 'Chicken Stir Fry', meta: 'Asian · 20 min · ~$4.50/serve', match: '100%', matchType: 'full', bg: palette.amberLight },
-    { emoji: '🍳', name: 'Tomato & Egg Scramble', meta: 'Breakfast · 10 min · ~$1.80/serve', match: '100%', matchType: 'full', bg: palette.terracottaLight },
-    { emoji: '🥗', name: 'Spinach & Feta Pasta', meta: 'Italian · 20 min · Missing 1', match: '+1 item', matchType: 'partial', bg: palette.freshLight },
-    { emoji: '🥩', name: 'Garlic Butter Chicken', meta: 'Western · 35 min · Missing 2', match: '+2 items', matchType: 'partial', bg: palette.creamDark },
-    { emoji: '🫕', name: 'Tomato Soup', meta: 'Comfort · 30 min · Missing 2', match: '+2 items', matchType: 'partial', bg: palette.greenLight },
-]
-
-const FILTERS = ['Best Match', '🌍 Cuisine', '⏱ Cook Time', '🥗 Dietary', '🔖 Saved']
-
 const Recipes = () => {
+    const c = useAppColors()
+
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        card: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        },
+        signatureColor: {
+            color: c.green,
+        },
+        matchFull: {
+            backgroundColor: c.freshLight,
+        },
+        matchPartial: {
+            backgroundColor: c.amberLight,
+        },
+        matchFullText: {
+            color: c.fresh,
+        },
+        matchPartialText: {
+            color: c.amber,
+        }
+    }), [c])
+
+    // Placeholder data
+    const RECIPES = [
+        { emoji: '🍝', name: 'Pasta Arrabiata', meta: 'Italian · 25 min · ~$3.20/serve', match: '100%', matchType: 'full', bg: c.greenLight },
+        { emoji: '🥘', name: 'Chicken Stir Fry', meta: 'Asian · 20 min · ~$4.50/serve', match: '100%', matchType: 'full', bg: c.amberLight },
+        { emoji: '🍳', name: 'Tomato & Egg Scramble', meta: 'Breakfast · 10 min · ~$1.80/serve', match: '100%', matchType: 'full', bg: c.terracottaLight },
+        { emoji: '🥗', name: 'Spinach & Feta Pasta', meta: 'Italian · 20 min · Missing 1', match: '+1 item', matchType: 'partial', bg: c.freshLight },
+        { emoji: '🥩', name: 'Garlic Butter Chicken', meta: 'Western · 35 min · Missing 2', match: '+2 items', matchType: 'partial', bg: c.creamDark },
+        { emoji: '🫕', name: 'Tomato Soup', meta: 'Comfort · 30 min · Missing 2', match: '+2 items', matchType: 'partial', bg: c.greenLight },
+    ]
+
+    const FILTERS = ['Best Match', '🌍 Cuisine', '⏱ Cook Time', '🥗 Dietary', '🔖 Saved']
+
+
     return (
         <ThemedView style={styles.container} safe>
             <ScrollView
@@ -36,11 +62,11 @@ const Recipes = () => {
                 </View>
 
                 {/* Search Bar */}
-                <View style={styles.searchBar}>
+                <View style={[styles.searchBar, themed.card]}>
                     <Text style={{ fontSize: 16 }}>🔍</Text>
                     <TextInput
                         placeholder="Search 38 recipes..."
-                        placeholderTextColor='#C0B8B0'
+                        placeholderTextColor='#D2CEC6'
                         style={styles.searchInput}
                     />
                 </View>
@@ -48,7 +74,7 @@ const Recipes = () => {
                 {/* Filter Bar */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
                     {FILTERS.map((f, i) => (
-                        <Pressable key={f} style={[styles.filterChip, i === 0 && styles.filterChipActive]}>
+                        <Pressable key={f} style={[styles.filterChip, themed.card, i === 0 && styles.filterChipActive]}>
                             <ThemedText style={[styles.filterChipText, i === 0 && styles.filterChipTextActive]}>{f}</ThemedText>
                         </Pressable>
                     ))}
@@ -56,15 +82,15 @@ const Recipes = () => {
 
                 {/* Recipe List */}
                 <View style={styles.sortRow}>
-                    <ThemedText style={styles.sortLabel}>Sorted by: </ThemedText>
-                    <ThemedText style={styles.sortValue}>Best Match to Pantry</ThemedText>
+                    <ThemedText style={styles.sortLabel} subtitle>Sorted by: </ThemedText>
+                    <ThemedText style={[styles.sortValue, themed.signatureColor]}>Best Match to Pantry</ThemedText>
                 </View>
 
                 <View style={styles.list}>
                     {RECIPES.map((recipe) => (
                         <Pressable
                             key={recipe.name}
-                            style={({ pressed }) => [styles.recipeItem, pressed && styles.pressed]}
+                            style={({ pressed }) => [styles.recipeItem, themed.card, pressed && styles.pressed]}
                             onPress={() => router.push('/recipe-detail')}
                         >
                             <View style={[styles.recipeThumb, { backgroundColor: recipe.bg }]}>
@@ -72,15 +98,15 @@ const Recipes = () => {
                             </View>
                             <View style={{ flex: 1 }}>
                                 <ThemedText style={styles.recipeName}>{recipe.name}</ThemedText>
-                                <ThemedText style={styles.recipeMeta}>{recipe.meta}</ThemedText>
+                                <ThemedText style={styles.recipeMeta} subtitle>{recipe.meta}</ThemedText>
                             </View>
                             <View style={[
                                 styles.matchPill,
-                                recipe.matchType === 'full' ? styles.matchFull : styles.matchPartial
+                                recipe.matchType === 'full' ? themed.matchFull : themed.matchPartial
                             ]}>
                                 <ThemedText style={[
                                     styles.matchPillText,
-                                    recipe.matchType === 'full' ? styles.matchFullText : styles.matchPartialText
+                                    recipe.matchType === 'full' ? themed.matchFullText : themed.matchPartialText
                                 ]}>
                                     {recipe.match}
                                 </ThemedText>
@@ -108,17 +134,15 @@ const styles = StyleSheet.create({
     },
     addBtn: {
         width: 40, height: 40,
-        backgroundColor: palette.green,
-        borderRadius: radius.small,
+        borderRadius: radius.small, backgroundColor: palette.green,
         alignItems: 'center', justifyContent: 'center',
     },
-    addBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+    addBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold', },
 
     searchBar: {
         flexDirection: 'row', alignItems: 'center', gap: 10,
         marginHorizontal: 24, marginBottom: 12,
-        backgroundColor: '#fff',
-        borderWidth: 1.5, borderColor: palette.beige,
+        borderWidth: 1.5,
         borderRadius: 14, padding: 12,
     },
     searchInput: {
@@ -131,22 +155,21 @@ const styles = StyleSheet.create({
     filterChip: {
         paddingVertical: 6, paddingHorizontal: 16,
         borderRadius: radius.full,
-        borderWidth: 1.5, borderColor: palette.beige,
+        borderWidth: 1.5,
         alignItems: 'center', justifyContent: 'center',
     },
     filterChipActive: { backgroundColor: palette.green, borderColor: palette.green, },
-    filterChipText: { fontFamily: 'DMSans_500Medium', fontSize: 12, color: 'rgba(0,0,0,0.5)' },
+    filterChipText: { fontFamily: 'DMSans_500Medium', fontSize: 12, },
     filterChipTextActive: { color: '#fff' },
 
     sortRow: { flexDirection: 'row', paddingHorizontal: 24, marginBottom: 8 },
-    sortLabel: { fontSize: 12, color: palette.warmGray },
-    sortValue: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: palette.green },
+    sortLabel: { fontSize: 12, },
+    sortValue: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, },
 
     list: { paddingHorizontal: 24, gap: 12 },
     recipeItem: {
-        backgroundColor: '#fff',
         borderRadius: radius.small,
-        borderWidth: 1, borderColor: palette.beige,
+        borderWidth: 1,
         padding: 14,
         flexDirection: 'row', alignItems: 'center', gap: 14
     },
@@ -156,7 +179,7 @@ const styles = StyleSheet.create({
         alignItems: 'center', justifyContent: 'center',
     },
     recipeName: { fontFamily: 'DMSans_600SemiBold', fontSize: 14, marginBottom: 3 },
-    recipeMeta: { fontSize: 10, color: palette.warmGray },
+    recipeMeta: { fontSize: 10, },
     matchPill: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: radius.full },
     matchFull: { backgroundColor: palette.freshLight },
     matchPartial: { backgroundColor: palette.amberLight },
