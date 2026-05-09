@@ -1,11 +1,11 @@
 // This file represents the Login page component inside the route group 'auth'
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View } from "react-native"
 import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { useAuth } from "../../context/AuthContext"
 import { Feather } from "@expo/vector-icons"
 import { Checkbox } from '@futurejj/react-native-checkbox'
-import { palette, radius } from "../../constants/colors"
+import { palette, radius, useAppColors } from "../../constants/colors"
 
 // Themed components
 import ThemedView from "../../components/ThemedView"
@@ -19,6 +19,15 @@ const Login = () => {
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false) // signals login function is running
     const [rememberMe, setRememberMe] = useState(false) // remember password
+
+    const c = useAppColors()
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        card: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        }
+    }), [c])
 
     // Business logic for login function
     const handleLogin = async () => {
@@ -50,15 +59,15 @@ const Login = () => {
             <ThemedView style={styles.container} safe={true}>
 
                 <View style={styles.header}>
-                    <Pressable style={({ pressed }) => [styles.btnOutline, pressed && styles.pressed]}
-                        onPress={() => router.push('/')}>
-                        <Feather name={'chevron-left'} size={22} color={'black'} />
+                    <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
+                        onPress={() => router.back()}>
+                        <Feather name={'chevron-left'} size={22} color={c.text} />
                     </Pressable>
 
                     <ThemedText style={styles.title} title serif >
                         Sign In to your Account
                     </ThemedText>
-                    <ThemedText style={styles.tagline}>
+                    <ThemedText style={styles.tagline} subtitle>
                         Time to cook smarter.
                     </ThemedText>
                 </View>
@@ -67,8 +76,9 @@ const Login = () => {
 
                 <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, themed.card]}
                     placeholder="Email"
+                    placeholderTextColor={c.textSoft}
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -76,8 +86,9 @@ const Login = () => {
                 />
                 <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, themed.card]}
                     placeholder="Password"
+                    placeholderTextColor={c.textSoft}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
@@ -88,19 +99,19 @@ const Login = () => {
                         <Checkbox
                             status={rememberMe ? 'checked' : 'unchecked'}
                             onPress={toggleCheckbox}
-                            color={palette.green}
-                            uncheckedColor={palette.green}
+                            color={c.greenLight}
+                            uncheckedColor={c.greenLight}
                         />
-                        <ThemedText>Remember me</ThemedText>
+                        <ThemedText subtitle>Remember me</ThemedText>
                     </View>
                     <Link href="/" asChild>
-                        <ThemedText style={{ textDecorationLine: 'underline', color: palette.green }}>Forgot Password?</ThemedText>
+                        <ThemedText style={{ textDecorationLine: 'underline', color: c.green }}>Forgot Password?</ThemedText>
                     </Link>
                 </View>
 
                 <Spacer height={216} />
 
-                <Pressable style={({ pressed }) => [styles.btn, pressed && styles.pressed]}
+                <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
                     onPress={handleLogin} disabled={loading}>
                     <ThemedText style={{ color: '#fff' }}>{loading ? 'Logging In...' : 'Log In'}</ThemedText>
                 </Pressable>
@@ -108,7 +119,7 @@ const Login = () => {
                 <ThemedText style={{ textAlign: 'center' }}>
                     Don't have an account?
                     <Link href="/register" asChild>
-                        <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: palette.green }}> Register</ThemedText>
+                        <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: c.green }}> Register</ThemedText>
                     </Link>
                 </ThemedText>
             </ThemedView>
@@ -145,7 +156,6 @@ const styles = StyleSheet.create({
     },
     tagline: {
         fontSize: 14,
-        color: 'rgba(0,0,0,0.65)',
     },
     subHeader: {
         fontSize: 12,
@@ -172,7 +182,6 @@ const styles = StyleSheet.create({
         marginLeft: -8,
     },
     btn: {
-        backgroundColor: palette.green,
         borderRadius: radius.medium,
         padding: 16,
         marginVertical: 16,
