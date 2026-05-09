@@ -1,8 +1,9 @@
 // This page serves as the recipe details page for the app
 import { router } from 'expo-router'
 import { Pressable, ScrollView, StyleSheet, View, } from "react-native"
+import { useMemo } from 'react'
 import { Feather } from '@expo/vector-icons'
-import { palette, radius } from "../constants/colors"
+import { palette, radius, useAppColors } from "../constants/colors"
 // Themed components
 import ThemedText from "../components/ThemedText"
 import ThemedView from "../components/ThemedView"
@@ -25,6 +26,16 @@ const STEPS = [
 ]
 
 const RecipeDetails = () => {
+    const c = useAppColors()
+
+    // Dynamic styles that depend on theme colors
+    const themed = useMemo(() => ({
+        card: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        }
+    }), [c])
+
     return (
         <ThemedView style={styles.container} >
 
@@ -50,12 +61,12 @@ const RecipeDetails = () => {
                     <View>
                         <View style={styles.tagRow}>
                             {['Italian', 'Vegetarian'].map((t) => (
-                                <View key={t} style={styles.tag}>
-                                    <ThemedText style={styles.tagText}>{t}</ThemedText>
+                                <View key={t} style={[styles.tag, { backgroundColor: c.creamDark, borderColor: c.warmGray }]}>
+                                    <ThemedText style={styles.tagText} subtitle>{t}</ThemedText>
                                 </View>
                             ))}
-                            <View style={[styles.tag, styles.tagFull]}>
-                                <ThemedText style={styles.tagFullText}>✓ Full match</ThemedText>
+                            <View style={[styles.tag, { backgroundColor: c.freshLight, borderColor: c.fresh }]}>
+                                <ThemedText style={[styles.tagFullText, { color: c.fresh }]}>✓ Full match</ThemedText>
                             </View>
                         </View>
                     </View>
@@ -70,9 +81,9 @@ const RecipeDetails = () => {
                             { val: '$3.20', lbl: 'PER SERVE' },
                             { val: '420', lbl: 'CALORIES' },
                         ].map((s) => (
-                            <View key={s.lbl} style={styles.statCard}>
+                            <View key={s.lbl} style={[styles.statCard, themed.card]}>
                                 <ThemedText style={styles.statVal} serif >{s.val}</ThemedText>
-                                <ThemedText style={styles.statLbl}>{s.lbl}</ThemedText>
+                                <ThemedText style={styles.statLbl} subtitle>{s.lbl}</ThemedText>
                             </View>
                         ))}
                     </View>
@@ -82,12 +93,12 @@ const RecipeDetails = () => {
                     {INGREDIENTS.map((ing) => (
                         <View key={ing.name} style={styles.ingrItem}>
                             <View style={styles.ingrItemLeft}>
-                                <View style={[styles.checkCircle, ing.have ? styles.checkHave : styles.checkMissing]}>
+                                <View style={[styles.checkCircle, ing.have ? { backgroundColor: c.freshLight } : [styles.checkMissing, { backgroundColor: c.redLight, borderColor: c.red }]]}>
                                     <ThemedText style={{ fontSize: 10 }}>{ing.have ? '✓' : 'X'}</ThemedText>
                                 </View>
-                                <ThemedText style={[ing.name, !ing.have && styles.ingrMissing]}>{ing.name}</ThemedText>
+                                <ThemedText style={[ing.name, !ing.have && { color: c.red }]}>{ing.name}</ThemedText>
                             </View>
-                            <ThemedText style={styles.ingrQty}>{ing.qty}</ThemedText>
+                            <ThemedText style={styles.ingrQty} subtitle>{ing.qty}</ThemedText>
                         </View>
                     ))}
 
@@ -148,26 +159,23 @@ const styles = StyleSheet.create({
     tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
     tag: {
         paddingVertical: 3, paddingHorizontal: 10,
-        backgroundColor: palette.creamDark,
-        borderWidth: 1, borderColor: palette.beige,
+        borderWidth: 1,
         borderRadius: radius.full,
     },
-    tagFull: { backgroundColor: palette.freshLight, borderColor: palette.freshLight, },
-    tagText: { fontFamily: 'DMSans_500Medium', fontSize: 10, color: palette.warmGray },
-    tagFullText: { fontFamily: 'DMSans_600SemiBold', fontSize: 10, color: palette.fresh },
+    tagText: { fontSize: 10 },
+    tagFullText: { fontFamily: 'DMSans_600SemiBold', fontSize: 10 },
 
     recipeTitle: { fontSize: 28, letterSpacing: -1, lineHeight: 36, },
 
     statsRow: { flexDirection: 'row', gap: 8, marginTop: 10, },
     statCard: {
         flex: 1,
-        backgroundColor: '#fff',
-        borderWidth: 1, borderColor: palette.beige,
-        borderRadius: radius.small, padding: 10, alignItems: 'center',
+        borderWidth: 1, borderRadius: radius.small,
+        padding: 10, alignItems: 'center',
     },
     statVal: { fontSize: 17, },
     statLbl: {
-        fontFamily: 'DMSans_500Medium', fontSize: 9, color: palette.warmGray,
+        fontFamily: 'DMSans_500Medium', fontSize: 9,
         letterSpacing: 0.5, marginTop: 2, textAlign: 'center'
     },
 
@@ -184,14 +192,12 @@ const styles = StyleSheet.create({
         width: 22, height: 22, borderRadius: radius.full,
         alignItems: 'center', justifyContent: 'center',
     },
-    checkHave: { backgroundColor: palette.freshLight },
     checkMissing: {
-        backgroundColor: palette.redLight,
-        borderWidth: 1.5, borderColor: palette.red, borderStyle: 'dashed',
+        borderWidth: 1.5, borderStyle: 'dashed',
     },
     ingrName: { flex: 1, fontSize: 14, },
-    ingrMissing: { color: palette.red },
-    ingrQty: { fontSize: 12, color: palette.warmGray, },
+    //ingrMissing: { color: palette.red },
+    ingrQty: { fontSize: 12 },
 
     stepItem: { flexDirection: 'row', gap: 14, },
     stepNum: {

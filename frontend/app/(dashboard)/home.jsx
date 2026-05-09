@@ -47,16 +47,16 @@ const Home = () => {
                 </View>
 
                 {/* Expiry Alert */}
-                <Pressable style={({ pressed }) => [styles.expiryAlert, pressed && styles.pressed]}
+                <Pressable style={({ pressed }) => [styles.expiryAlert, { backgroundColor: c.redLight, borderColor: c.red }, pressed && styles.pressed]}
                     onPress={() => router.push('/pantry')}>
-                    <View style={styles.expiryIcon}>
+                    <View style={[styles.expiryIcon, { backgroundColor: c.red }]}>
                         <ThemedText style={{ fontSize: 16 }}>⏰</ThemedText>
                     </View>
                     <View style={{ flex: 1 }}>
                         <ThemedText style={styles.expiryTitle}>3 items expiring soon</ThemedText>
                         <ThemedText style={styles.expirySub} subtitle>Spinach, Chicken, Tomatoes · Tap to View</ThemedText>
                     </View>
-                    <ThemedText style={styles.expiryArrow}>›</ThemedText>
+                    <ThemedText style={[styles.expiryArrow, { color: c.red }]}>›</ThemedText>
                 </Pressable>
 
                 {/* Tonight's Dishcisions Card */}
@@ -156,21 +156,20 @@ const styles = StyleSheet.create({
     avatarText: { fontSize: 18, color: '#fff' },
 
     expiryAlert: {
-        backgroundColor: palette.redLight,
-        borderWidth: 1, borderColor: '#FABEBE',
+        //backgroundColor: palette.redLight,
+        borderWidth: 1, //borderColor: '#FABEBE',
         borderRadius: radius.small,
         padding: 16,
         flexDirection: 'row', alignItems: 'center', gap: 16,
     },
     expiryIcon: {
         width: 36, height: 36,
-        backgroundColor: palette.red,
         borderRadius: radius.small,
         alignItems: 'center', justifyContent: 'center',
     },
     expiryTitle: { fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: palette.red },
-    expirySub: { fontSize: 10, color: 'rgba(0,0,0,0.45)', marginTop: 2 },
-    expiryArrow: { fontSize: 16, color: palette.red, opacity: 0.6 },
+    expirySub: { fontSize: 10, marginTop: 2 },
+    expiryArrow: { fontSize: 16, opacity: 0.6 },
 
     headerCard: {
         backgroundColor: palette.green,

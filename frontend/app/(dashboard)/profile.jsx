@@ -118,7 +118,7 @@ const Profile = () => {
                             <View style={[styles.settingsIcon, { backgroundColor: c.redLight }]}>
                                 <ThemedText style={{ fontSize: 16 }}>↩️</ThemedText>
                             </View>
-                            <ThemedText style={[styles.settingsLabel, themed.red]}>Log Out</ThemedText>
+                            <ThemedText style={[styles.settingsLabel, { fontFamily: 'DMSans_600SemiBold', color: c.red }]}>Log Out</ThemedText>
                         </View>
                     </Pressable>
                 </View>
