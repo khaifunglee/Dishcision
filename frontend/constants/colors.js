@@ -45,9 +45,9 @@ export const Colors = {
         redLight: '#2D1818',        // compliments failure colour
         amber: '#E08B30',           // partial match colour
         amberLight: '#2D2010',      // compliments partial match colour
-
-        fresh: '#5FA040',           // match colour
+        fresh: '#91F562',           // match colour
         freshLight: '#1A2D14',      // compliments match colour
+
         warmGray: '#6B6259',
         creamDark: '#43413E',
         iconColor: "#9591A5",       // light blue

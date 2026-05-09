@@ -1,6 +1,7 @@
 // This page serves as the pantry page (accessible by bottom nav dashboard) for the app
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from "react-native"
-import { palette, radius } from "../../constants/colors"
+import { useMemo } from "react"
+import { palette, radius, useAppColors } from "../../constants/colors"
 // Themed components
 import Spacer from "../../components/Spacer"
 import ThemedView from "../../components/ThemedView"
@@ -24,23 +25,33 @@ const FRESH = [
 
 const FILTERS = ['All (12)', '🔴 Expiring (3)', '🥩 Protein', '🥦 Produce', '🥫 Pantry', '🧀 Dairy']
 
-// Status colors (fresh, close to expiry, expiring)
-const statusColors = {
-    fresh: { bar: palette.fresh, badge: palette.freshLight, text: palette.fresh },
-    warn: { bar: palette.amber, badge: palette.amberLight, text: palette.amber },
-    urgent: { bar: palette.red, badge: palette.redLight, text: palette.red },
-}
-
 // Ingredient item card
 function IngredientItem({ item }) {
+
+    const c = useAppColors()
+
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        card: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        },
+    }), [c])
+
+    // Status colors (fresh, close to expiry, expiring)
+    const statusColors = {
+        fresh: { bar: c.fresh, badge: c.freshLight, text: c.fresh },
+        warn: { bar: c.amber, badge: c.amberLight, text: c.amber },
+        urgent: { bar: c.red, badge: c.redLight, text: c.red },
+    }
     const sc = statusColors[item.status]
     return (
-        <View style={styles.ingredientItem}>
+        <View style={[styles.ingredientItem, themed.card]}>
             <View style={[styles.statusBar, { backgroundColor: sc.bar }]} />
             <ThemedText style={styles.ingredientEmoji}>{item.emoji}</ThemedText>
             <View style={{ flex: 1 }}>
                 <ThemedText style={styles.ingredientName}>{item.name}</ThemedText>
-                <ThemedText style={styles.ingredientQty}>{item.qty}</ThemedText>
+                <ThemedText style={styles.ingredientQty} subtitle>{item.qty}</ThemedText>
             </View>
             <View style={[styles.expiryBadge, { backgroundColor: sc.badge }]}>
                 <ThemedText style={[styles.expiryBadgeText, { color: sc.text }]}>{item.badge}</ThemedText>
@@ -50,6 +61,23 @@ function IngredientItem({ item }) {
 }
 
 const Pantry = () => {
+
+    const c = useAppColors()
+
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        card: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        },
+        signatureColor: {
+            color: c.green,
+        },
+        filterChipActive: {
+            backgroundColor: c.green,
+            borderColor: c.green,
+        }
+    }), [c])
 
     return (
         <ThemedView style={styles.container} safe>
@@ -66,11 +94,11 @@ const Pantry = () => {
                 </View>
 
                 {/* Search Bar */}
-                <View style={styles.searchBar}>
+                <View style={[styles.searchBar, themed.card]}>
                     <Text style={{ fontSize: 16 }}>🔍</Text>
                     <TextInput
                         placeholder="Search ingredients..."
-                        placeholderTextColor='#C0B8B0'
+                        placeholderTextColor='#D2CEC6'
                         style={styles.searchInput}
                     />
                 </View>
@@ -78,20 +106,20 @@ const Pantry = () => {
                 {/* Filter Bar */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
                     {FILTERS.map((f, i) => (
-                        <Pressable key={f} style={[styles.filterChip, i === 0 && styles.filterChipActive]}>
-                            <ThemedText style={[styles.filterChipText, i === 0 && styles.filterChipTextActive]}>{f}</ThemedText>
+                        <Pressable key={f} style={[styles.filterChip, themed.card, i === 0 && themed.filterChipActive]}>
+                            <ThemedText style={[styles.filterChipText, i === 0 && styles.filterChipTextActive]} subtitle >{f}</ThemedText>
                         </Pressable>
                     ))}
                 </ScrollView>
 
                 {/* Ingredient List */}
                 <View style={styles.list}>
-                    <ThemedText style={styles.sectionLabel}>EXPIRING SOON</ThemedText>
+                    <ThemedText style={styles.sectionLabel} subtitle>EXPIRING SOON</ThemedText>
                     {EXPIRING.map((item) => <IngredientItem key={item.name} item={item} />)}
 
                     <Spacer height={15} />
 
-                    <ThemedText style={styles.sectionLabel}>ALL GOOD</ThemedText>
+                    <ThemedText style={styles.sectionLabel} subtitle>ALL GOOD</ThemedText>
                     {FRESH.map((item) => <IngredientItem key={item.name} item={item} />)}
                 </View>
             </ScrollView>
@@ -123,8 +151,7 @@ const styles = StyleSheet.create({
     searchBar: {
         flexDirection: 'row', alignItems: 'center', gap: 10,
         marginHorizontal: 24, marginBottom: 12,
-        backgroundColor: '#fff',
-        borderWidth: 1.5, borderColor: palette.beige,
+        borderWidth: 1.5,
         borderRadius: 14, padding: 12,
     },
     searchInput: {
@@ -141,19 +168,18 @@ const styles = StyleSheet.create({
         alignItems: 'center', justifyContent: 'center',
     },
     filterChipActive: { backgroundColor: palette.green, borderColor: palette.green, },
-    filterChipText: { fontFamily: 'DMSans_500Medium', fontSize: 12, color: 'rgba(0,0,0,0.5)' },
+    filterChipText: { fontFamily: 'DMSans_500Medium', fontSize: 12, },
     filterChipTextActive: { color: '#fff' },
 
     list: { paddingHorizontal: 24, gap: 8 },
     sectionLabel: {
         fontFamily: 'DMSans_600SemiBold', fontSize: 10,
-        color: palette.warmGray, letterSpacing: 1,
+        letterSpacing: 1,
         paddingVertical: 4,
     },
 
     ingredientItem: {
-        borderRadius: radius.small,
-        borderWidth: 1, borderColor: palette.beige,
+        borderRadius: radius.small, borderWidth: 1,
         padding: 14,
         flexDirection: 'row', alignItems: 'center', gap: 14,
         overflow: 'hidden',

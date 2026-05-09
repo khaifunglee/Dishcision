@@ -31,6 +31,10 @@ const Recipes = () => {
         },
         matchPartialText: {
             color: c.amber,
+        },
+        filterChipActive: {
+            backgroundColor: c.green,
+            borderColor: c.green,
         }
     }), [c])
 
@@ -74,8 +78,8 @@ const Recipes = () => {
                 {/* Filter Bar */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
                     {FILTERS.map((f, i) => (
-                        <Pressable key={f} style={[styles.filterChip, themed.card, i === 0 && styles.filterChipActive]}>
-                            <ThemedText style={[styles.filterChipText, i === 0 && styles.filterChipTextActive]}>{f}</ThemedText>
+                        <Pressable key={f} style={[styles.filterChip, themed.card, i === 0 && themed.filterChipActive]}>
+                            <ThemedText style={[styles.filterChipText, i === 0 && styles.filterChipTextActive]} subtitle>{f}</ThemedText>
                         </Pressable>
                     ))}
                 </ScrollView>
@@ -158,7 +162,6 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         alignItems: 'center', justifyContent: 'center',
     },
-    filterChipActive: { backgroundColor: palette.green, borderColor: palette.green, },
     filterChipText: { fontFamily: 'DMSans_500Medium', fontSize: 12, },
     filterChipTextActive: { color: '#fff' },
 
