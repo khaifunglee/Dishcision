@@ -1,10 +1,10 @@
 // This file represents the Register page component inside the route group 'auth'
-import { useState } from "react"
-import { StyleSheet, View, Text, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
+import { useState, useMemo } from "react"
+import { StyleSheet, View, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
 import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
-import { palette, radius } from "../../constants/colors"
+import { palette, radius, useAppColors } from "../../constants/colors"
 
 // Themed components
 import ThemedView from "../../components/ThemedView"
@@ -19,6 +19,15 @@ const Register = () => {
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false) // signals register function is rnning
     const [selected, setSelected] = useState([]) // chips
+
+    const c = useAppColors()
+    // Dynamic styles that depend on theme colours
+    const themed = useMemo(() => ({
+        card: {
+            backgroundColor: c.uiBackground,
+            borderColor: c.border,
+        },
+    }), [c])
 
     // Business logic for register function
     const handleRegister = async () => {
@@ -55,15 +64,15 @@ const Register = () => {
             <ThemedView style={styles.container} safe>
 
                 <View style={styles.header}>
-                    <Pressable style={({ pressed }) => [styles.btnOutline, pressed && styles.pressed]}
-                        onPress={() => router.push('/')}>
-                        <Feather name={'chevron-left'} size={22} color={'black'} />
+                    <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
+                        onPress={() => router.back()}>
+                        <Feather name={'chevron-left'} size={22} color={c.text} />
                     </Pressable>
 
                     <ThemedText style={styles.title} title={true} serif={true}>
                         Create your account
                     </ThemedText>
-                    <ThemedText style={styles.tagline}>
+                    <ThemedText style={styles.tagline} subtitle>
                         Let's get your pantry ready.
                     </ThemedText>
                 </View>
@@ -72,16 +81,18 @@ const Register = () => {
 
                 <ThemedText style={styles.subHeader} title>YOUR NAME</ThemedText>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, themed.card]}
                     placeholder="Name"
+                    color={c.textSoft}
                     value={name}
                     onChangeText={setName}
                     autoCapitalize="words"
                 />
                 <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, themed.card]}
                     placeholder="Email"
+                    color={c.textSoft}
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -89,8 +100,9 @@ const Register = () => {
                 />
                 <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, themed.card]}
                     placeholder="Min. 8 characters"
+                    color={c.textSoft}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
@@ -100,7 +112,7 @@ const Register = () => {
 
                 {/* Dietary preferences chips */}
                 <ThemedText style={styles.subHeader} title>
-                    DIETARY PREFERENCES <ThemedText style={styles.subHeaderAccent}>(optional)</ThemedText>
+                    DIETARY PREFERENCES <ThemedText subtitle>(optional)</ThemedText>
                 </ThemedText>
 
                 <View style={styles.chipsRow}>
@@ -109,10 +121,11 @@ const Register = () => {
                     ].map(chip => (
                         <Pressable
                             key={chip}
-                            style={[styles.chip, selected.includes(chip) && styles.chipActive]}
+                            style={[styles.chip, { backgroundColor: c.creamDark, borderColor: c.warmGray },
+                            selected.includes(chip) && { backgroundColor: c.freshLight, borderColor: c.fresh }]}
                             onPress={() => toggle(chip)}
                         >
-                            <ThemedText style={[styles.chipText, selected.includes(chip) && styles.chipTextActive]}>
+                            <ThemedText style={[styles.chipText, selected.includes(chip) && { color: c.fresh }]} subtitle>
                                 {chip}
                             </ThemedText>
                         </Pressable>
@@ -120,7 +133,7 @@ const Register = () => {
                 </View>
 
                 <View style={styles.bottom}>
-                    <Pressable style={({ pressed }) => [styles.btn, pressed && styles.pressed]}
+                    <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
                         onPress={handleRegister} disabled={loading}>
                         <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>{loading ? 'Creating account...' : 'Create Account'}</ThemedText>
                     </Pressable>
@@ -128,7 +141,7 @@ const Register = () => {
                     <ThemedText style={{ textAlign: 'center' }}>
                         Already have an account?
                         <Link href="/login" asChild>
-                            <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: palette.green }}> Log in</ThemedText>
+                            <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: c.green }}> Log in</ThemedText>
                         </Link>
                     </ThemedText>
                 </View>
@@ -149,9 +162,7 @@ const styles = StyleSheet.create({
         alignItems: 'left',
     },
     btnOutline: {
-        borderWidth: 0.6,
-        borderColor: '#ccc',
-        borderRadius: radius.medium,
+        borderWidth: 0.6, borderRadius: radius.medium,
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
@@ -161,7 +172,6 @@ const styles = StyleSheet.create({
     },
     tagline: {
         fontSize: 14,
-        color: 'rgba(0,0,0,0.65)',
     },
     subHeader: {
         fontSize: 12,
@@ -170,15 +180,11 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 0.6,
-        borderColor: '#ccc',
         borderRadius: radius.medium,
         padding: 16,
         marginBottom: 12,
         fontSize: 14,
         fontFamily: 'DMSans_400Regular',
-    },
-    subHeaderAccent: {
-        color: 'rgba(0,0,0,0.45)',
     },
     chipsRow: {
         flexDirection: 'row',
@@ -186,29 +192,19 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     chip: {
-        paddingVertical: 6,
+        paddingBottom: 6, paddingTop: 4, // paddingVertical doesn't work for some reason
         paddingHorizontal: 14,
-        borderRadius: 100,
+        borderRadius: radius.full,
         borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.45)',
-        backgroundColor: 'white',
-    },
-    chipActive: {
-        backgroundColor: palette.greenLight,
-        borderColor: palette.green,
+        alignItems: 'center', justifyContent: 'center',
     },
     chipText: {
         fontSize: 12,
-        color: palette.warmGray,
-    },
-    chipTextActive: {
-        color: palette.green,
     },
     bottom: {
         marginTop: 8,
     },
     btn: {
-        backgroundColor: palette.green,
         borderRadius: radius.medium,
         padding: 16,
         marginVertical: 16,
