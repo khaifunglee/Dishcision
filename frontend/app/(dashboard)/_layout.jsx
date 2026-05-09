@@ -1,30 +1,37 @@
 // This dashboard layout page wraps all dashboard pages with a bottom nav bar tab
 import { Tabs } from 'expo-router'
-import { View, Text, useColorScheme, StyleSheet } from 'react-native'
-import { Colors, palette } from '../../constants/colors'
+import { View, StyleSheet } from 'react-native'
+import { useTheme } from '../../context/ThemeContext'
+import { Colors } from '../../constants/colors'
 import { Feather } from '@expo/vector-icons'
 
+// Themed components
+import ThemedText from '../../components/ThemedText'
+
 function TabIcon({ name, label, focused }) {
-    const colorScheme = useColorScheme()
-    const theme = Colors[colorScheme] ?? Colors.light
+    // Select light/dark colour theme from colors.js based on settings toggle
+    const { isDark } = useTheme()
+    const theme = isDark ? Colors.dark : Colors.light
     return (
         <View style={styles.tabItem}>
             {/* Dynamic icon, use home when tab selected (focused == true), home-outline when not */}
             <Feather
                 name={name}
                 size={22}
-                color={focused ? theme.green : theme.warmGray}
+                color={focused ? theme.green : theme.textSoft}
             />
-            <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
+            <ThemedText style={[styles.tabLabel, focused && { color: theme.green }]}>
                 {label}
-            </Text>
+            </ThemedText>
         </View>
     )
 }
 
 const DashboardLayout = () => {
-    const colorScheme = useColorScheme()
-    const theme = Colors[colorScheme] ?? Colors.light
+    // Select light/dark colour theme from colors.js based on settings toggle
+    const { isDark } = useTheme()
+    const theme = isDark ? Colors.dark : Colors.light
+
     return (
         <Tabs
             screenOptions={{
@@ -86,11 +93,6 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     tabLabel: {
-        fontFamily: 'DMSans_500Medium',
         fontSize: 10,
-        color: palette.warmGray,
     },
-    tabLabelActive: {
-        color: palette.green,
-    }
 })

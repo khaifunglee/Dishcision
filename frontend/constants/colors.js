@@ -30,7 +30,7 @@ export const Colors = {
     dark: {
         background: '#161B11',      // screen bg (deep green)
         uiBackground: '#759141',    // card bg (warmer green)
-        border: '#BFEA6E',          // card border (dark green)
+        border: '#5e7533',          // card border (dark green)
 
         text: '#F2EDE4',            // normal text (cream)
         textSoft: '#D2CEC6',        // subtitles (warm grey)

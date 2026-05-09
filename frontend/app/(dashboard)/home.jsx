@@ -7,13 +7,6 @@ import { useMemo } from 'react'
 import ThemedText from "../../components/ThemedText"
 import ThemedView from "../../components/ThemedView"
 import Spacer from '../../components/Spacer'
-// Placeholder for saved recipes section
-const SAVED_RECIPES = [
-    { emoji: '🍝', name: 'Pasta Arrabiata', meta: '25 min · Italian', bg: palette.greenLight },
-    { emoji: '🥘', name: 'Chicken Stir Fry', meta: '20 min · Asian', bg: palette.amberLight },
-    { emoji: '🍳', name: 'Tomato Omelette', meta: '10 min · Breakfast', bg: palette.terracottaLight },
-    { emoji: '🥗', name: 'Spinach Pasta', meta: '20 min · Italian', bg: palette.freshLight },
-]
 
 const Home = () => {
 
@@ -24,13 +17,16 @@ const Home = () => {
         card: {
             backgroundColor: c.uiBackground,
             borderColor: c.border,
-        },
-        //expiryAlert: {
-        //backgroundColor: c.redLight,
-        //}
-        //title: { color: c.text },
-        //badge: { backgroundColor: c.greenLight }
-    }))
+        }, // add signatureColor: { color: c.green } for cleaner code?
+    }), [c])
+
+    // Placeholder for saved recipes section
+    const SAVED_RECIPES = [
+        { emoji: '🍝', name: 'Pasta Arrabiata', meta: '25 min · Italian', bg: c.freshLight },
+        { emoji: '🥘', name: 'Chicken Stir Fry', meta: '20 min · Asian', bg: c.amberLight },
+        { emoji: '🍳', name: 'Tomato Omelette', meta: '10 min · Breakfast', bg: c.terracottaLight },
+        { emoji: '🥗', name: 'Spinach Pasta', meta: '20 min · Italian', bg: c.freshLight },
+    ]
 
     return (
         <ThemedView style={styles.container} safe>
@@ -42,7 +38,7 @@ const Home = () => {
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <ThemedText style={styles.greetingSub}>Good morning ☀️</ThemedText>
+                        <ThemedText style={styles.greetingSub} subtitle>Good morning ☀️</ThemedText>
                         <ThemedText style={styles.greetingMain} serif>Make a Dishcision</ThemedText>
                     </View>
                     <View style={styles.avatar}>
@@ -58,7 +54,7 @@ const Home = () => {
                     </View>
                     <View style={{ flex: 1 }}>
                         <ThemedText style={styles.expiryTitle}>3 items expiring soon</ThemedText>
-                        <ThemedText style={styles.expirySub}>Spinach, Chicken, Tomatoes · Tap to View</ThemedText>
+                        <ThemedText style={styles.expirySub} subtitle>Spinach, Chicken, Tomatoes · Tap to View</ThemedText>
                     </View>
                     <ThemedText style={styles.expiryArrow}>›</ThemedText>
                 </Pressable>
@@ -67,11 +63,11 @@ const Home = () => {
                 <Pressable style={({ pressed }) => [styles.headerCard, pressed && styles.pressed]}
                     onPress={() => router.push('/suggestions')}>
                     <View>
-                        <ThemedText style={styles.cardEyebrow}>◊ YOUR PANTRY · 12 ITEMS</ThemedText>
-                        <ThemedText style={styles.cardTitle} serif > Tonight's{'\n'}
+                        <ThemedText style={styles.cardEyebrow} subtitle>◊ YOUR PANTRY · 12 ITEMS</ThemedText>
+                        <ThemedText style={styles.cardTitle} serif> Tonight's{'\n'}
                             <ThemedText style={styles.cardTitleAccent} serif>Dishcisions</ThemedText>
                         </ThemedText>
-                        <ThemedText style={styles.cardSub}>5 recipes you can cook right now</ThemedText>
+                        <ThemedText style={styles.cardSub} subtitle>5 recipes you can cook right now</ThemedText>
                     </View>
                     <View style={styles.cardCta}>
                         <ThemedText style={styles.cardCtaText}>See what's cooking ›</ThemedText>
@@ -87,28 +83,28 @@ const Home = () => {
                     ].map((stat) => (
                         <View key={stat.label} style={[styles.statCard, themed.card]}>
                             <ThemedText style={styles.statIcon}>{stat.emoji}</ThemedText>
-                            <ThemedText style={styles.statValue} serif >{stat.value}</ThemedText>
-                            <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
+                            <ThemedText style={styles.statValue} serif>{stat.value}</ThemedText>
+                            <ThemedText style={styles.statLabel} subtitle>{stat.label}</ThemedText>
                         </View>
                     ))}
                 </View>
 
                 {/* Quick Add */}
                 <Pressable style={({ pressed }) => [styles.quickAdd, themed.card, pressed && styles.pressed]}>
-                    <View style={styles.quickAddIcon}>
-                        <ThemedText style={{ fontSize: 18, color: palette.green }}>+</ThemedText>
+                    <View style={[styles.quickAddIcon, { backgroundColor: c.freshLight }]}>
+                        <ThemedText style={{ fontSize: 18, color: c.fresh }}>+</ThemedText>
                     </View>
-                    <ThemedText style={styles.quickAddText}>
-                        <ThemedText style={styles.quickAddBold}>Quick-add </ThemedText>
+                    <ThemedText style={styles.quickAddText} subtitle>
+                        <ThemedText style={[styles.quickAddBold, { color: c.fresh }]}>Quick-add </ThemedText>
                         an ingredient to your pantry
                     </ThemedText>
-                    <ThemedText style={{ color: palette.warmGray, fontSize: 18 }}>›</ThemedText>
+                    <ThemedText style={{ fontSize: 18 }} subtitle>›</ThemedText>
                 </Pressable>
 
                 {/* Saved Recipes */}
                 <View style={styles.sectionHeader}>
                     <ThemedText style={styles.sectionTitle} serif >Saved Recipes</ThemedText>
-                    <ThemedText style={styles.sectionAction}>See All</ThemedText>
+                    <ThemedText style={[styles.sectionAction, { color: c.green }]}>See All</ThemedText>
                 </View>
                 {/* Horizontal scroll bar for saved recipes section */}
                 <ScrollView
@@ -119,7 +115,7 @@ const Home = () => {
                     {SAVED_RECIPES.map((recipe) => (
                         <Pressable
                             key={recipe.name}
-                            style={({ pressed }) => [styles.recipeCardMini, pressed && styles.pressed]}
+                            style={({ pressed }) => [styles.recipeCardMini, themed.card, pressed && styles.pressed]}
                             onPress={() => router.push('/recipe-detail')}
                         >
                             <View style={[styles.recipeCardImg, { backgroundColor: recipe.bg }]}>
@@ -127,7 +123,7 @@ const Home = () => {
                             </View>
                             <View style={{ padding: 10 }}>
                                 <ThemedText style={styles.recipeCardName}>{recipe.name}</ThemedText>
-                                <ThemedText style={styles.recipeCardMeta}>⏱ {recipe.meta}</ThemedText>
+                                <ThemedText style={styles.recipeCardMeta} subtitle>⏱ {recipe.meta}</ThemedText>
                             </View>
                         </Pressable>
                     ))}
@@ -184,10 +180,10 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         ...shadow.large,
     },
-    cardEyebrow: { fontFamily: 'DMSans_600SemiBold', fontSize: 11, color: 'rgba(255,255,255,0.5)', },
+    cardEyebrow: { fontFamily: 'DMSans_600SemiBold', fontSize: 11, },
     cardTitle: { fontSize: 28, color: '#fff', letterSpacing: -1, marginTop: 8, lineHeight: 32 },
     cardTitleAccent: { fontFamily: 'Fraunces_400Regular_Italic', color: '#F5A675' },
-    cardSub: { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 },
+    cardSub: { fontSize: 13, marginTop: 4 },
     cardCta: {
         backgroundColor: palette.terracotta,
         borderRadius: radius.full,
@@ -206,38 +202,34 @@ const styles = StyleSheet.create({
     },
     statIcon: { fontSize: 22, marginBottom: 4 },
     statValue: { fontSize: 24 },
-    statLabel: { fontSize: 10, color: 'rgba(0,0,0,0.5)', },
+    statLabel: { fontSize: 10, },
 
     quickAdd: {
         flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6,
-        //backgroundColor: '#fff',
-        borderWidth: 1.5, borderColor: palette.beige, borderStyle: 'dashed',
+        borderWidth: 1.5, borderStyle: 'dashed',
         borderRadius: radius.small, padding: 12
     },
     quickAddIcon: {
         width: 32, height: 32,
-        backgroundColor: palette.greenLight,
         borderRadius: 10,
         alignItems: 'center', justifyContent: 'center',
     },
-    quickAddText: { flex: 1, fontSize: 14, color: 'rgba(0,0,0,0.5)', },
-    quickAddBold: { fontFamily: 'DMSans_600SemiBold', color: palette.green },
+    quickAddText: { flex: 1, fontSize: 14, },
+    quickAddBold: { fontFamily: 'DMSans_600SemiBold' },
 
     sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
     sectionTitle: { fontSize: 18 },
-    sectionAction: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: palette.green, },
+    sectionAction: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, },
 
     hScroll: { gap: 16, paddingVertical: 4 },
     recipeCardMini: {
         width: 140,
-        backgroundColor: '#fff',
-        borderRadius: radius.small,
-        borderWidth: 1, borderColor: palette.beige,
+        borderRadius: radius.small, borderWidth: 1,
         overflow: 'hidden',
     },
     recipeCardImg: { height: 90, alignItems: 'center', justifyContent: 'center', },
     recipeCardName: { fontFamily: 'DMSans_600SemiBold', fontSize: 13, lineHeight: 18 },
-    recipeCardMeta: { fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 4 },
+    recipeCardMeta: { fontSize: 9, marginTop: 4 },
 
     pressed: { opacity: 0.7 }
 })
