@@ -5,7 +5,7 @@ import { Link, router } from 'expo-router' // Expo router component to link to o
 import { useAuth } from "../../context/AuthContext"
 import { Feather } from "@expo/vector-icons"
 import { Checkbox } from '@futurejj/react-native-checkbox'
-import { palette, radius, useAppColors } from "../../constants/colors"
+import { radius, useAppColors } from "../../constants/colors"
 
 // Themed components
 import ThemedView from "../../components/ThemedView"
@@ -105,7 +105,7 @@ const Login = () => {
                         <ThemedText subtitle>Remember me</ThemedText>
                     </View>
                     <Link href="/" asChild>
-                        <ThemedText style={{ textDecorationLine: 'underline', color: c.green }}>Forgot Password?</ThemedText>
+                        <ThemedText style={{ textDecorationLine: 'underline', color: c.greenLight }}>Forgot Password?</ThemedText>
                     </Link>
                 </View>
 
@@ -134,29 +134,17 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 36,
         paddingTop: 56,
-        //alignItems: 'center',
-        //justifyContent: 'center',
     },
-    header: {
-        gap: 16,
-        //flex: 1,
-        //justifyContent: 'space-around',
-        //alignItems: 'left',
-    },
+    header: { gap: 16 },
     btnOutline: {
         borderWidth: 0.6,
-        borderColor: '#ccc',
         borderRadius: radius.medium,
-        //padding: 10,
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
-    title: {
-        fontSize: 28,
-    },
-    tagline: {
-        fontSize: 14,
-    },
+    title: { fontSize: 28 },
+    tagline: { fontSize: 14 },
+
     subHeader: {
         fontSize: 12,
         fontFamily: 'DMSans_600SemiBold',
@@ -164,7 +152,6 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 0.6,
-        borderColor: '#ccc',
         borderRadius: radius.medium,
         padding: 16,
         marginBottom: 12,
@@ -176,6 +163,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
+
     rmbMe: {
         flexDirection: 'row',
         alignItems: 'center',

@@ -7,25 +7,27 @@ export const Colors = {
     light: {
         background: '#FBF7F2',      // cream
         uiBackground: '#FFF',       // white
-        text: '#1C1915',            // dark grey
-        textSoft: '#6B6259',        // light grey
         border: '#EAE3DC',          // beige
+
+        text: '#1C1915',            // dark grey
+        textSoft: '#877f78',        // light grey
+        // Key colours
         green: '#243D1A',
         greenLight: '#EBF2E6',
         terracotta: '#C05C2A',
         terracottaLight: '#FAEEE7',
+
         red: '#C94040',
         redLight: '#FDEAEA',
         amber: '#D97E20',
         amberLight: '#FEF3E6',
         fresh: '#4A8A2E',
         freshLight: '#EAF4E4',
+
         warmGray: '#8A7E74',
         creamDark: '#F2EBE1',
-
         iconColor: "#686477",       // light blue
         iconColorFocused: "#201e2b",// dark blue
-        navBackground: "#e8e7ef",
     },
     dark: {
         background: '#161B11',      // screen bg (deep green)
@@ -34,7 +36,6 @@ export const Colors = {
 
         text: '#F2EDE4',            // normal text (cream)
         textSoft: '#D2CEC6',        // subtitles (warm grey)
-
         // Key colours
         green: '#C05C2A',           // signature colour (flip to terracotta)
         greenLight: '#56923e',      // compliments green

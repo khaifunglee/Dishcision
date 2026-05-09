@@ -4,7 +4,7 @@ import { StyleSheet, View, TextInput, Keyboard, Alert, TouchableWithoutFeedback,
 import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
-import { palette, radius, useAppColors } from "../../constants/colors"
+import { radius, useAppColors } from "../../constants/colors"
 
 // Themed components
 import ThemedView from "../../components/ThemedView"

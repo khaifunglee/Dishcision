@@ -17,6 +17,14 @@ function RecipeCard({ recipe }) {
         card: {
             backgroundColor: c.uiBackground,
             borderColor: c.border,
+        },
+        cookNowChip: {
+            backgroundColor: c.freshLight,
+            borderColor: c.fresh,
+        },
+        almostThereChip: {
+            backgroundColor: c.amberLight,
+            borderColor: c.amber,
         }
     }), [c])
 
@@ -28,9 +36,13 @@ function RecipeCard({ recipe }) {
                 <ThemedText style={{ fontSize: 52 }} >{recipe.emoji}</ThemedText>
                 <View style={[
                     styles.matchBadge,
-                    recipe.badgeType === 'full' ? { backgroundColor: c.greenLight } : { backgroundColor: c.amber }
+                    recipe.badgeType === 'full' ? themed.cookNowChip : themed.almostThereChip
                 ]}>
-                    <ThemedText style={styles.matchBadgeText}>{recipe.badge}</ThemedText>
+                    <ThemedText style={[styles.matchBadgeText,
+                    recipe.badgeType === 'full' ? { color: c.fresh } : { color: c.amber }
+                    ]}>
+                        {recipe.badge}
+                    </ThemedText>
                 </View>
             </View>
             <View style={styles.recipeInfo}>
@@ -75,7 +87,7 @@ const Suggestions = () => {
 
     // Placeholder data for recipes
     const COOK_NOW = [
-        { emoji: '🍝', name: 'Pasta Arrabiata', tags: ['Italian', 'Vegetarian', '25 min'], meta: '2 servings · 25 min · ~$3.20/serve', bg: c.freshLight, badge: '✓ Full match', badgeType: 'full' },
+        { emoji: '🍝', name: 'Pasta Arrabiata', tags: ['Italian', 'Vegetarian', '25 min'], meta: '2 servings · 25 min · ~$3.20/serve', bg: c.greenLight, badge: '✓ Full match', badgeType: 'full' },
         { emoji: '🥘', name: 'Chicken Stir Fry', tags: ['Asian', '20 min', 'Uses expiring items'], meta: '2 servings · 20 min · ~$4.50/serve', bg: c.amberLight, badge: '✓ Full match', badgeType: 'full' },
         { emoji: '🍳', name: 'Tomato & Egg Scramble', tags: ['Breakfast', '10 min'], meta: '1 serving · 10 min · ~$1.80/serve', bg: c.terracottaLight, badge: '✓ Full match', badgeType: 'full' },
     ]
