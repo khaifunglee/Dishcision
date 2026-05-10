@@ -5,6 +5,7 @@ import { Stack, router } from 'expo-router'
 import { StatusBar, useColorScheme } from 'react-native'
 import { AuthProvider, useAuth } from '../context/AuthContext' // used to check user logged in state in every page
 import { ThemeProvider } from '../context/ThemeContext' // used to return light/dark themed pages on device with userInterfaceSytle in app.json
+import { OnboardingProvider } from '../context/OnboardingContext' // used to check if user has had onboarding messages yet
 
 // Design
 import { Colors } from "../constants/colors"
@@ -12,6 +13,7 @@ import { useFonts } from 'expo-font'
 import { Fraunces_400Regular, Fraunces_600SemiBold, Fraunces_400Regular_Italic } from '@expo-google-fonts/fraunces'
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans'
 import * as SplashScreen from 'expo-splash-screen'
+
 
 // Keep splash screen visible until resources are loaded (fonts & auth context)
 SplashScreen.preventAutoHideAsync()
@@ -67,7 +69,9 @@ export default function Layout() {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <RootLayout />
+                <OnboardingProvider>
+                    <RootLayout />
+                </OnboardingProvider>
             </AuthProvider>
         </ThemeProvider>
     )

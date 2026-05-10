@@ -2,15 +2,21 @@
 import { router } from 'expo-router'
 import { Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { palette, radius, shadow, useAppColors } from "../../constants/colors"
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useOnboarding } from '../../context/OnboardingContext'
+
+import OnboardingOverlay from '../../components/OnboardingOverlay' // Home page shows step 1
 // Themed components
 import ThemedText from "../../components/ThemedText"
 import ThemedView from "../../components/ThemedView"
 import Spacer from '../../components/Spacer'
 
+
 const Home = () => {
 
     const c = useAppColors()
+    const { shouldOnboard, completeOnboarding } = useOnboarding()
+    const [showOverlay, setShowOverlay] = useState(false)
 
     // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({
@@ -19,6 +25,20 @@ const Home = () => {
             borderColor: c.border,
         }, // add signatureColor: { color: c.green } for cleaner code?
     }), [c])
+
+    // Hook to show onboarding overlay
+    useEffect(() => {
+        if (shouldOnboard) setShowOverlay(true)
+    }, [shouldOnboard])
+    // Functions to skip or go to next onboarding overlay
+    const handleNext = () => {
+        setShowOverlay(false)
+        router.push('/pantry')
+    }
+    const handleSkip = async () => {
+        setShowOverlay(false)
+        await completeOnboarding()
+    }
 
     // Placeholder for saved recipes section
     const SAVED_RECIPES = [
@@ -131,7 +151,14 @@ const Home = () => {
 
                 <Spacer height={16} />
             </ScrollView>
-
+            {/* Onboarding Overlay */}
+            <OnboardingOverlay
+                visible={showOverlay}
+                step={1} total={3}
+                body='This is your Home screen. See what you can cook tonight and check for expiring items at a glance.'
+                onNext={handleNext}
+                onSkip={handleSkip}
+            />
         </ThemedView>
     )
 }

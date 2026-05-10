@@ -2,7 +2,10 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from "react-native"
 import { router } from "expo-router"
 import { palette, radius, useAppColors } from "../../constants/colors"
-import { useMemo } from "react"
+import { useMemo, useEffect } from "react"
+import { useOnboarding } from "../../context/OnboardingContext"
+
+import OnboardingOverlay from "../../components/OnboardingOverlay" // Recipes page shows step 3
 
 // Themed components
 import ThemedView from "../../components/ThemedView"
@@ -10,6 +13,8 @@ import ThemedText from "../../components/ThemedText"
 
 const Recipes = () => {
     const c = useAppColors()
+    const { shouldOnboard, completeOnboarding } = useOnboarding()
+    const [showOverlay, setShowOverlay] = useState(false)
 
     // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({
@@ -37,6 +42,21 @@ const Recipes = () => {
             borderColor: c.green,
         }
     }), [c])
+
+    // Hook to show onboarding overlay
+    useEffect(() => {
+        if (shouldOnboard) setShowOverlay(true)
+    }, [shouldOnboard])
+    // Functions to skip or finish onboarding
+    const handleFinish = async () => {
+        setShowOverlay(false)
+        await completeOnboarding()
+        router.replace('/home')
+    }
+    const handleSkip = async () => {
+        setShowOverlay(false)
+        await completeOnboarding()
+    }
 
     // Placeholder data
     const RECIPES = [
@@ -119,6 +139,14 @@ const Recipes = () => {
                     ))}
                 </View>
             </ScrollView>
+            {/* Onboarding Overlay */}
+            <OnboardingOverlay
+                visible={showOverlay}
+                step={3} total={3}
+                body='Browse for recipes sorted by your best pantry match. The app tells you exactly what you can cook now!'
+                onNext={handleFinish}
+                onSkip={handleSkip}
+            />
         </ThemedView>
     )
 }

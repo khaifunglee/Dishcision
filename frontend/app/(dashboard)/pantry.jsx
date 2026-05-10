@@ -1,7 +1,11 @@
 // This page serves as the pantry page (accessible by bottom nav dashboard) for the app
+import { router } from 'expo-router'
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from "react-native"
-import { useMemo } from "react"
+import { useMemo, useEffect } from "react"
 import { palette, radius, useAppColors } from "../../constants/colors"
+import { useOnboarding } from "../../context/OnboardingContext"
+
+import OnboardingOverlay from "../../components/OnboardingOverlay" // Pantry page shows step 2
 // Themed components
 import Spacer from "../../components/Spacer"
 import ThemedView from "../../components/ThemedView"
@@ -63,6 +67,8 @@ function IngredientItem({ item }) {
 const Pantry = () => {
 
     const c = useAppColors()
+    const { shouldOnboard, completeOnboarding } = useOnboarding()
+    const [showOverlay, setShowOverlay] = useState(false)
 
     // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({
@@ -78,6 +84,20 @@ const Pantry = () => {
             borderColor: c.green,
         }
     }), [c])
+
+    // Hook to show onboarding overlay
+    useEffect(() => {
+        if (shouldOnboard) setShowOverlay(true)
+    }, [shouldOnboard])
+    // Functions to skip or go to next onboarding 
+    const handleNext = () => {
+        setShowOverlay(false)
+        router.push('/recipes')
+    }
+    const handleSkip = async () => {
+        setShowOverlay(false)
+        await completeOnboarding()
+    }
 
     return (
         <ThemedView style={styles.container} safe>
@@ -123,6 +143,14 @@ const Pantry = () => {
                     {FRESH.map((item) => <IngredientItem key={item.name} item={item} />)}
                 </View>
             </ScrollView>
+            {/* Onboarding Overlay */}
+            <OnboardingOverlay
+                visible={showOverlay}
+                step={2} total={3}
+                body='Your pantry stores all your ingredients with colour-coded expiry dates. Tap + to add items.'
+                onNext={handleNext}
+                onSkip={handleSkip}
+            />
         </ThemedView>
     )
 }

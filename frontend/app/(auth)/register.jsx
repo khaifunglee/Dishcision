@@ -4,6 +4,7 @@ import { StyleSheet, View, TextInput, Keyboard, Alert, TouchableWithoutFeedback,
 import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
+import { useOnboarding } from "../../context/OnboardingContext"
 import { radius, useAppColors } from "../../constants/colors"
 
 // Themed components
@@ -14,6 +15,8 @@ import Spacer from "../../components/Spacer"
 const Register = () => {
 
     const { register } = useAuth()
+    const { triggerOnboarding } = useOnboarding()
+
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -42,6 +45,7 @@ const Register = () => {
         setLoading(true)
         try {
             await register(name, email, password) // _layout.jsx handles navigation on success
+            await triggerOnboarding()            // trigger onboarding messages
         } catch (error) {
             const message = error.response?.data?.message || 'Registration failed'
             Alert.alert('Error', message)
