@@ -1,9 +1,10 @@
 // This compnent is a template for onboarding overlay messages on the main pages
 import { View, Pressable, StyleSheet, Modal } from 'react-native'
 import { BlurView } from 'expo-blur'
-import { useAppColors } from '../constants/colors'
+import { radius, useAppColors } from '../constants/colors'
 import { useTheme } from '../context/ThemeContext'
 import ThemedText from './ThemedText'
+import { useMemo } from 'react'
 
 export default function OnboardingOverlay({ visible, step, total, body, onNext, onSkip }) {
     const c = useAppColors()
@@ -14,7 +15,7 @@ export default function OnboardingOverlay({ visible, step, total, body, onNext, 
     return (
         <Modal transparent animationType='fade' visible={visible}>
             <BlurView
-                intensity={40}
+                intensity={10}
                 tint={isDark ? 'dark' : 'light'}
                 style={StyleSheet.absoluteFill}
             />
@@ -22,7 +23,7 @@ export default function OnboardingOverlay({ visible, step, total, body, onNext, 
                 <View style={[styles.tooltip, { backgroundColor: c.uiBackground, borderColor: c.border }]}>
                     {/* Header */}
                     <View style={styles.stepRow}>
-                        <ThemedText style={[styles.stepLabel, { color: c.terracotta }]}>
+                        <ThemedText style={[styles.stepLabel, { color: c.green }]}>
                             STEP {step} OF {total}
                         </ThemedText>
                     </View>
@@ -34,7 +35,7 @@ export default function OnboardingOverlay({ visible, step, total, body, onNext, 
                         <Pressable onPress={onSkip}>
                             <ThemedText style={styles.skipText} subtitle>Skip tour</ThemedText>
                         </Pressable>
-                        <Pressable style={({ pressed }) => [styles.nextBtn, themed.card, pressed && styles.pressed]}
+                        <Pressable style={({ pressed }) => [styles.nextBtn, { backgroundColor: c.green, borderColor: c.green }, pressed && styles.pressed]}
                             onPress={onNext}
                         >
                             <ThemedText style={styles.nextBtnText}>
@@ -51,34 +52,35 @@ export default function OnboardingOverlay({ visible, step, total, body, onNext, 
 
 const styles = StyleSheet.create({
     container: {
+        position: 'absolute', bottom: 100,
         flex: 1,
-        justifyContent: 'center', alignItems: 'center',
-        padding: 32,
+        alignItems: 'left',
+        padding: 24,
     },
     tooltip: {
-        width: '100%',
-        borderRadius: 20, borderWidth: 1,
-        padding: 24, gap: 12,
-    },
-    stepRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        width: '90%',
+        borderRadius: 20,
+        padding: 22, gap: 8,
     },
     stepLabel: {
         fontFamily: 'DMSans_600SemiBold',
-        fontSize: 11,
+        fontSize: 12,
         letterSpacing: 0.8,
     },
     skipText: { fontSize: 14 },
     body: {
-        fontSize: 14, lineHeight: 22,
+        fontSize: 12, lineHeight: 22,
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     nextBtn: {
-        borderRadius: 12,
-        padding: 14, marginTop: 4,
+        borderRadius: radius.medium, borderWidth: 1,
+        paddingVertical: 10, paddingHorizontal: 16,
         alignItems: 'center',
         marginTop: 4,
     },
-    nextBtnText: { fontFamily: 'DMSans_600SemiBold', fontSize: 14, }
+    nextBtnText: { fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: '#fff' }
 })

@@ -87,6 +87,7 @@ const Register = () => {
                 <TextInput
                     style={[styles.input, themed.card]}
                     placeholder="Name"
+                    placeholderTextColor={c.textSoft}
                     color={c.textSoft}
                     value={name}
                     onChangeText={setName}
@@ -96,6 +97,7 @@ const Register = () => {
                 <TextInput
                     style={[styles.input, themed.card]}
                     placeholder="Email"
+                    placeholderTextColor={c.textSoft}
                     color={c.textSoft}
                     value={email}
                     onChangeText={setEmail}
@@ -106,6 +108,7 @@ const Register = () => {
                 <TextInput
                     style={[styles.input, themed.card]}
                     placeholder="Min. 8 characters"
+                    placeholderTextColor={c.textSoft}
                     color={c.textSoft}
                     value={password}
                     onChangeText={setPassword}
@@ -125,7 +128,7 @@ const Register = () => {
                     ].map(chip => (
                         <Pressable
                             key={chip}
-                            style={[styles.chip, { backgroundColor: c.creamDark, borderColor: c.warmGray },
+                            style={[styles.chip, { backgroundColor: c.creamDark, borderColor: c.border },
                             selected.includes(chip) && { backgroundColor: c.freshLight, borderColor: c.fresh }]}
                             onPress={() => toggle(chip)}
                         >

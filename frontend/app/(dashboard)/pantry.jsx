@@ -1,7 +1,7 @@
 // This page serves as the pantry page (accessible by bottom nav dashboard) for the app
 import { router } from 'expo-router'
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from "react-native"
-import { useMemo, useEffect } from "react"
+import { useMemo, useEffect, useState } from "react"
 import { palette, radius, useAppColors } from "../../constants/colors"
 import { useOnboarding } from "../../context/OnboardingContext"
 

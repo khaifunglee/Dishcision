@@ -77,6 +77,7 @@ const Login = () => {
                 <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
                 <TextInput
                     style={[styles.input, themed.card]}
+                    color={c.textSoft}
                     placeholder="Email"
                     placeholderTextColor={c.textSoft}
                     value={email}
@@ -87,6 +88,7 @@ const Login = () => {
                 <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
                 <TextInput
                     style={[styles.input, themed.card]}
+                    color={c.textSoft}
                     placeholder="Password"
                     placeholderTextColor={c.textSoft}
                     value={password}
@@ -99,13 +101,13 @@ const Login = () => {
                         <Checkbox
                             status={rememberMe ? 'checked' : 'unchecked'}
                             onPress={toggleCheckbox}
-                            color={c.greenLight}
-                            uncheckedColor={c.greenLight}
+                            color={c.green}
+                            uncheckedColor={c.green}
                         />
                         <ThemedText subtitle>Remember me</ThemedText>
                     </View>
                     <Link href="/" asChild>
-                        <ThemedText style={{ textDecorationLine: 'underline', color: c.greenLight }}>Forgot Password?</ThemedText>
+                        <ThemedText style={{ textDecorationLine: 'underline', color: c.green }}>Forgot Password?</ThemedText>
                     </Link>
                 </View>
 

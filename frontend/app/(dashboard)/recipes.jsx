@@ -2,7 +2,7 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from "react-native"
 import { router } from "expo-router"
 import { palette, radius, useAppColors } from "../../constants/colors"
-import { useMemo, useEffect } from "react"
+import { useMemo, useEffect, useState } from "react"
 import { useOnboarding } from "../../context/OnboardingContext"
 
 import OnboardingOverlay from "../../components/OnboardingOverlay" // Recipes page shows step 3
