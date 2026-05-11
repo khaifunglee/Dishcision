@@ -4,7 +4,6 @@ import { BlurView } from 'expo-blur'
 import { radius, useAppColors } from '../constants/colors'
 import { useTheme } from '../context/ThemeContext'
 import ThemedText from './ThemedText'
-import { useMemo } from 'react'
 
 export default function OnboardingOverlay({ visible, step, total, body, onNext, onSkip }) {
     const c = useAppColors()

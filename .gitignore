@@ -40,3 +40,4 @@ yarn-error.*
 /ios
 /android
 backend/src/main/resources/application.properties
+backend/src/main/resources/application.properties
