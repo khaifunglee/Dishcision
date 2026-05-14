@@ -34,7 +34,7 @@ const FRESH = [
 const FILTERS = ['All (12)', '🔴 Expiring (3)', '🥩 Protein', '🥦 Produce', '🥫 Pantry', '🧀 Dairy']
 
 // Ingredient item card
-function IngredientItem({ item }) {
+function IngredientItem({ item, onPress }) {
 
     const c = useAppColors()
 
@@ -54,7 +54,8 @@ function IngredientItem({ item }) {
     }
     const sc = statusColors[item.status]
     return (
-        <View style={[styles.ingredientItem, themed.card]}>
+        <Pressable style={({ pressed }) => [styles.ingredientItem, themed.card, pressed && styles.pressed]}
+            onPress={onPress}>
             <View style={[styles.statusBar, { backgroundColor: sc.bar }]} />
             <ThemedText style={styles.ingredientEmoji}>{item.emoji}</ThemedText>
             <View style={{ flex: 1 }}>
@@ -64,15 +65,21 @@ function IngredientItem({ item }) {
             <View style={[styles.expiryBadge, { backgroundColor: sc.badge }]}>
                 <ThemedText style={[styles.expiryBadgeText, { color: sc.text }]}>{item.badge}</ThemedText>
             </View>
-        </View>
+        </Pressable>
     )
 }
 
 const Pantry = () => {
 
     const c = useAppColors()
+    // Onboarding overlay constants
     const { shouldOnboard, completeOnboarding } = useOnboarding()
     const [showOverlay, setShowOverlay] = useState(false)
+    // Quick add, edit sheet modal and toast message constants
+    const [addSheetVisible, setAddSheetVisible] = useState(false)
+    const [editSheetVisible, setEditSheetVisible] = useState(false)
+    const [selectedIngredient, setSelectedIngredient] = useState(null) // track which ingredient was selected for editing
+    const { toast, showToast } = useToast()
 
     // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({
@@ -102,6 +109,11 @@ const Pantry = () => {
         setShowOverlay(false)
         await completeOnboarding()
     }
+    // Function that handles opening edit ingredient modal sheet
+    const openEdit = (ingredient) => {
+        setSelectedIngredient(ingredient)
+        setEditSheetVisible(true)
+    }
 
     return (
         <ThemedView style={styles.container} safe>
@@ -112,7 +124,8 @@ const Pantry = () => {
                 {/* Header */}
                 <View style={[styles.header, { paddingTop: 16 }]}>
                     <ThemedText style={styles.title} serif>Pantry</ThemedText>
-                    <Pressable style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}>
+                    <Pressable style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}
+                        onPress={() => setAddSheetVisible(true)}>
                         <ThemedText style={styles.addBtnText}>+</ThemedText>
                     </Pressable>
                 </View>
@@ -139,12 +152,24 @@ const Pantry = () => {
                 {/* Ingredient List */}
                 <View style={styles.list}>
                     <ThemedText style={styles.sectionLabel} subtitle>EXPIRING SOON</ThemedText>
-                    {EXPIRING.map((item) => <IngredientItem key={item.name} item={item} />)}
+                    {EXPIRING.map((item) => (
+                        <IngredientItem
+                            key={item.name}
+                            item={item}
+                            onPress={() => openEdit(item)}
+                        />
+                    ))}
 
                     <Spacer height={15} />
 
                     <ThemedText style={styles.sectionLabel} subtitle>ALL GOOD</ThemedText>
-                    {FRESH.map((item) => <IngredientItem key={item.name} item={item} />)}
+                    {FRESH.map((item) => (
+                        <IngredientItem
+                            key={item.name}
+                            item={item}
+                            onPress={() => openEdit(item)}
+                        />
+                    ))}
                 </View>
             </ScrollView>
             {/* Onboarding Overlay */}
@@ -154,6 +179,20 @@ const Pantry = () => {
                 body='Your pantry stores all your ingredients with colour-coded expiry dates. Tap + to add items.'
                 onNext={handleNext}
                 onSkip={handleSkip}
+            />
+            {/* Toast Message */}
+            <Toast message={toast.message} visible={toast.visible} />
+            <AddIngredientSheet
+                visible={addSheetVisible}
+                onClose={() => setAddSheetVisible(false)}
+                onAdd={() => showToast('✓ Ingredient added to pantry!')}
+            />
+            <EditIngredientSheet
+                visible={editSheetVisible}
+                ingredient={selectedIngredient}
+                onClose={() => setEditSheetVisible(false)}
+                onSave={() => showToast('✓ Ingredient updated!')}
+                onDelete={() => showToast('✓ Ingredient removed from pantry')}
             />
         </ThemedView>
     )

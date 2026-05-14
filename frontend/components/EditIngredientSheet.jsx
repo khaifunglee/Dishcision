@@ -4,7 +4,6 @@ import {
     View, TextInput, Pressable, StyleSheet,
     Modal, Animated, TouchableWithoutFeedback, Dimensions
 } from "react-native"
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet'
 import { radius, useAppColors } from "../constants/colors"
 
 import ThemedText from "./ThemedText"
