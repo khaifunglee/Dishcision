@@ -169,7 +169,6 @@ const Home = () => {
             />
             {/* Toast Message */}
             <Toast message={toast.message} visible={toast.visible} />
-
             <AddIngredientSheet
                 visible={addSheetVisible}
                 onClose={() => setAddSheetVisible(false)}

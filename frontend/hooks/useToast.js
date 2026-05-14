@@ -6,7 +6,9 @@ export const useToast = () => {
 
     const showToast = useCallback((message) => {
         setToast({ visible: true, message })
-        setTimeout(() => setToast({ visible: false, message }), 2500) // Prevent displaying duplicate toast messages
+        setTimeout(() => {
+            setToast(prev => ({ ...prev, visible: false }))
+        }, 2500)
     }, [])
 
     return { toast, showToast }

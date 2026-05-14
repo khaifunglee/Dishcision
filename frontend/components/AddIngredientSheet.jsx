@@ -95,6 +95,7 @@ export default function AddIngredientSheet({ visible, onClose, onAdd }) {
                             <TextInput
                                 style={[styles.input, themed.inputField]}
                                 placeholder="g, ml, pieces"
+
                                 placeholderTextColor={c.textSoft}
                             />
                         </View>
@@ -137,30 +138,30 @@ const styles = StyleSheet.create({
     sheet: {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         borderTopLeftRadius: 28, borderTopRightRadius: 28,
-        padding: 28, paddingBottom: 28,
-        gap: 20,
+        padding: 28, paddingBottom: 36,
+        gap: 14,
     },
     handle: {
         width: 40, height: 4,
         borderRadius: 2,
         alignSelf: 'center',
-        marginBottom: 8,
+        marginBottom: 4,
     },
     title: {
         fontSize: 24,
-        letterSpacing: -0.5,
+        letterSpacing: -1,
     },
-    fields: { gap: 16 },
-    fieldGroup: { gap: 6 },
+    fields: { gap: 12 },
+    fieldGroup: { gap: 4 },
     label: {
         fontFamily: 'DMSans_600SemiBold',
         fontSize: 12,
-        letterSpacing: 0.8,
+        letterSpacing: 0.5,
     },
     input: {
         borderWidth: 1, borderRadius: radius.medium,
         padding: 14,
-        fontSize: 14,
+        fontSize: 14, fontFamily: 'DMSans_400Regular'
     },
     row: {
         flexDirection: 'row', gap: 12,
@@ -169,6 +170,6 @@ const styles = StyleSheet.create({
         borderRadius: radius.large, padding: 16,
         alignItems: 'center', marginTop: 4,
     },
-    addBtnText: { fontSize: 16, color: '#fff', },
+    addBtnText: { fontSize: 16, fontFamily: 'DMSans_600SemiBold', color: '#fff', },
     pressed: { opacity: 0.7 }
 })
