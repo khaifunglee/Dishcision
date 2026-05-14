@@ -4,19 +4,25 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { palette, radius, shadow, useAppColors } from "../../constants/colors"
 import { useEffect, useMemo, useState } from 'react'
 import { useOnboarding } from '../../context/OnboardingContext'
+import { useToast } from '../../hooks/useToast'
 
-import OnboardingOverlay from '../../components/OnboardingOverlay' // Home page shows step 1
-// Themed components
+// Components
 import ThemedText from "../../components/ThemedText"
 import ThemedView from "../../components/ThemedView"
 import Spacer from '../../components/Spacer'
-
+import OnboardingOverlay from '../../components/OnboardingOverlay' // Home page shows step 1
+import Toast from '../../components/Toast'
+import AddIngredientSheet from '../../components/AddIngredientSheet'
 
 const Home = () => {
 
     const c = useAppColors()
+    // Onboarding overlay constants
     const { shouldOnboard, completeOnboarding } = useOnboarding()
     const [showOverlay, setShowOverlay] = useState(false)
+    // Quick add sheet modal and toast message constants
+    const [addSheetVisible, setAddSheetVisible] = useState(false)
+    const { toast, showToast } = useToast()
 
     // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({
@@ -109,8 +115,10 @@ const Home = () => {
                     ))}
                 </View>
 
-                {/* Quick Add */}
-                <Pressable style={({ pressed }) => [styles.quickAdd, themed.card, pressed && styles.pressed]}>
+                {/* Quick Add button */}
+                <Pressable style={({ pressed }) => [styles.quickAdd, themed.card, pressed && styles.pressed]}
+                    onPress={() => setAddSheetVisible(true)}
+                >
                     <View style={[styles.quickAddIcon, { backgroundColor: c.freshLight }]}>
                         <ThemedText style={{ fontSize: 18, color: c.fresh }}>+</ThemedText>
                     </View>
@@ -158,6 +166,14 @@ const Home = () => {
                 body='This is your Home screen. See what you can cook tonight and check for expiring items at a glance.'
                 onNext={handleNext}
                 onSkip={handleSkip}
+            />
+            {/* Toast Message */}
+            <Toast message={toast.message} visible={toast.visible} />
+
+            <AddIngredientSheet
+                visible={addSheetVisible}
+                onClose={() => setAddSheetVisible(false)}
+                onAdd={() => showToast('✓ Ingredient added to pantry!')}
             />
         </ThemedView>
     )

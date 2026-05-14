@@ -6,6 +6,7 @@ import { StatusBar, useColorScheme } from 'react-native'
 import { AuthProvider, useAuth } from '../context/AuthContext' // used to check user logged in state in every page
 import { ThemeProvider } from '../context/ThemeContext' // used to return light/dark themed pages on device with userInterfaceSytle in app.json
 import { OnboardingProvider } from '../context/OnboardingContext' // used to check if user has had onboarding messages yet
+import { GestureHandlerRootView } from 'react-native-gesture-handler' // handles any gestures detected on screens
 
 // Design
 import { Colors } from "../constants/colors"
@@ -67,12 +68,14 @@ function RootLayout() {
 }
 export default function Layout() {
     return (
-        <ThemeProvider>
-            <AuthProvider>
-                <OnboardingProvider>
-                    <RootLayout />
-                </OnboardingProvider>
-            </AuthProvider>
-        </ThemeProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <ThemeProvider>
+                <AuthProvider>
+                    <OnboardingProvider>
+                        <RootLayout />
+                    </OnboardingProvider>
+                </AuthProvider>
+            </ThemeProvider>
+        </GestureHandlerRootView>
     )
 }
