@@ -4,17 +4,21 @@ import { router } from "expo-router"
 import { palette, radius, useAppColors } from "../../constants/colors"
 import { useMemo, useEffect, useState } from "react"
 import { useOnboarding } from "../../context/OnboardingContext"
+import { useToast } from "../../hooks/useToast"
 
 import OnboardingOverlay from "../../components/OnboardingOverlay" // Recipes page shows step 3
 
 // Themed components
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
+import SwipeableRecipeItem from "../../components/SwipeableRecipeItem"
+import Toast from "../../components/Toast"
 
 const Recipes = () => {
     const c = useAppColors()
     const { shouldOnboard, completeOnboarding } = useOnboarding()
     const [showOverlay, setShowOverlay] = useState(false)
+    const { toast, showToast } = useToast()
 
     // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({
@@ -80,7 +84,8 @@ const Recipes = () => {
                 {/* Header */}
                 <View style={[styles.header, { paddingTop: 16 }]}>
                     <ThemedText style={styles.title} serif>Recipes</ThemedText>
-                    <Pressable style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}>
+                    <Pressable style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}
+                        onPress={() => showToast('✓ Recipe added!')}>
                         <ThemedText style={styles.addBtnText}>+</ThemedText>
                     </Pressable>
                 </View>
@@ -112,30 +117,13 @@ const Recipes = () => {
 
                 <View style={styles.list}>
                     {RECIPES.map((recipe) => (
-                        <Pressable
+                        <SwipeableRecipeItem
                             key={recipe.name}
+                            recipe={recipe}
                             style={({ pressed }) => [styles.recipeItem, themed.card, pressed && styles.pressed]}
                             onPress={() => router.push('/recipe-detail')}
-                        >
-                            <View style={[styles.recipeThumb, { backgroundColor: recipe.bg }]}>
-                                <ThemedText style={{ fontSize: 28 }}>{recipe.emoji}</ThemedText>
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <ThemedText style={styles.recipeName}>{recipe.name}</ThemedText>
-                                <ThemedText style={styles.recipeMeta} subtitle>{recipe.meta}</ThemedText>
-                            </View>
-                            <View style={[
-                                styles.matchPill,
-                                recipe.matchType === 'full' ? themed.matchFull : themed.matchPartial
-                            ]}>
-                                <ThemedText style={[
-                                    styles.matchPillText,
-                                    recipe.matchType === 'full' ? themed.matchFullText : themed.matchPartialText
-                                ]}>
-                                    {recipe.match}
-                                </ThemedText>
-                            </View>
-                        </Pressable>
+                            onSave={() => showToast('🔖 Recipe saved!')}
+                        />
                     ))}
                 </View>
             </ScrollView>
@@ -147,6 +135,8 @@ const Recipes = () => {
                 onNext={handleFinish}
                 onSkip={handleSkip}
             />
+            {/* Toast Message */}
+            <Toast message={toast.message} visible={toast.visible} />
         </ThemedView>
     )
 }

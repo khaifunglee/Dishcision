@@ -1,44 +1,59 @@
 // This component is a template for swipeable recipe items (to save recipes in recipe page)
 import { useRef } from 'react'
-import { View, Pressable, StyleSheet, Animated } from 'react-native'
-import { Swipeable } from 'react-native-gesture-handler/ReanimatedSwipeable'
-import { useAppColors } from '../hooks/useAppColors'
-
+import { View, Pressable, StyleSheet } from 'react-native'
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable'
+import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated'
+import { useAppColors } from '../constants/colors'
+// Components
 import ThemedText from './ThemedText'
 
+// Function to register a swipe right action
+function RightAction({ drag, onSave }) {
+    const c = useAppColors()
+
+    const animatedStyle = useAnimatedStyle(() => {
+        const scale = interpolate(
+            drag.value,
+            [-80, 0],
+            [1, 0.5],
+        )
+        return { transform: [{ scale }] }
+    })
+
+    return (
+        <Pressable
+            style={[styles.saveAction, { backgroundColor: c.green }]}
+            onPress={() => {
+                onSave()
+            }}
+        >
+            <Animated.Text style={[styles.saveActionText, animatedStyle]}>
+                🔖
+            </Animated.Text>
+            <Animated.Text style={[styles.saveActionLabel, animatedStyle]}>
+                Save
+            </Animated.Text>
+        </Pressable>
+    )
+}
+
 export default function SwipeableRecipeItem({ recipe, onPress, onSave }) {
+    if (!recipe) return null
+
     const c = useAppColors()
     const swipeRef = useRef(null)
-    // Returns a component which will be rendered beneath the swipeable after being swiped to the left
-    const renderRightAction = (progress, dragX) => {
-        const scale = dragX.interpolate({
-            inputRange: [-80, 0],
-            outputRange: [1, 0.5],
-            extrapolate: 'clamp',
-        })
 
-        return (
-            <Pressable
-                style={[styles.saveAction, { backgroundColor: c.green }]}
-                onPress={() => {
-                    swipeRef.current?.close()
-                    onSave()
-                }}
-            >
-                <Animated.Text style={[styles.saveActionText, { transform: [{ scale }] }]}>
-                    🔖
-                </Animated.Text>
-                <Animated.Text style={[styles.saveActionLabel, { transform: [{ scale }] }]}>
-                    Save
-                </Animated.Text>
-            </Pressable>
-        )
+    const handleSave = () => {
+        swipeRef.current?.close()
+        onSave()
     }
 
     return (
         <Swipeable
             ref={swipeRef}
-            renderRightActions={renderRightAction}
+            renderRightActions={(progress, drag) => (
+                <RightAction drag={drag} onSave={handleSave} />
+            )}
             rightThreshold={40}
             overshootRight={false}
         >
