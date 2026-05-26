@@ -100,6 +100,9 @@ export const shadow = {
 
 // Hook for every screen to use correct colour theme based on ThemeContext
 export const useAppColors = () => {
+    const context = useTheme()
+    // Fall back to light theme if context isn't ready yet
+    if (!context) return Colors.light
     const { isDark } = useTheme()
     return isDark ? Colors.dark : Colors.light
 }

@@ -2,7 +2,7 @@
 import { Tabs } from 'expo-router'
 import { View, StyleSheet } from 'react-native'
 import { useTheme } from '../../context/ThemeContext'
-import { Colors } from '../../constants/colors'
+import { Colors, useAppColors } from '../../constants/colors'
 import { Feather } from '@expo/vector-icons'
 
 // Themed components
@@ -10,8 +10,7 @@ import ThemedText from '../../components/ThemedText'
 
 function TabIcon({ name, label, focused }) {
     // Select light/dark colour theme from colors.js based on settings toggle
-    const { isDark } = useTheme()
-    const theme = isDark ? Colors.dark : Colors.light
+    const theme = useAppColors()
     return (
         <View style={styles.tabItem}>
             {/* Dynamic icon, use home when tab selected (focused == true), home-outline when not */}
@@ -29,14 +28,14 @@ function TabIcon({ name, label, focused }) {
 
 const DashboardLayout = () => {
     // Select light/dark colour theme from colors.js based on settings toggle
-    const { isDark } = useTheme()
-    const theme = isDark ? Colors.dark : Colors.light
+    const theme = useAppColors()
 
     return (
         <Tabs
             screenOptions={{
                 headerShown: false,
-                animation: 'shift',
+                animation: 'none', // (no animations because buggy)
+                unmountOnBlur: false,
                 tabBarStyle: {
                     backgroundColor: theme.background,
                     borderTopColor: theme.border,
