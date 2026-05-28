@@ -1,4 +1,4 @@
-// This class defines the DTO of ingredient search results for the pantry page
+// This class defines the DTO of ingredient search results for matching to canonical ingredient names
 package com.dishcision.backend.dto;
 
 import com.dishcision.backend.model.UnitType;
