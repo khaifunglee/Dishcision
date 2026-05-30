@@ -1,4 +1,4 @@
-// This file handles incoming HTTP register/login requests from frontend
+// This file handles incoming HTTP ingredient search requests from frontend
 package com.dishcision.backend.controller;
 
 import com.dishcision.backend.dto.IngredientSearchResult;
@@ -19,7 +19,9 @@ public class IngredientController {
 
     private final IngredientService ingredientService;
 
-    // GET search request
+    // GET (200) search request
+    // @RequestParam reads a query string parameter
+    // e.g /api/ingredients/search?q=tomato
     @GetMapping("/search")
     public ResponseEntity<List<IngredientSearchResult>> search(@RequestParam String q) {
         if (q == null || q.trim().length() < 2) {
