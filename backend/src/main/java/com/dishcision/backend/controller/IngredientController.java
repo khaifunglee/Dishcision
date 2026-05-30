@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController // every method returns JSON
-@RequestMapping("/api/ingredients")
+@RequestMapping("/ingredients")
 @RequiredArgsConstructor
 
 public class IngredientController {
