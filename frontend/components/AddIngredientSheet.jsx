@@ -13,7 +13,7 @@ import { radius, useAppColors } from "../constants/colors"
 import ThemedText from "./ThemedText"
 import PickerField from "./PickerField.jsx"
 
-import { pantryApi } from '../api/pantryApi.js'
+import { searchIngredients, addItem } from '../api/pantryApi.js'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
 
@@ -69,19 +69,22 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
         setError('')
     }
 
-    // Hook for autofill search function — debounced at 300ms
+    // Load ingredient names for autofill search function — debounced at 300ms
     useEffect(() => {
         if (ingredientName.length < 2) {
-            setSuggestions([]);
-            return;
+            setSuggestions([])
+            return
         }
         const timer = setTimeout(async () => {
             setSearchLoading(true);
             try {
-                const results = await pantryApi.searchIngredients(ingredientName);
+                console.log('Searching for: ', ingredientName)
+                const results = await searchIngredients(ingredientName);
+                console.log('Results: ', results)
                 setSuggestions(results);
-            } catch {
+            } catch (e) {
                 setSuggestions([]);
+                console.error('Search error: ', e)
             } finally {
                 setSearchLoading(false);
             }
@@ -161,7 +164,7 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
         try {
             let saved
             if (isAdding) {
-                saved = await pantryApi.addItem(payload)
+                saved = await addItem(payload)
             }
             onAdded(saved, isAdding)
             resetForm()
@@ -198,13 +201,14 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
             <Animated.View style={[styles.sheet, {
                 backgroundColor: c.background, transform: [{ translateY: slideAnim }]
             }]}>
-                {/* Handle */}
-                <View style={[styles.handle, { backgroundColor: c.border }]} />
-                <ThemedText style={styles.title} serif>
-                    Add Ingredient
-                </ThemedText>
-
                 <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                    {/* Handle */}
+                    <View style={[styles.handle, { backgroundColor: c.border }]} />
+                    <ThemedText style={styles.title} serif>
+                        Add Ingredient
+                    </ThemedText>
+
+
 
                     {/* Input Fields */}
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -222,12 +226,13 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
                                 />
                                 {/* Autofill suggestion list */}
                                 {searchLoading && <ActivityIndicator size='small' color={c.green} style={{ marginTop: 4 }} />}
+                                {/* Only load suggestions if >2 letters typed */}
                                 {suggestions.length > 0 && (
                                     <View style={[styles.suggestionsBox, themed.inputField]}>
                                         {suggestions.map((s) => (
                                             <Pressable
                                                 key={s.id}
-                                                style={[styles.suggestionItem, { borderBottomColor: c.border }]}
+                                                style={({ pressed }) => [styles.suggestionItem, { borderBottomColor: c.border }, pressed && styles.pressed]}
                                                 onPress={() => selectSuggestion(s)}
                                             >
                                                 <ThemedText style={styles.suggestionName}>{s.canonicalName}</ThemedText>
@@ -283,32 +288,39 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
                                 <View style={[styles.input, themed.inputField]}>
                                     <Pressable
                                         style={styles.fieldInput}
-                                        onPress={() => setShowDatePicker(true)}
+                                        onPress={() => setShowDatePicker(prev => !prev)}
+                                        activeOpacity={0.7}
                                     >
-                                        <ThemedText style={expiryDate ? styles.dateText : [styles.datePlaceholder, { color: c.textSoft }]}>
-                                            {formatDate(expiryDate)}
-                                        </ThemedText>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <ThemedText style={expiryDate ? [styles.dateText, { color: c.textSoft }] : [styles.datePlaceholder, { color: c.textSoft }]}>
+                                                {formatDate(expiryDate)}
+                                            </ThemedText>
+                                            {expiryDate ? <Pressable onPress={() => { setExpiryDate(null); setShowDatePicker(false) }}>
+                                                <ThemedText style={{ fontSize: 12, }} subtitle>Clear Date</ThemedText>
+                                            </Pressable> : <ThemedText style={{ fontSize: 12, }}>🗓️</ThemedText>}
+                                        </View>
                                     </Pressable>
                                 </View>
-                                {expiryDate && (
-                                    <Pressable onPress={() => setExpiryDate(null)}>
-                                        <ThemedText style={styles.clearDate} subtitle >Clear date</ThemedText>
-                                    </Pressable>
-                                )}
+
                             </View>
 
                             {showDatePicker && (
-                                <DateTimePicker
-                                    value={expiryDate || new Date()}
-                                    mode='date'
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    minimumDate={new Date()}
-                                    onChange={(event, date) => {
-                                        setShowDatePicker(Platform.OS === 'ios')
-                                        if (date) setExpiryDate(date)
-                                    }}
-                                    textColor={c.text}
-                                />
+                                <View style={[styles.calendarWrapper, themed.inputField]}>
+                                    <DateTimePicker
+                                        value={expiryDate || new Date()}
+                                        mode='date'
+                                        display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                                        minimumDate={new Date()}
+                                        themeVariant='light'
+                                        accentColor={c.green}
+                                        onChange={(event, date) => {
+                                            if (Platform.OS === 'android') setShowDatePicker(false)
+                                            if (date) setExpiryDate(date)
+                                        }}
+                                        textColor={c.text}
+                                        style={{ width: '100%', }}
+                                    />
+                                </View>
                             )}
 
                             {error ? <ThemedText style={[styles.errorText, { color: c.red }]}>{error}</ThemedText> : null}
@@ -396,5 +408,11 @@ const styles = StyleSheet.create({
         alignItems: 'center', marginTop: 14,
     },
     addBtnText: { fontSize: 16, fontFamily: 'DMSans_600SemiBold', color: '#fff', },
-    pressed: { opacity: 0.7 }
+    pressed: { opacity: 0.7 },
+
+    calendarWrapper: {
+        marginTop: 8,
+        borderRadius: radius.small,
+        borderWidth: 1, overflow: 'hidden',
+    }
 })

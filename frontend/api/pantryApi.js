@@ -47,7 +47,7 @@ export const deleteItem = async (id) => {
 // Search ingredients GET API
 export const searchIngredients = async (q) => {
     console.log('calling GET API for search item...')
-    const response = await client.get('/ingredient/search', q)
+    const response = await client.get('/ingredients/search', { params: { q } })
     console.log('response: ', response.data)
 
     const results = response.data
