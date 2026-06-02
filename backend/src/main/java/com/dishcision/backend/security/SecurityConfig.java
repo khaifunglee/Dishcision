@@ -25,7 +25,9 @@ public class SecurityConfig {
                                                                                                   // sessions
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // login/register requests are public (don't need to
-                                                                 // check token)
+                        .requestMatchers("/pantry/**").permitAll()
+                        .requestMatchers("/ingredients/**").permitAll()
+                        // check token)
                         .anyRequest().authenticated() // everything else needs JWT
                 )
                 // Run JwtFilter before Spring's own filter to validate and authenticate token
