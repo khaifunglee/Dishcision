@@ -120,7 +120,7 @@ function IngredientItem({ item, onEdit, onDelete }) {
 
     const renderRightActions = () => (
         <Pressable
-            style={styles.swipeDelete}
+            style={[styles.swipeDelete, { backgroundColor: c.red }]}
             onPress={() => {
                 Alert.alert('Remove Item', `Remove ${item.ingredientName} from your pantry?`,
                     [
@@ -130,8 +130,8 @@ function IngredientItem({ item, onEdit, onDelete }) {
                 )
             }}
         >
-            <ThemedText style={{ fontSize: 12 }}>🗑️</ThemedText>
-            <ThemedText style={styles.swipeDeleteLabel}>Remove</ThemedText>
+            <ThemedText style={{ fontSize: 12, justifyContent: 'center' }}>🗑️</ThemedText>
+            <ThemedText style={[styles.swipeDeleteLabel, { color: c.redLight }]}>Remove</ThemedText>
         </Pressable>
     )
 
@@ -217,7 +217,7 @@ const Pantry = () => {
         } else {
             setItems(prev => [...prev, savedItem]);
         }
-        () => showToast('✓ Ingredient added to pantry!')
+        showToast('✓ Ingredient added to pantry!')
     }
 
     // Delete item function
@@ -385,7 +385,7 @@ const Pantry = () => {
                 visible={sheetVisible}
                 onClose={() => setSheetVisible(false)}
                 onSaved={handleSaved}
-                editingItemItem={editingItem}
+                editingItem={editingItem}
             />
             <EditIngredientSheet
                 visible={sheetVisible}
@@ -476,12 +476,11 @@ const styles = StyleSheet.create({
     expiryBadgeText: { fontFamily: 'DMSans_600SemiBold', fontSize: 10 },
 
     swipeDelete: {
+        width: 70, height: '100%',
         justifyContent: 'center', alignItems: 'center',
-        width: 80,
-        borderRadius: 12, marginBottom: 8, marginRight: 24,
+        borderRadius: 12, marginBottom: 8, marginHorizontal: 12,
     },
-    swipeDeleteText: { fontSize: 20 },
-    swipeDeleteLabel: { fontSize: 10, color: '#fff', fontWeight: '700', marginTop: 2 },
+    swipeDeleteLabel: { fontSize: 10, fontWeight: 'bold', marginTop: 2 },
 
     emptyState: {
         flex: 1, alignItems: 'center', justifyContent: 'center',

@@ -37,7 +37,7 @@ export const updateItem = async (id, item) => {
 
 // Remove item DEL API
 export const deleteItem = async (id) => {
-    console.log('calling DEL API to remove item...')
+    console.log(`calling DEL API to remove item ${id}`)
     const response = await client.delete('/pantry/delete/${id}')
     console.log('response: ', response.data)
 
