@@ -1,11 +1,9 @@
-// This component is a template for adding ingredients as a bottom modal sheet 
+// This component is a template for adding/editing ingredients as a bottom modal sheet 
 import { useRef, useEffect, useMemo, useState } from "react"
 import {
     View, TextInput, Pressable, StyleSheet, Keyboard,
     Modal, Animated, TouchableWithoutFeedback, Dimensions,
-    ActivityIndicator,
-    Platform,
-    ScrollView
+    ActivityIndicator, Platform, ScrollView
 } from "react-native"
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { radius, useAppColors } from "../constants/colors"
@@ -13,7 +11,7 @@ import { radius, useAppColors } from "../constants/colors"
 import ThemedText from "./ThemedText"
 import PickerField from "./PickerField.jsx"
 
-import { searchIngredients, addItem } from '../api/pantryApi.js'
+import { searchIngredients, addItem, updateItem } from '../api/pantryApi.js'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
 
@@ -25,10 +23,10 @@ const UNIT_OPTIONS = {
 const DEFAULT_UNITS = { WEIGHT: 'g', VOLUME: 'ml', COUNT: 'pieces' }
 const CATEGORIES = ['Produce', 'Protein', 'Dairy', 'Pantry Staple', 'Frozen', 'Other']
 
-export default function AddIngredientSheet({ visible, onClose, onAdded, addingItem }) {
+export default function AddIngredientSheet({ visible, onClose, onSaved, editingItem }) {
 
     // States for adding ingredients
-    const isAdding = !!addingItem
+    const isEditing = !!editingItem
     const [ingredientName, setIngredientName] = useState('')
     const [quantity, setQuantity] = useState('')
     const [unit, setUnit] = useState('g')
@@ -45,17 +43,18 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
 
     // Pre-fill when adding
     useEffect(() => {
-        if (addingItem) {
-            setIngredientName(addingItem.ingredientName || '');
-            setQuantity(addingItem.quantity?.toString() || '');
-            setUnit(addingItem.unit || 'g');
-            setExpiryDate(addingItem.expiryDate ? new Date(addingItem.expiryDate) : null);
-            setCategory(addingItem.category || 'Dairy');
-            setResolvedUnitType(addingItem.unitType || null);
+        console.log('editingItem received: ', JSON.stringify(editingItem))
+        if (editingItem) {
+            setIngredientName(editingItem.ingredientName || '');
+            setQuantity(editingItem.quantity?.toString() || '');
+            setUnit(editingItem.unit || 'g');
+            setExpiryDate(new Date(editingItem.expiryDate) ? new Date(editingItem.expiryDate) : null);
+            setCategory(editingItem.category || 'Dairy');
+            setResolvedUnitType(editingItem.unitType || null);
         } else {
             resetForm();
         }
-    }, [addingItem, visible]);
+    }, [editingItem, visible]);
 
     // Default form field
     const resetForm = () => {
@@ -107,6 +106,51 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
         }
     }
 
+    // Function for saving updated ingredient item
+    const handleSave = async () => {
+
+        if (!ingredientName.trim()) {
+            setError('Ingredient name is required.')
+            return
+        }
+        if (!quantity || isNaN(parseFloat(quantity))) {
+            setError('Enter a valid quantity.')
+            return
+        }
+        console.log('Updating/adding item: ', ingredientName)
+        setSaving(true)
+        setError('')
+
+        const payload = {
+            ingredientName: ingredientName.trim(),
+            quantity: parseFloat(quantity),
+            unit,
+            expiryDate: expiryDate ? expiryDate.toISOString().split('T')[0] : null,
+            category
+        }
+        console.log('Sending payload to POST API: ', payload)
+
+        // Send POST API
+        try {
+            let saved
+            if (isEditing) {
+                saved = await updateItem(editingItem.id, payload)
+                console.log(`Updated ingredient ${editingItem.ingredientName}: `, saved)
+            } else {
+                saved = await addItem(payload)
+                console.log('Added ingredient: ', saved)
+            }
+            onSaved(saved, isEditing)
+            resetForm()
+            onClose()
+        } catch (e) {
+            setError('Something went wrong. Please try again')
+            console.log('Add/update item error: ', e)
+        } finally {
+            setSaving(false)
+        }
+    }
+
     const c = useAppColors()
     // Dynamic styles for theme dependent colours
     const themed = useMemo(() => ({
@@ -137,45 +181,6 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
         }
     }, [visible])
 
-    // Function for saving added ingredient item
-    const handleAdd = async () => {
-
-        if (!ingredientName.trim()) {
-            setError('Ingredient name is required.')
-            return
-        }
-        if (!quantity || isNaN(parseFloat(quantity))) {
-            setError('Enter a valid quantity.')
-            return
-        }
-
-        setSaving(true)
-        setError('')
-
-        const payload = {
-            ingredientName: ingredientName.trim(),
-            quantity: parseFloat(quantity),
-            unit,
-            expiryDate: expiryDate ? expiryDate.toISOString().split('T')[0] : null,
-            category
-        }
-
-        // Send POST API
-        try {
-            let saved
-            if (isAdding) {
-                saved = await addItem(payload)
-            }
-            onAdded(saved, isAdding)
-            resetForm()
-            onClose()
-        } catch (e) {
-            setError('Something went wrong. Please try again')
-        } finally {
-            setSaving(false)
-        }
-    }
-
     // Set current units
     const currentUnits = resolvedUnitType ? UNIT_OPTIONS[resolvedUnitType] : [...UNIT_OPTIONS.WEIGHT, ...UNIT_OPTIONS.VOLUME, ...UNIT_OPTIONS.COUNT]
 
@@ -205,10 +210,8 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
                     {/* Handle */}
                     <View style={[styles.handle, { backgroundColor: c.border }]} />
                     <ThemedText style={styles.title} serif>
-                        Add Ingredient
+                        {isEditing ? 'Edit Ingredient' : 'Add Ingredient'}
                     </ThemedText>
-
-
 
                     {/* Input Fields */}
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -328,13 +331,13 @@ export default function AddIngredientSheet({ visible, onClose, onAdded, addingIt
                         </View>
                     </TouchableWithoutFeedback>
 
-                    <Pressable style={({ pressed }) => [styles.addBtn, { backgroundColor: c.green }, pressed && styles.pressed]}
-                        onPress={handleAdd}
+                    <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed, saving && styles.btnDisabled]}
+                        onPress={handleSave}
                         disabled={saving}
                     >
                         {saving
                             ? <ActivityIndicator color='#fff' />
-                            : <ThemedText style={styles.addBtnText}>Add to Pantry</ThemedText>
+                            : <ThemedText style={styles.btnText}>{isEditing ? 'Save Changes' : 'Add to Pantry'}</ThemedText>
                         }
                     </Pressable>
                 </ScrollView>
@@ -363,8 +366,9 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         letterSpacing: -1,
+        marginVertical: 4,
     },
-    fields: { gap: 12 },
+    fields: { gap: 14 },
     fieldGroup: { gap: 4 },
     label: {
         fontFamily: 'DMSans_600SemiBold',
@@ -403,11 +407,12 @@ const styles = StyleSheet.create({
     clearDate: { fontSize: 12, marginTop: 4, textDecorationLine: 'underline', },
     errorText: { fontSize: 13, marginBottom: 8, textAlign: 'center', },
 
-    addBtn: {
+    btn: {
         borderRadius: radius.large, padding: 16,
         alignItems: 'center', marginTop: 14,
     },
-    addBtnText: { fontSize: 16, fontFamily: 'DMSans_600SemiBold', color: '#fff', },
+    btnText: { fontSize: 16, fontFamily: 'DMSans_600SemiBold', color: '#fff', },
+    btnDisabled: { opacity: 0.6 },
     pressed: { opacity: 0.7 },
 
     calendarWrapper: {

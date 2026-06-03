@@ -20,7 +20,7 @@ export default function PickerField({ label, selectedValue, onValueChange, optio
                 onPress={() => setOpen(prev => !prev)}
                 activeOpacity={0.7}
             >
-                <ThemedText style={styles.displayValue} subtitle>{selectedValue}</ThemedText>
+                <ThemedText style={styles.displayValue}>{selectedValue}</ThemedText>
                 <ThemedText style={styles.chevron} subtitle>{open ? '▲' : '▼'}</ThemedText>
             </Pressable>
 
@@ -32,7 +32,7 @@ export default function PickerField({ label, selectedValue, onValueChange, optio
                         onValueChange={(val) => {
                             onValueChange(val)
                         }}
-                        style={[styles.picker,]}>
+                        style={[styles.picker]}>
                         {options.map(opt => (
                             <Picker.Item color={c.text} fontFamily={'DMSans_400Regular'} key={opt} label={opt} value={opt} />
                         ))}
