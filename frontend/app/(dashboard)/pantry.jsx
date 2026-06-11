@@ -161,13 +161,11 @@ const Pantry = () => {
     const [showOverlay, setShowOverlay] = useState(false)
     // Quick add, edit sheet modal and toast message constants
     const [sheetVisible, setSheetVisible] = useState(false)
-    //const [editSheetVisible, setEditSheetVisible] = useState(false)
     const [items, setItems] = useState([])                             // pantry items to be loaded onto page
     const [loading, setLoading] = useState(true)                       // loading pantry items state
     const [refreshing, setRefreshing] = useState(false)
     const [search, setSearch] = useState('')
     const [activeFilter, setActiveFilter] = useState('all')
-    const [addingItem, setAddingItem] = useState(null)
     const [editingItem, setEditingItem] = useState(null)
     const [selectedIngredient, setSelectedIngredient] = useState(null) // track which ingredient was selected for editing
 
@@ -210,13 +208,15 @@ const Pantry = () => {
 
     // Add item function
     const handleSaved = (savedItem, wasEditing) => {
-        console.log('handleAdded received:', JSON.stringify(savedItem)); // add this
+        console.log('handleAdded received:', JSON.stringify(savedItem))
         if (wasEditing) {
-            setItems(prev => prev.map(i => i.id === savedItem.id ? savedItem : i));
+            setItems(prev => prev.map(i => i.id === savedItem.id ? savedItem : i))
+            showToast('✓ Ingredient updated!')
         } else {
-            setItems(prev => [...prev, savedItem]);
+            setItems(prev => [...prev, savedItem])
+            showToast('✓ Ingredient added to pantry!')
         }
-        showToast('✓ Ingredient added to pantry!')
+        
     }
 
     // Delete item function

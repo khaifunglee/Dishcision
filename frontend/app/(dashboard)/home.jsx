@@ -2,7 +2,7 @@
 import { router } from 'expo-router'
 import { Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { palette, radius, shadow, useAppColors } from "../../constants/colors"
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useOnboarding } from '../../context/OnboardingContext'
 import { useToast } from '../../hooks/useToast'
 
@@ -21,7 +21,9 @@ const Home = () => {
     const { shouldOnboard, completeOnboarding } = useOnboarding()
     const [showOverlay, setShowOverlay] = useState(false)
     // Quick add sheet modal and toast message constants
-    const [addSheetVisible, setAddSheetVisible] = useState(false)
+    const [items, setItems] = useState([])
+    const [sheetVisible, setSheetVisible] = useState(false)
+    const [editingItem, setEditingItem] = useState(null)
     const { toast, showToast } = useToast()
 
     // Dynamic styles that depend on theme colours
@@ -45,6 +47,33 @@ const Home = () => {
         setShowOverlay(false)
         await completeOnboarding()
     }
+
+    // Load pantry items
+    const fetchPantry = useCallback(async () => {
+        try {
+            console.log('Retrieving pantry items...')
+            const data = await getAll()
+            setItems(data)
+            console.log('List: ', data)
+        } catch (e) {
+            Alert.alert('Error', 'Could not load your pantry. Please try again.')
+            console.log('Error: ', e)
+        }
+    }, [])
+
+    // Add item function
+    const handleSaved = (savedItem, wasEditing) => {
+        console.log('handleAdded received: ', JSON.stringify(savedItem))
+        if (wasEditing) {
+            setItems(prev => prev.map(i => i.id === savedItem.id ? savedItem : i))
+        } else {
+            setItems(prev => [...prev, savedItem])
+            showToast('✓ Ingredient added to pantry!')
+        }
+    }
+
+    // Function to open add ingredient sheet
+    const openAdd = () => { setEditingItem(null); setSheetVisible(true) }
 
     // Placeholder for saved recipes section
     const SAVED_RECIPES = [
@@ -117,7 +146,7 @@ const Home = () => {
 
                 {/* Quick Add button */}
                 <Pressable style={({ pressed }) => [styles.quickAdd, themed.card, pressed && styles.pressed]}
-                    onPress={() => setAddSheetVisible(true)}
+                    onPress={openAdd}
                 >
                     <View style={[styles.quickAddIcon, { backgroundColor: c.freshLight }]}>
                         <ThemedText style={{ fontSize: 18, color: c.fresh }}>+</ThemedText>
@@ -170,9 +199,9 @@ const Home = () => {
             {/* Toast Message */}
             <Toast message={toast.message} visible={toast.visible} />
             <AddIngredientSheet
-                visible={addSheetVisible}
-                onClose={() => setAddSheetVisible(false)}
-                onAdd={() => showToast('✓ Ingredient added to pantry!')}
+                visible={sheetVisible}
+                onClose={() => setSheetVisible(false)}
+                onSaved={handleSaved}
             />
         </ThemedView>
     )

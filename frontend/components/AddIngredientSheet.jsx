@@ -290,12 +290,11 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
                                 <ThemedText style={styles.label}>EXPIRY DATE (OPTIONAL)</ThemedText>
                                 <View style={[styles.input, themed.inputField]}>
                                     <Pressable
-                                        style={styles.fieldInput}
                                         onPress={() => setShowDatePicker(prev => !prev)}
                                         activeOpacity={0.7}
                                     >
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <ThemedText style={expiryDate ? [styles.dateText, { color: c.textSoft }] : [styles.datePlaceholder, { color: c.textSoft }]}>
+                                            <ThemedText style={expiryDate ? [styles.dateText, { color: c.text }] : [styles.datePlaceholder, { color: c.textSoft }]}>
                                                 {formatDate(expiryDate)}
                                             </ThemedText>
                                             {expiryDate ? <Pressable onPress={() => { setExpiryDate(null); setShowDatePicker(false) }}>
