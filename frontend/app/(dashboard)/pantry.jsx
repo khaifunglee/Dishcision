@@ -19,7 +19,6 @@ import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
 import Toast from '../../components/Toast'
 import AddIngredientSheet from '../../components/AddIngredientSheet'
-import EditIngredientSheet from '../../components/EditIngredientSheet'
 import { deleteItem, getAll } from '../../api/pantryApi'
 
 // Placeholder data
@@ -386,13 +385,6 @@ const Pantry = () => {
                 onClose={() => setSheetVisible(false)}
                 onSaved={handleSaved}
                 editingItem={editingItem}
-            />
-            <EditIngredientSheet
-                visible={sheetVisible}
-                ingredient={selectedIngredient}
-                onClose={() => setSheetVisible(false)}
-                onSave={handleSaved}
-                onDelete={() => showToast('✓ Ingredient removed from pantry')}
             />
         </ThemedView>
     )

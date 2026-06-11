@@ -27,7 +27,7 @@ export const addItem = async (item) => {
 // Update item PUT API
 export const updateItem = async (id, item) => {
     console.log('calling PUT API to update item...')
-    const response = await client.put('/pantry/update/${id}', { id, item })
+    const response = await client.put(`/pantry/update/${id}`, item)
     console.log('response: ', response.data)
 
     const pantryList = response.data
@@ -38,7 +38,7 @@ export const updateItem = async (id, item) => {
 // Remove item DEL API
 export const deleteItem = async (id) => {
     console.log(`calling DEL API to remove item ${id}`)
-    const response = await client.delete('/pantry/delete/${id}')
+    const response = await client.delete(`/pantry/delete/${id}`)
     console.log('response: ', response.data)
 
     return
