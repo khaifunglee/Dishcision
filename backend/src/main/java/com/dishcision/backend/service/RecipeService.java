@@ -6,8 +6,6 @@ import com.dishcision.backend.model.*;
 import com.dishcision.backend.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,23 +39,20 @@ public class RecipeService {
     // -------------------------------------------------------------------------
     // Public API
     // -------------------------------------------------------------------------
-
-    // Function for retrieving recipe list for user (paginated list for easier data
-    // handling)
+    // Retrieve recipe list for user
     @Transactional(readOnly = true)
-    public Page<RecipeSummaryDTO> getRecipes(
-            Long userId, String cuisine, Integer maxCookTime,
-            String dietaryTagStr, Pageable pageable) {
+    public List<RecipeSummaryDTO> getRecipes(
+            Long userId, String cuisine, Integer maxCookTime, String dietaryTagStr) {
 
-        // Get recipe's dietary tags
         DietaryTag dietaryTag = parseDietaryTag(dietaryTagStr);
         Map<Long, List<PantryItem>> pantryByCanonical = buildPantryMap(userId);
-        // Build page by searching for recipes with selected filters
-        Page<Recipe> page = recipeRepository.findWithFilters(cuisine, maxCookTime, dietaryTag, pageable);
-        return page.map(r -> toSummary(r, pantryByCanonical));
+        return recipeRepository.findWithFilters(cuisine, maxCookTime, dietaryTag)
+                .stream()
+                .map(r -> toSummary(r, pantryByCanonical))
+                .collect(Collectors.toList());
     }
 
-    // Function to get a recipe's details
+    // Function to get a single recipe's details
     @Transactional(readOnly = true)
     public RecipeDetailDTO getRecipeDetail(Long userId, Long recipeId) {
         Recipe recipe = recipeRepository.findByIdWithIngredients(recipeId)
@@ -74,10 +69,12 @@ public class RecipeService {
 
         List<RecipeSummaryDTO> fullMatch = new ArrayList<>();
         List<RecipeSummaryDTO> nearMatch = new ArrayList<>();
-
+        // Load all recipes with ingredients, iterate through them with matching
+        // algorithm
         for (Recipe recipe : recipeRepository.findAllWithIngredients()) {
             RecipeSummaryDTO summary = toSummary(recipe, pantryByCanonical);
             int missing = summary.getMissingIngredients().size();
+            // Sort each recipe into full match or near match recipes
             if (missing == 0)
                 fullMatch.add(summary);
             else if (missing <= 2)
@@ -91,7 +88,8 @@ public class RecipeService {
                 .build();
     }
 
-    // Create a recipe detail DTO
+    // Create a recipe function by converting recipe detail DTO into recipe entity +
+    // recipe ingredient child entities
     @Transactional
     public RecipeDetailDTO createRecipe(Long userId, RecipeRequest request) {
         userRepository.findById(userId)
@@ -144,12 +142,13 @@ public class RecipeService {
     // -------------------------------------------------------------------------
     // DTO mapping
     // -------------------------------------------------------------------------
-    // Map recipe DTO to recipe summary DTO
+    // Map recipe entities to recipe summary DTO (serializable objects)
     private RecipeSummaryDTO toSummary(Recipe recipe, Map<Long, List<PantryItem>> pantryByCanonical) {
+        // Build required ingredients for the recipe
         List<RecipeIngredient> required = recipe.getIngredients().stream()
                 .filter(ri -> !ri.isOptional())
                 .collect(Collectors.toList());
-
+        // Calculate missing ingredients with computeMissing
         List<MissingIngredientDTO> missing = computeMissing(required, pantryByCanonical);
 
         return RecipeSummaryDTO.builder()
@@ -168,7 +167,7 @@ public class RecipeService {
                 .build();
     }
 
-    // Map recipe DTO to recipe detail DTO
+    // Map recipe entites to recipe detail DTO
     private RecipeDetailDTO toDetail(Recipe recipe, Map<Long, List<PantryItem>> pantryByCanonical) {
         List<RecipeIngredient> required = recipe.getIngredients().stream()
                 .filter(ri -> !ri.isOptional())
@@ -229,13 +228,13 @@ public class RecipeService {
     }
 
     // Function to check if an ingredient is present in a user's pantry (due to
-    // potential unit mismatches between recipe vs pantry ingredients)
+    // potential unit/name mismatches between recipe vs pantry ingredients)
     private boolean isAvailable(RecipeIngredient ri,
             Map<Long, List<PantryItem>> pantryByCanonical) {
         List<PantryItem> candidates = findCandidates(ri, pantryByCanonical);
         if (candidates == null || candidates.isEmpty())
             return false;
-
+        // If recipe ingredient is present in pantry, check if each has enough qty
         for (PantryItem candidate : candidates) {
             if (hasSufficientQuantity(ri.getQuantity(), ri.getUnit(),
                     candidate.getQuantity(), candidate.getUnit())) {
@@ -249,20 +248,24 @@ public class RecipeService {
     // Tries canonical ID first, then alias-based fuzzy resolution
     private List<PantryItem> findCandidates(RecipeIngredient ri,
             Map<Long, List<PantryItem>> pantryByCanonical) {
+        // Tries canonical matching first (if ri has a canonical ingredient linked)
         if (ri.getCanonicalIngredient() != null) {
             return pantryByCanonical.get(ri.getCanonicalIngredient().getId());
         }
+        // Otherwise tries matching ri against canonical names and aliases
         return ingredientService.resolveByName(ri.getIngredientName())
                 .map(ingredient -> pantryByCanonical.get(ingredient.getId()))
                 .orElse(null);
     }
 
-    // Returns true if the available quantity is sufficient, accounting for unit
-    // conversion within the same measurement group
+    // Returns true if the available ingredient qty is sufficient, accounting for
+    // unit conversion within the same measurement group
     private boolean hasSufficientQuantity(BigDecimal needed, String neededUnit,
             BigDecimal available, String availableUnit) {
+        // Either req or avail qty is null = assume present (no qty restriction)
         if (needed == null || available == null)
-            return true; // no quantity = assume present
+            return true;
+        // Either req or avail unit is null = assume present (can't compare)
         if (neededUnit == null || availableUnit == null)
             return true;
 
@@ -279,7 +282,9 @@ public class RecipeService {
             return true; // unrecognised unit = assume available
         if (ng != ag)
             return true; // if cross-type (e.g: g vs pieces) = assume available
-
+        // If req & avail units are under same group, convert to base unit
+        // If req & avail units are under diff group, assume present (cross-type like
+        // 200ml can't be compared)
         return switch (ng) {
             case WEIGHT -> {
                 BigDecimal nG = toGrams(needed, nu);
@@ -292,6 +297,7 @@ public class RecipeService {
                 yield (nMl == null || aMl == null) || aMl.compareTo(nMl) >= 0;
             }
             case COUNT -> {
+                // Known conversion: apply multipler (e.g 1 head * 10 = 10 cloves)
                 BigDecimal factor = COUNT_CONVERSIONS.get(au + ":" + nu);
                 // No known conversion → assume available rather than incorrectly failing
                 yield factor == null || available.multiply(factor).compareTo(needed) >= 0;
@@ -346,8 +352,8 @@ public class RecipeService {
     // Utility
     // -------------------------------------------------------------------------
 
-    // Groups pantry items by canonical ingredient ID for lookups during
-    // matching.
+    // Groups pantry items by canonical ingredient ID during matching
+    // Required for easy lookups for recipe matching info in RecipeSummaryDTO
     private Map<Long, List<PantryItem>> buildPantryMap(Long userId) {
         Map<Long, List<PantryItem>> map = new HashMap<>();
         // Get user's pantry items ordered by expiry date

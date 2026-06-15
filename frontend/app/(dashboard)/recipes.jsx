@@ -72,7 +72,7 @@ const Recipes = () => {
             try {
                 setLoading(true)
                 const data = await getRecipes()
-                setRecipes(data.content || [])
+                setRecipes(Array.isArray(data) ? data : [])
             } catch (e) {
                 console.error('Failed to load recipes:', e)
                 Alert.alert('Error', 'Could not load recipes. Please try again.')
@@ -114,18 +114,20 @@ const Recipes = () => {
     // Client-side filter + sort by match percentage function
     const sorted = useMemo(() => {
         let filtered = recipes
-
+        // 1. Match by text on search query
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase()
             filtered = filtered.filter(r =>
                 r.name.toLowerCase().includes(q) ||
                 (r.cuisine && r.cuisine.toLowerCase().includes(q)))
         }
+        // 2. Match by cuisine, time, dietary filters next if chips are active
         if (cuisineFilter) filtered = filtered.filter(r => r.cuisine === cuisineFilter)
         if (timeFilter)    filtered = filtered.filter(r => r.cookTimeMins <= timeFilter)
         if (dietaryFilter) filtered = filtered.filter(r =>
             r.dietaryTags && r.dietaryTags.includes(dietaryFilter))
-
+            
+            // Returns recipes sorted by match %, then by ascending cook time 
         return [...filtered].sort((a, b) => {
             const pctA = a.totalRequired > 0 ? a.matchedCount / a.totalRequired : 1
             const pctB = b.totalRequired > 0 ? b.matchedCount / b.totalRequired : 1

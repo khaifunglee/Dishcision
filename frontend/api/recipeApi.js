@@ -1,10 +1,10 @@
 // This file contains recipe service API wrapper functions for recipe endpoints
 import client from "./client"
 
-// GET recipe list, returns Page<RecipeSummaryDto> with match data included.
+// GET recipe list, returns RecipeSummaryDTO[] with match data included.
 // All filtering is done client-side from the full result set (30–50 recipes).
-export const getRecipes = async ({ page = 0, size = 50 } = {}) => {
-    const response = await client.get('/recipes', { params: { page, size } })
+export const getRecipes = async () => {
+    const response = await client.get('/recipes')
     return response.data
 }
 

@@ -5,13 +5,13 @@ import com.dishcision.backend.dto.*;
 import com.dishcision.backend.security.UserDetailsImpl;
 import com.dishcision.backend.service.RecipeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/recipes")
@@ -20,20 +20,15 @@ public class RecipeController {
 
     private final RecipeService recipeService;
 
-    // GET (200) recipe request (with optional filters)
-    // e.g:
-    // /recipes?cuisine=Italian&maxCookTime=30&dietaryTag=VEGETARIAN&page=0&size=50
+    // GET (200) recipe list with optional filters
+    // e.g: /recipes?cuisine=Italian&maxCookTime=30&dietaryTag=VEGETARIAN
     @GetMapping
-    public ResponseEntity<Page<RecipeSummaryDTO>> getRecipes(
+    public ResponseEntity<List<RecipeSummaryDTO>> getRecipes(
             @RequestParam(required = false) String cuisine,
             @RequestParam(required = false) Integer maxCookTime,
-            @RequestParam(required = false) String dietaryTag,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(required = false) String dietaryTag) {
 
-        return ResponseEntity.ok(recipeService.getRecipes(
-                getCurrentUserId(), cuisine, maxCookTime, dietaryTag,
-                PageRequest.of(page, size)));
+        return ResponseEntity.ok(recipeService.getRecipes(getCurrentUserId(), cuisine, maxCookTime, dietaryTag));
     }
 
     // GET (200) suggestions request
