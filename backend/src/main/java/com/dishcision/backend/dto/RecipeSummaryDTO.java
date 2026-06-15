@@ -1,4 +1,4 @@
-// This class defines the DTO of summarized recipe details and data required for matching
+// This class defines the DTO of summarized recipe details for recipe list cards
 package com.dishcision.backend.dto;
 
 import lombok.AllArgsConstructor;

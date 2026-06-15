@@ -1,4 +1,4 @@
-// This class defines the DTO of recipe details
+// This class defines the DTO of recipe details for recipe detail page
 package com.dishcision.backend.dto;
 
 import lombok.AllArgsConstructor;

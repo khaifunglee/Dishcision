@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 import java.util.*;
 
 // Seeds 30 recipes after all CommandLineRunner beans (including DataSeeder) have finished.
-// Uses @EventListener(ApplicationReadyEvent.class) to guarantee ingredient data exists first.
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -26,7 +25,8 @@ public class RecipeDataSeeder {
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    // Fires after ingredient data seeder finishes seeding
+    // @EventListener guarantees this fires after ingredient data seeder finishes
+    // seeding
     public void seed() {
         if (recipeRepository.count() > 0) {
             log.info("Recipes already seeded, skipping.");
