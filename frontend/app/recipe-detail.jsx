@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
 
     statsRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
     statCard: { flex: 1, borderWidth: 1, borderRadius: radius.small, padding: 10, alignItems: 'center' },
-    statVal: { fontSize: 17 },
+    statVal: { fontSize: 16 },
     statLbl: { fontFamily: 'DMSans_500Medium', fontSize: 9, letterSpacing: 0.5, marginTop: 2, textAlign: 'center' },
 
     sectionTitle: { fontSize: 18, letterSpacing: -0.5, marginTop: 20, marginBottom: 12 },

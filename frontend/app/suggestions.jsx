@@ -19,8 +19,8 @@ function RecipeCard({ recipe }) {
 
     const themed = useMemo(() => ({
         card: { backgroundColor: c.uiBackground, borderColor: c.border },
-        fullChip: { backgroundColor: c.freshLight, borderColor: c.fresh },
-        nearChip: { backgroundColor: c.amberLight, borderColor: c.amber },
+        fullChip: { backgroundColor: c.fresh, borderColor: c.fresh },
+        nearChip: { backgroundColor: c.amber, borderColor: c.amber },
     }), [c])
 
     const isFullMatch = recipe.totalRequired === 0 || recipe.matchedCount === recipe.totalRequired
@@ -42,7 +42,7 @@ function RecipeCard({ recipe }) {
                 <ThemedText style={{ fontSize: 52 }}>{emoji}</ThemedText>
                 <View style={[styles.matchBadge, isFullMatch ? themed.fullChip : themed.nearChip]}>
                     <ThemedText style={[styles.matchBadgeText,
-                        { color: isFullMatch ? c.fresh : c.amber }]}>
+                        { color: '#fff' }]}>
                         {isFullMatch ? '✓ Full match' : `+${missing} item${missing === 1 ? '' : 's'}`}
                     </ThemedText>
                 </View>
