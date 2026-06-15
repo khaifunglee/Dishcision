@@ -31,6 +31,7 @@ export default function PickerField({ label, selectedValue, onValueChange, optio
                         selectedValue={selectedValue}
                         onValueChange={(val) => {
                             onValueChange(val)
+                            setOpen(false)
                         }}
                         style={[styles.picker]}>
                         {options.map(opt => (

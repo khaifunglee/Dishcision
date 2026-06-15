@@ -70,7 +70,7 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
 
     // Load ingredient names for autofill search function — debounced at 300ms
     useEffect(() => {
-        if (ingredientName.length < 2) {
+        if (ingredientName.length < 3) {
             setSuggestions([])
             return
         }
@@ -317,7 +317,7 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
                                         accentColor={c.green}
                                         onChange={(event, date) => {
                                             if (Platform.OS === 'android') setShowDatePicker(false)
-                                            if (date) setExpiryDate(date)
+                                            if (date) setExpiryDate(date); setShowDatePicker(false)
                                         }}
                                         textColor={c.text}
                                         style={{ width: '100%', }}
