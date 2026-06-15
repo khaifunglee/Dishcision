@@ -1,140 +1,223 @@
-// This page serves as the recipe details page for the app
-import { router } from 'expo-router'
-import { Pressable, ScrollView, StyleSheet, View, } from "react-native"
-import { useMemo } from 'react'
+// Dynamic recipe detail screen — receives `id` param from router, fetches full detail from API
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router'
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { useCallback, useState } from 'react'
 import { Feather } from '@expo/vector-icons'
 import { palette, radius, useAppColors } from "../constants/colors"
+import { getRecipeDetail } from '../api/recipeApi'
+import { useToast } from '../hooks/useToast'
 // Themed components
 import ThemedText from "../components/ThemedText"
 import ThemedView from "../components/ThemedView"
+import Toast from '../components/Toast'
+// Map emojis to cuisine as thumbnail
+const CUISINE_EMOJIS = {
+    Italian: '🍝', Asian: '🥢', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
+}
 
-// Placeholder data for recipe details
-const INGREDIENTS = [
-    { name: 'Penne pasta', qty: '200g', have: true },
-    { name: 'Tomatoes (or canned)', qty: '3 pieces', have: true },
-    { name: 'Garlic', qty: '3 cloves', have: true },
-    { name: 'Olive oil', qty: '2 tbsp', have: true },
-    { name: 'Chilli flakes', qty: '1 tsp', have: true },
-    { name: 'Parmesan (to serve)', qty: '30g', have: false },
-]
+const DIETARY_LABELS = {
+    VEGETARIAN: 'Vegetarian', VEGAN: 'Vegan', GLUTEN_FREE: 'Gluten-Free',
+    DAIRY_FREE: 'Dairy-Free', NUT_FREE: 'Nut-Free',
+    HIGH_PROTEIN: 'High Protein', LOW_CARB: 'Low Carb',
+}
 
-const STEPS = [
-    'Boil a large pot of salted water and cook the penne until al dente, about 10–12 minutes. Reserve ½ cup pasta water before draining.',
-    'Meanwhile, heat olive oil in a pan over medium heat. Add minced garlic and chilli flakes, cook for 1–2 minutes until fragrant.',
-    'Add crushed tomatoes, season with salt and pepper, and simmer for 10 minutes until the sauce thickens.',
-    'Toss the drained pasta in the sauce, adding a splash of pasta water to loosen if needed. Serve with grated parmesan.',
-]
+const formatQty = (quantity, unit) => {
+    if (!quantity) return unit || ''
+    const q = Number(quantity)
+    const display = q % 1 === 0 ? q : q.toFixed(1)
+    return unit ? `${display} ${unit}` : `${display}`
+}
 
 const RecipeDetails = () => {
+    const { id } = useLocalSearchParams()           // grab recipe ID from expo router
     const c = useAppColors()
+    const { toast, showToast } = useToast()
+    const [recipe, setRecipe] = useState(null)      // recipe to be loaded
+    const [loading, setLoading] = useState(true)    // loading state for recipe
 
-    // Dynamic styles that depend on theme colors
-    const themed = useMemo(() => ({
-        card: {
-            backgroundColor: c.uiBackground,
-            borderColor: c.border,
+    useFocusEffect(useCallback(() => {
+        if (!id) return
+        const load = async () => {
+            try {
+                setLoading(true)
+                const data = await getRecipeDetail(id)
+                setRecipe(data)
+            } catch (e) {
+                console.error('Failed to load recipe:', e)
+            } finally {
+                setLoading(false)
+            }
         }
-    }), [c])
+        load()
+    }, [id]))
+    // Loading state
+    if (loading) {
+        return (
+            <ThemedView style={styles.container}>
+                <View style={[styles.header, { justifyContent: 'flex-start', paddingTop: 52 }]}>
+                    <Pressable style={styles.backBtn} onPress={() => router.back()}>
+                        <Feather name='chevron-left' size={22} color='white' />
+                    </Pressable>
+                </View>
+                <ActivityIndicator style={{ marginTop: 80 }} size='large' color={c.green} />
+            </ThemedView>
+        )
+    }
+    // Empty state
+    if (!recipe) {
+        return (
+            <ThemedView style={styles.container}>
+                <View style={[styles.header, { justifyContent: 'flex-start', paddingTop: 52 }]}>
+                    <Pressable style={styles.backBtn} onPress={() => router.back()}>
+                        <Feather name='chevron-left' size={22} color='white' />
+                    </Pressable>
+                </View>
+                <View style={{ padding: 24 }}>
+                    <ThemedText>Recipe not found.</ThemedText>
+                </View>
+            </ThemedView>
+        )
+    }
+
+    const emoji = CUISINE_EMOJIS[recipe.cuisine] || '🍽️'
+    const isFullMatch = recipe.totalRequired === 0 || recipe.matchedCount === recipe.totalRequired
+    const missing = recipe.totalRequired - recipe.matchedCount
 
     return (
-        <ThemedView style={styles.container} >
-
+        <ThemedView style={styles.container}>
             <ScrollView
                 contentContainerStyle={{ paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}>
-                {/* Recipe Header */}
+
+                {/* Header */}
                 <View style={styles.header}>
-                    <Pressable style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+                    <Pressable
+                        style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
                         onPress={() => router.back()}>
-                        <Feather name={'chevron-left'} size={22} color={'white'} />
+                        <Feather name='chevron-left' size={22} color='white' />
                     </Pressable>
-                    <View>
-                        <ThemedText style={{ fontSize: 100 }} serif >🍝</ThemedText>
-                    </View>
-                    <Pressable style={({ pressed }) => [styles.saveBtn, pressed && styles.pressed]}>
+                    <ThemedText style={{ fontSize: 96 }} serif>{emoji}</ThemedText>
+                    <Pressable
+                        style={({ pressed }) => [styles.saveBtn, pressed && styles.pressed]}
+                        onPress={() => showToast('🔖 Saved recipes coming in Sprint 3!')}>
                         <ThemedText style={{ fontSize: 18 }}>🔖</ThemedText>
                     </Pressable>
                 </View>
 
                 <View style={styles.body}>
-                    {/* Tags and Title */}
-                    <View>
-                        <View style={styles.tagRow}>
-                            {['Italian', 'Vegetarian'].map((t) => (
-                                <View key={t} style={[styles.tag, { backgroundColor: c.creamDark, borderColor: c.warmGray }]}>
-                                    <ThemedText style={styles.tagText} subtitle>{t}</ThemedText>
-                                </View>
-                            ))}
-                            <View style={[styles.tag, { backgroundColor: c.freshLight, borderColor: c.fresh }]}>
-                                <ThemedText style={[styles.tagFullText, { color: c.fresh }]}>✓ Full match</ThemedText>
+                    {/* Tags row - Cuisine, dietary, match type */}
+                    <View style={styles.tagRow}>
+                        {recipe.cuisine && (
+                            <View style={[styles.tag, { backgroundColor: c.creamDark, borderColor: c.warmGray }]}>
+                                <ThemedText style={styles.tagText} subtitle>{recipe.cuisine}</ThemedText>
                             </View>
+                        )}
+                        {(recipe.dietaryTags || []).map(tag => (
+                            <View key={tag} style={[styles.tag, { backgroundColor: c.creamDark, borderColor: c.warmGray }]}>
+                                <ThemedText style={styles.tagText} subtitle>
+                                    {DIETARY_LABELS[tag] || tag}
+                                </ThemedText>
+                            </View>
+                        ))}
+                        <View style={[styles.tag, {
+                            backgroundColor: isFullMatch ? c.freshLight : c.amberLight,
+                            borderColor: isFullMatch ? c.fresh : c.amber,
+                        }]}>
+                            <ThemedText style={[styles.tagText, {
+                                fontFamily: 'DMSans_600SemiBold',
+                                color: isFullMatch ? c.fresh : c.amber,
+                            }]}>
+                                {isFullMatch ? '✓ Full match' : `+${missing} item${missing === 1 ? '' : 's'}`}
+                            </ThemedText>
                         </View>
                     </View>
 
-                    <ThemedText style={styles.recipeTitle} serif>Pasta Arrabiata</ThemedText>
+                    <ThemedText style={styles.recipeTitle} serif>{recipe.name}</ThemedText>
 
-                    {/* Stats */}
+                    {/* Stats row - cook time, servings, $ per serve, calories */}
                     <View style={styles.statsRow}>
                         {[
-                            { val: '25', lbl: 'MINUTES' },
-                            { val: '2', lbl: 'SERVINGS' },
-                            { val: '$3.20', lbl: 'PER SERVE' },
-                            { val: '420', lbl: 'CALORIES' },
-                        ].map((s) => (
-                            <View key={s.lbl} style={[styles.statCard, themed.card]}>
-                                <ThemedText style={styles.statVal} serif >{s.val}</ThemedText>
+                            { val: recipe.cookTimeMins ? `${recipe.cookTimeMins}` : '—', lbl: 'MINUTES' },
+                            { val: recipe.servings ? `${recipe.servings}` : '—', lbl: 'SERVINGS' },
+                            { val: recipe.costPerServe ? `$${Number(recipe.costPerServe).toFixed(2)}` : '—', lbl: 'PER SERVE' },
+                            { val: recipe.calories ? `${recipe.calories}` : '—', lbl: 'CALORIES' },
+                        ].map(s => (
+                            <View key={s.lbl}
+                                style={[styles.statCard, { backgroundColor: c.uiBackground, borderColor: c.border }]}>
+                                <ThemedText style={styles.statVal} serif>{s.val}</ThemedText>
                                 <ThemedText style={styles.statLbl} subtitle>{s.lbl}</ThemedText>
                             </View>
                         ))}
                     </View>
 
-                    {/* Ingredients */}
+                    {/* Ingredients list */}
                     <ThemedText style={styles.sectionTitle} serif>Ingredients</ThemedText>
-                    {INGREDIENTS.map((ing) => (
-                        <View key={ing.name} style={styles.ingrItem}>
+                    {(recipe.ingredients || []).map((ing, i) => (
+                        <View key={ing.id ?? i} style={[styles.ingrItem, { borderBottomColor: c.border }]}>
                             <View style={styles.ingrItemLeft}>
-                                <View style={[styles.checkCircle, ing.have ? { backgroundColor: c.freshLight } : [styles.checkMissing, { backgroundColor: c.redLight, borderColor: c.red }]]}>
-                                    <ThemedText style={{ fontSize: 10 }}>{ing.have ? '✓' : 'X'}</ThemedText>
+                                <View style={[
+                                    styles.checkCircle,
+                                    ing.optional
+                                        ? { backgroundColor: c.creamDark }
+                                        : ing.inPantry
+                                            ? { backgroundColor: c.freshLight }
+                                            : [styles.checkMissing, { backgroundColor: c.redLight, borderColor: c.red }]
+                                ]}>
+                                    <ThemedText style={{ fontSize: 10 }}>
+                                        {ing.optional ? '○' : ing.inPantry ? '✓' : '✗'}
+                                    </ThemedText>
                                 </View>
-                                <ThemedText style={[ing.name, !ing.have && { color: c.red }]}>{ing.name}</ThemedText>
+                                <ThemedText style={[
+                                    styles.ingrName,
+                                    !ing.optional && !ing.inPantry && { color: c.red }
+                                ]}>
+                                    {ing.ingredientName}
+                                    {ing.optional && (
+                                        <ThemedText style={styles.optionalLabel} subtitle> (optional)</ThemedText>
+                                    )}
+                                </ThemedText>
                             </View>
-                            <ThemedText style={styles.ingrQty} subtitle>{ing.qty}</ThemedText>
+                            <ThemedText style={styles.ingrQty} subtitle>
+                                {formatQty(ing.quantity, ing.unit)}
+                            </ThemedText>
                         </View>
                     ))}
 
                     {/* Instructions */}
                     <ThemedText style={styles.sectionTitle} serif>Instructions</ThemedText>
-                    {STEPS.map((steps, i) => (
+                    {(recipe.steps || []).map((step, i) => (
                         <View key={i} style={styles.stepItem}>
                             <View style={styles.stepNum}>
                                 <ThemedText style={styles.stepNumText}>{i + 1}</ThemedText>
                             </View>
-                            <ThemedText style={styles.stepText}>{steps}</ThemedText>
+                            <ThemedText style={styles.stepText}>{step}</ThemedText>
                         </View>
                     ))}
                 </View>
             </ScrollView>
 
-            {/* Floating Button */}
+            {/* Floating 'I cooked this' container */}
             <View style={[styles.floatingContainer, { bottom: 52 }]}>
-                <Pressable style={({ pressed }) => [styles.cookBtn, pressed && styles.pressed]}>
+                <Pressable
+                    style={({ pressed }) => [styles.cookBtn, pressed && styles.pressed]}
+                    onPress={() => showToast('🍳 Cooking history coming in Sprint 4!')}>
                     <ThemedText style={styles.cookBtnText}>I cooked this</ThemedText>
                 </Pressable>
             </View>
+
+            <Toast message={toast.message} visible={toast.visible} />
         </ThemedView>
     )
 }
 export default RecipeDetails
 
 const styles = StyleSheet.create({
-    container: { flex: 1, },
+    container: { flex: 1 },
     header: {
         backgroundColor: palette.green,
         height: 260,
         alignItems: 'center', justifyContent: 'center',
-        paddingHorizontal: 24,
-        paddingTop: 52,
-        paddingBottom: 28,
+        paddingHorizontal: 24, paddingTop: 52, paddingBottom: 28,
     },
     backBtn: {
         position: 'absolute', left: 20, top: 52,
@@ -156,75 +239,47 @@ const styles = StyleSheet.create({
     },
 
     body: { padding: 24, gap: 12 },
-    tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
-    tag: {
-        paddingVertical: 3, paddingHorizontal: 10,
-        borderWidth: 1,
-        borderRadius: radius.full,
-    },
+    tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
+    tag: { paddingVertical: 3, paddingHorizontal: 10, borderWidth: 1, borderRadius: radius.full },
     tagText: { fontSize: 10 },
-    tagFullText: { fontFamily: 'DMSans_600SemiBold', fontSize: 10 },
 
-    recipeTitle: { fontSize: 28, letterSpacing: -1, lineHeight: 36, },
+    recipeTitle: { fontSize: 28, letterSpacing: -1, lineHeight: 36 },
 
-    statsRow: { flexDirection: 'row', gap: 8, marginTop: 10, },
-    statCard: {
-        flex: 1,
-        borderWidth: 1, borderRadius: radius.small,
-        padding: 10, alignItems: 'center',
-    },
-    statVal: { fontSize: 17, },
-    statLbl: {
-        fontFamily: 'DMSans_500Medium', fontSize: 9,
-        letterSpacing: 0.5, marginTop: 2, textAlign: 'center'
-    },
+    statsRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
+    statCard: { flex: 1, borderWidth: 1, borderRadius: radius.small, padding: 10, alignItems: 'center' },
+    statVal: { fontSize: 17 },
+    statLbl: { fontFamily: 'DMSans_500Medium', fontSize: 9, letterSpacing: 0.5, marginTop: 2, textAlign: 'center' },
 
-    sectionTitle: { fontSize: 18, letterSpacing: -0.5, marginTop: 20, marginBottom: 12, },
+    sectionTitle: { fontSize: 18, letterSpacing: -0.5, marginTop: 20, marginBottom: 12 },
 
     ingrItem: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-        paddingVertical: 10,
-        borderBottomWidth: 1, borderBottomColor: palette.beige,
+        paddingVertical: 10, borderBottomWidth: 1,
     },
-    ingrItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, },
-
-    checkCircle: {
-        width: 22, height: 22, borderRadius: radius.full,
-        alignItems: 'center', justifyContent: 'center',
-    },
-    checkMissing: {
-        borderWidth: 1.5, borderStyle: 'dashed',
-    },
-    ingrName: { flex: 1, fontSize: 14, },
-    //ingrMissing: { color: palette.red },
+    ingrItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+    checkCircle: { width: 22, height: 22, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
+    checkMissing: { borderWidth: 1.5, borderStyle: 'dashed' },
+    ingrName: { flex: 1, fontSize: 14 },
+    optionalLabel: { fontSize: 11 },
     ingrQty: { fontSize: 12 },
 
-    stepItem: { flexDirection: 'row', gap: 14, },
+    stepItem: { flexDirection: 'row', gap: 14 },
     stepNum: {
         width: 28, height: 28,
-        backgroundColor: palette.green,
-        borderRadius: 8,
-        alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, marginTop: 1,
+        backgroundColor: palette.green, borderRadius: 8,
+        alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
     },
-    stepNumText: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: '#fff', },
+    stepNumText: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: '#fff' },
     stepText: { flex: 1, fontSize: 14, lineHeight: 22 },
 
-    floatingContainer: {
-        position: 'absolute', left: 0, right: 0,
-        alignItems: 'center',
-    },
+    floatingContainer: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
     cookBtn: {
         backgroundColor: palette.terracotta,
-        borderRadius: radius.full,
-        paddingVertical: 16, paddingHorizontal: 32,
-        shadowColor: palette.terracotta,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 16,
-        elevation: 8,
+        borderRadius: radius.full, paddingVertical: 16, paddingHorizontal: 32,
+        shadowColor: palette.terracotta, shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35, shadowRadius: 16, elevation: 8,
     },
     cookBtnText: { fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: '#fff' },
 
-    pressed: { opacity: 0.7 }
+    pressed: { opacity: 0.7 },
 })
