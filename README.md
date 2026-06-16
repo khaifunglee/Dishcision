@@ -162,3 +162,19 @@ jwt.expiration=86400000
 - Added features such as dark mode, remember me for logins, and onboarding overlay messages for newly registered users
 - Added more complex frontend features such as bottom sheet add/edit ingredient sheet modal and swipeable recipe item components
 - Fixed numerous minor visual bugs, polished UI/UX of the application
+
+### 11/6/2026
+
+**Implemented Pantry-related functions**:
+
+- Created ingredient seed database
+- Wired live pantry data to pantry and home page
+- Added functions such as add/edit pantry items with autofill, search & filter, expiry status tracker
+
+### 16/6/2026
+
+**Implemented Recipe-related functions**:
+
+- Created recipe seed database and wired live recipe data to recipes and home page
+- Redesigned recipe details page to take dynamic recipe details
+- Added functions such as search & filter, recipe suggestions for suggestions page
