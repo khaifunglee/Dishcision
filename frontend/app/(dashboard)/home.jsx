@@ -49,9 +49,32 @@ const Home = () => {
         }
         load()
     }, []))
+
+    // Expiry date calculate helpers
+    function getExpiryStatus(expiryDate) {
+        if (!expiryDate) return 'fresh'
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const expiry = new Date(expiryDate)
+        expiry.setHours(0, 0, 0, 0)
+
+        const diff = Math.ceil((expiry - today) / 86400000)
+        if (diff <= 3) return 'expiring'
+        return 'fresh'
+    }
+
+    // Get expiring pantry items
+    const expiringItems = useMemo(() => {
+        let result = items
+        result = result.filter(i => ['expiring'].includes(getExpiryStatus(i.expiryDate)))
+        return result
+    }, [items])
+
     // Handles next/skip steps in onboarding overlay
     const handleNext = () => { setShowOverlay(false); router.push('/pantry') }
     const handleSkip = async () => { setShowOverlay(false); await completeOnboarding() }
+
     // Function for adding ingredient to pantry
     const handleSaved = (savedItem, wasEditing) => {
         if (wasEditing) {
@@ -71,6 +94,7 @@ const Home = () => {
         { emoji: '🍳', name: 'Tomato Omelette', meta: '10 min · Breakfast', bg: c.terracottaLight },
         { emoji: '🥗', name: 'Spinach Pasta', meta: '20 min · Italian', bg: c.freshLight },
     ]
+
     // Empty states for Tonight's Dishcision card - empty pantry / no full match recipes
     const dishcisionSubtitle = useMemo(() => {
         if (items.length === 0) return 'Add ingredients to see tonight\'s suggestions'
@@ -100,20 +124,26 @@ const Home = () => {
                 <Pressable
                     style={({ pressed }) => [
                         styles.expiryAlert,
-                        { backgroundColor: c.redLight, borderColor: c.red },
+                        expiringItems.length > 0
+                            ? { backgroundColor: c.redLight, borderColor: c.red }
+                            : { backgroundColor: c.freshLight, borderColor: c.fresh },
                         pressed && styles.pressed
                     ]}
                     onPress={() => router.push('/pantry')}>
-                    <View style={[styles.expiryIcon, { backgroundColor: c.red }]}>
-                        <ThemedText style={{ fontSize: 16 }}>⏰</ThemedText>
+                    <View style={[styles.expiryIcon, { backgroundColor: expiringItems.length > 0 ? c.red : c.fresh }]}>
+                        <ThemedText style={{ fontSize: 16 }}>{expiringItems.length > 0 ? '⏰' : '👌'}</ThemedText>
                     </View>
                     <View style={{ flex: 1 }}>
-                        <ThemedText style={styles.expiryTitle}>3 items expiring soon</ThemedText>
+                        <ThemedText style={[styles.expiryTitle, { color: expiringItems.length > 0 ? c.red : c.fresh }]}>
+                            {expiringItems.length > 0 ? `${expiringItems.length} items expiring soon` : 'All Good'}
+                        </ThemedText>
                         <ThemedText style={styles.expirySub} subtitle>
-                            Spinach, Chicken, Tomatoes · Tap to View
+                            {expiringItems.length > 0
+                                ? `${expiringItems.slice(0, 3).map(i => i.ingredientName).join(', ')} · Tap to View`
+                                : 'All pantry items are fresh · Tap to View'}
                         </ThemedText>
                     </View>
-                    <ThemedText style={[styles.expiryArrow, { color: c.red }]}>›</ThemedText>
+                    <ThemedText style={[styles.expiryArrow, { color: expiringItems.length > 0 ? c.red : c.fresh }]}>›</ThemedText>
                 </Pressable>
 
                 {/* Tonight's Dishcisions Card */}
