@@ -15,30 +15,30 @@ import Toast from "../../components/Toast"
 
 // Maps cuisine to a display emoji for the thumbnail
 const CUISINE_EMOJIS = {
-    Italian: '🍝', Asian: '🥘', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
+    Italian: '🍝', Asian: '🍛', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
 }
 
 // Chips for each filterable category, value=null means no filters
 const CUISINE_CHIPS = [
-    { label: 'All cuisines', value: null },
-    { label: '🍝 Italian', value: 'Italian' },
-    { label: '🥢 Asian', value: 'Asian' },
-    { label: '🍳 Western', value: 'Western' },
-    { label: '🫕 Comfort', value: 'Comfort' },
-    { label: '🥞 Breakfast', value: 'Breakfast' },
+    { key: 'All cuisines', label: null },
+    { key: '🍝 Italian', label: 'Italian' },
+    { key: '🍛 Asian', label: 'Asian' },
+    { key: '🍳 Western', label: 'Western' },
+    { key: '🫕 Comfort', label: 'Comfort' },
+    { key: '🥞 Breakfast', label: 'Breakfast' },
 ]
 
 const TIME_CHIPS = [
-    { label: '⏱ Any time', value: null },
-    { label: '≤15 min', value: 15 },
-    { label: '≤30 min', value: 30 },
+    { key: '⏱ Any time', label: null },
+    { key: '≤15 min', label: 15 },
+    { key: '≤30 min', label: 30 },
 ]
 
 const DIETARY_CHIPS = [
-    { label: 'All diets', value: null },
-    { label: '🌿 Vegetarian', value: 'VEGETARIAN' },
-    { label: '🌱 Vegan', value: 'VEGAN' },
-    { label: '🌾 Gluten-Free', value: 'GLUTEN_FREE' },
+    { key: 'All diets', label: null },
+    { key: '🌿 Vegetarian', label: 'VEGETARIAN' },
+    { key: '🌱 Vegan', label: 'VEGAN' },
+    { key: '🌾 Gluten-Free', label: 'GLUTEN_FREE' },
 ]
 
 const Recipes = () => {
@@ -55,6 +55,10 @@ const Recipes = () => {
     const [timeFilter, setTimeFilter] = useState(null)          // cook time filter value
     const [dietaryFilter, setDietaryFilter] = useState(null)    // dietary filter value
 
+    // Map a bg colour for each cuisine
+    const CUISINE_BG = {
+        Italian: c.greenLight, Asian: c.amberLight, Western: c.creamDark, Comfort: c.greenLight, Breakfast: c.terracottaLight
+    }
     const themed = useMemo(() => ({
         card: { backgroundColor: c.uiBackground, borderColor: c.border },
         signatureColor: { color: c.green },
@@ -102,7 +106,7 @@ const Recipes = () => {
             id: r.id,
             name: r.name,
             emoji: CUISINE_EMOJIS[r.cuisine] || '🍽️',
-            bg: c.greenLight,
+            bg: CUISINE_BG[r.cuisine] || c.greenLight,
             meta: [r.cuisine, r.cookTimeMins && `${r.cookTimeMins} min`,
                    r.costPerServe && `~$${Number(r.costPerServe).toFixed(2)}/serve`]
                   .filter(Boolean).join(' · '),
@@ -126,7 +130,7 @@ const Recipes = () => {
         if (timeFilter)    filtered = filtered.filter(r => r.cookTimeMins <= timeFilter)
         if (dietaryFilter) filtered = filtered.filter(r =>
             r.dietaryTags && r.dietaryTags.includes(dietaryFilter))
-            
+
             // Returns recipes sorted by match %, then by ascending cook time 
         return [...filtered].sort((a, b) => {
             const pctA = a.totalRequired > 0 ? a.matchedCount / a.totalRequired : 1
@@ -135,10 +139,6 @@ const Recipes = () => {
             return (a.cookTimeMins || 0) - (b.cookTimeMins || 0)
         })
     }, [recipes, searchQuery, cuisineFilter, timeFilter, dietaryFilter])
-
-    const toggleChip = (current, value, setter) => {
-        setter(current === value ? null : value)
-    }
 
     return (
         <ThemedView style={styles.container} safe>
@@ -172,13 +172,13 @@ const Recipes = () => {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.filterRow}>
                     {CUISINE_CHIPS.map(chip => {
-                        const active = cuisineFilter === chip.value
+                        /* const active = cuisineFilter === chip.value */
                         return (
                             <Pressable key={chip.label}
-                                style={[styles.filterChip, themed.card, active && themed.activeChip]}
-                                onPress={() => toggleChip(cuisineFilter, chip.value, setCuisineFilter)}>
-                                <ThemedText style={[styles.filterChipText, active && styles.filterChipTextActive]}
-                                    subtitle>{chip.label}</ThemedText>
+                                style={[styles.filterChip, themed.card, cuisineFilter === chip.label && themed.activeChip]}
+                                onPress={() => setCuisineFilter(chip.label)}>
+                                <ThemedText style={[styles.filterChipText, cuisineFilter === chip.label && styles.filterChipTextActive]}
+                                    subtitle>{chip.key}</ThemedText>
                             </Pressable>
                         )
                     })}
@@ -188,25 +188,25 @@ const Recipes = () => {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}
                     contentContainerStyle={[styles.filterRow, { paddingTop: 0, paddingBottom: 8 }]}>
                     {TIME_CHIPS.map(chip => {
-                        const active = timeFilter === chip.value
+                        /* const active = timeFilter === chip.value */
                         return (
                             <Pressable key={chip.label}
-                                style={[styles.filterChip, themed.card, active && themed.activeChip]}
-                                onPress={() => toggleChip(timeFilter, chip.value, setTimeFilter)}>
-                                <ThemedText style={[styles.filterChipText, active && styles.filterChipTextActive]}
-                                    subtitle>{chip.label}</ThemedText>
+                                style={[styles.filterChip, themed.card, timeFilter === chip.label && themed.activeChip]}
+                                onPress={() => setTimeFilter(chip.label)}>
+                                <ThemedText style={[styles.filterChipText, timeFilter === chip.label && styles.filterChipTextActive]}
+                                    subtitle>{chip.key}</ThemedText>
                             </Pressable>
                         )
                     })}
                     <View style={styles.filterDivider} />
                     {DIETARY_CHIPS.map(chip => {
-                        const active = dietaryFilter === chip.value
+                        /* const active = dietaryFilter === chip.value */
                         return (
                             <Pressable key={chip.label}
-                                style={[styles.filterChip, themed.card, active && themed.activeChip]}
-                                onPress={() => toggleChip(dietaryFilter, chip.value, setDietaryFilter)}>
-                                <ThemedText style={[styles.filterChipText, active && styles.filterChipTextActive]}
-                                    subtitle>{chip.label}</ThemedText>
+                                style={[styles.filterChip, themed.card, dietaryFilter === chip.label && themed.activeChip]}
+                                onPress={() => setDietaryFilter(chip.label)}>
+                                <ThemedText style={[styles.filterChipText, dietaryFilter === chip.label && styles.filterChipTextActive]}
+                                    subtitle>{chip.key}</ThemedText>
                             </Pressable>
                         )
                     })}

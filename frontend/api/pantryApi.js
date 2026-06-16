@@ -4,9 +4,9 @@ import * as SecureStore from 'expo-secure-store'
 
 // Pantry list GET API
 export const getAll = async () => {
-    console.log('calling get API for pantry list...')
+    //console.log('calling get API for pantry list...')
     const response = await client.get('/pantry/getList')
-    console.log('response: ', response.data)
+    //console.log('response: ', response.data)
 
     const pantryList = response.data
 
@@ -46,9 +46,9 @@ export const deleteItem = async (id) => {
 
 // Search ingredients GET API
 export const searchIngredients = async (q) => {
-    console.log('calling GET API for search item...')
+    //console.log('calling GET API for search item...')
     const response = await client.get('/ingredients/search', { params: { q } })
-    console.log('response: ', response.data)
+    //console.log('response: ', response.data)
 
     const results = response.data
 

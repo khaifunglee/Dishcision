@@ -21,22 +21,6 @@ import Toast from '../../components/Toast'
 import AddIngredientSheet from '../../components/AddIngredientSheet'
 import { deleteItem, getAll } from '../../api/pantryApi'
 
-// Placeholder data
-const EXPIRING = [
-    { emoji: '🥬', name: 'Spinach', qty: '1 bag · 200g', status: 'urgent', badge: 'Today' },
-    { emoji: '🍗', name: 'Chicken Breast', qty: '2 pieces', status: 'urgent', badge: 'Tomorrow' },
-    { emoji: '🍅', name: 'Tomatoes', qty: '4 pieces', status: 'warn', badge: '2 days' },
-]
-
-const FRESH = [
-    { emoji: '🥚', name: 'Eggs', qty: '6 pieces', status: 'fresh', badge: '12 days' },
-    { emoji: '🧄', name: 'Garlic', qty: '1 head', status: 'fresh', badge: '14 days' },
-    { emoji: '🍝', name: 'Pasta (Penne)', qty: '400g', status: 'fresh', badge: '6 months' },
-    { emoji: '🧅', name: 'Onion', qty: '2 pieces', status: 'fresh', badge: '21 days' },
-    { emoji: '🫙', name: 'Olive Oil', qty: '500ml', status: 'fresh', badge: '8 months' },
-    { emoji: '🧀', name: 'Parmesan', qty: '200g', status: 'fresh', badge: '18 days' },
-]
-
 const CATEGORY_EMOJIS = {
     'Protein': '🥩', 'Produce': '🥦', 'Dairy': '🧀', 'Pantry Staple': '🥫', 'Frozen': '❄️', 'Other': '🫙'
 }
@@ -189,10 +173,10 @@ const Pantry = () => {
     // Load pantry items
     const fetchPantry = useCallback(async () => {
         try {
-            console.log('Retrieving pantry items...')
+            //console.log('Retrieving pantry items...')
             const data = await getAll()
             setItems(data)
-            console.log('List: ', data)
+            //console.log('List: ', data)
         } catch (e) {
             Alert.alert('Error', 'Could not load your pantry. Please try again.')
             console.log('Error: ', e)
@@ -208,7 +192,7 @@ const Pantry = () => {
 
     // Add item function
     const handleSaved = (savedItem, wasEditing) => {
-        console.log('handleAdded received:', JSON.stringify(savedItem))
+        //console.log('handleAdded received:', JSON.stringify(savedItem))
         if (wasEditing) {
             setItems(prev => prev.map(i => i.id === savedItem.id ? savedItem : i))
             showToast('✓ Ingredient updated!')

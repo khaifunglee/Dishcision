@@ -12,7 +12,7 @@ import ThemedView from "../components/ThemedView"
 import Toast from '../components/Toast'
 // Map emojis to cuisine as thumbnail
 const CUISINE_EMOJIS = {
-    Italian: '🍝', Asian: '🥢', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
+    Italian: '🍝', Asian: '🍛', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
 }
 
 const DIETARY_LABELS = {
@@ -34,6 +34,11 @@ const RecipeDetails = () => {
     const { toast, showToast } = useToast()
     const [recipe, setRecipe] = useState(null)      // recipe to be loaded
     const [loading, setLoading] = useState(true)    // loading state for recipe
+
+    // Map a bg colour for each cuisine
+    const CUISINE_BG = {
+        Italian: c.green, Asian: c.amber, Western: c.warmGray, Comfort: c.green, Breakfast: c.terracotta
+    }
 
     useFocusEffect(useCallback(() => {
         if (!id) return
