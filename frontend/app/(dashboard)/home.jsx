@@ -4,9 +4,10 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { palette, radius, shadow, useAppColors } from "../../constants/colors"
 import { useCallback, useMemo, useState } from 'react'
 import { useOnboarding } from '../../context/OnboardingContext'
+import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../hooks/useToast'
 import { getAll } from '../../api/pantryApi'
-import { getSuggestions } from '../../api/recipeApi'
+import { getSuggestions, getSavedRecipes } from '../../api/recipeApi'
 // Themed components
 import ThemedText from "../../components/ThemedText"
 import ThemedView from "../../components/ThemedView"
@@ -15,34 +16,53 @@ import OnboardingOverlay from '../../components/OnboardingOverlay'
 import Toast from '../../components/Toast'
 import AddIngredientSheet from '../../components/AddIngredientSheet'
 
+// Maps cuisine to a background colour for saved recipe cards
+const CUISINE_BG_KEYS = {
+    Italian: 'freshLight', Asian: 'amberLight', Western: 'creamDark',
+    Comfort: 'greenLight', Breakfast: 'terracottaLight',
+}
+const CUISINE_EMOJIS = {
+    Italian: '🍝', Asian: '🍛', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
+}
+
 const Home = () => {
     const c = useAppColors()
     const { shouldOnboard, completeOnboarding } = useOnboarding()
+    const { user } = useAuth()
     const [showOverlay, setShowOverlay] = useState(false)
     const [items, setItems] = useState([])                          // list of pantry items
     const [sheetVisible, setSheetVisible] = useState(false)
     const [editingItem, setEditingItem] = useState(null)
     const [fullMatchCount, setFullMatchCount] = useState(null)      // # of full match recipes
+    const [savedRecipes, setSavedRecipes] = useState([])            // list of saved recipes
     const { toast, showToast } = useToast()
 
     const themed = useMemo(() => ({
         card: { backgroundColor: c.uiBackground, borderColor: c.border },
     }), [c])
 
+    // User initial for avatar
+    const userInitial = useMemo(() => {
+        if (!user?.name) return '?'
+        return user.name.trim().charAt(0).toUpperCase()
+    }, [user])
+
     useFocusEffect(useCallback(() => {
         if (shouldOnboard) setShowOverlay(true)
     }, [shouldOnboard]))
 
-    // Fetch pantry and suggestions count on every focus so the card stays fresh
+    // Fetch pantry, suggestions, and saved recipes on every focus
     useFocusEffect(useCallback(() => {
         const load = async () => {
             try {
-                const [pantryData, suggestionsData] = await Promise.all([
+                const [pantryData, suggestionsData, savedData] = await Promise.all([
                     getAll(),
                     getSuggestions(),
+                    getSavedRecipes(),
                 ])
                 setItems(pantryData)
                 setFullMatchCount(suggestionsData.fullMatch?.length ?? 0)
+                setSavedRecipes(Array.isArray(savedData) ? savedData : [])
             } catch (e) {
                 console.error('Home load error:', e)
             }
@@ -50,28 +70,23 @@ const Home = () => {
         load()
     }, []))
 
-    // Expiry date calculate helpers
+    // Expiry status calculate helpers
     function getExpiryStatus(expiryDate) {
         if (!expiryDate) return 'fresh'
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-
         const expiry = new Date(expiryDate)
         expiry.setHours(0, 0, 0, 0)
-
         const diff = Math.ceil((expiry - today) / 86400000)
         if (diff <= 3) return 'expiring'
         return 'fresh'
     }
-
     // Get expiring pantry items
     const expiringItems = useMemo(() => {
-        let result = items
-        result = result.filter(i => ['expiring'].includes(getExpiryStatus(i.expiryDate)))
-        return result
+        return items.filter(i => getExpiryStatus(i.expiryDate) === 'expiring')
     }, [items])
 
-    // Handles next/skip steps in onboarding overlay
+    // Handle next/skip steps in onboarding overlay
     const handleNext = () => { setShowOverlay(false); router.push('/pantry') }
     const handleSkip = async () => { setShowOverlay(false); await completeOnboarding() }
 
@@ -87,15 +102,6 @@ const Home = () => {
     // Open add ingredient sheet
     const openAdd = () => { setEditingItem(null); setSheetVisible(true) }
 
-    // Placeholder data until Sprint 3 wires up saved recipes
-    const SAVED_RECIPES = [
-        { emoji: '🍝', name: 'Pasta Arrabiata', meta: '25 min · Italian', bg: c.freshLight },
-        { emoji: '🥘', name: 'Chicken Stir Fry', meta: '20 min · Asian', bg: c.amberLight },
-        { emoji: '🍳', name: 'Tomato Omelette', meta: '10 min · Breakfast', bg: c.terracottaLight },
-        { emoji: '🥗', name: 'Spinach Pasta', meta: '20 min · Italian', bg: c.freshLight },
-    ]
-
-    // Empty states for Tonight's Dishcision card - empty pantry / no full match recipes
     const dishcisionSubtitle = useMemo(() => {
         if (items.length === 0) return 'Add ingredients to see tonight\'s suggestions'
         if (fullMatchCount === null) return 'Loading...'
@@ -115,9 +121,12 @@ const Home = () => {
                         <ThemedText style={styles.greetingSub} subtitle>Good morning ☀️</ThemedText>
                         <ThemedText style={styles.greetingMain} serif>Make a Dishcision</ThemedText>
                     </View>
-                    <View style={styles.avatar}>
-                        <ThemedText style={styles.avatarText} serif>A</ThemedText>
-                    </View>
+                    {/* Avatar */}
+                    <Pressable
+                        style={styles.avatar}
+                        onPress={() => router.push('/(dashboard)/profile')}>
+                        <ThemedText style={styles.avatarText} serif>{userInitial}</ThemedText>
+                    </Pressable>
                 </View>
 
                 {/* Expiry Alert */}
@@ -173,9 +182,8 @@ const Home = () => {
                 <View style={styles.statsRow}>
                     {[
                         { emoji: '🥦', value: `${items.length}`, label: 'Pantry items' },
-                        { emoji: '📖', value: '30', label: 'Recipes' }, /* 30 pre-loaded recipes for now */
-                        { emoji: '🍽️', value: fullMatchCount !== null ? `${fullMatchCount}` : '—', label: 'Can cook now' },
-                        /* Replace full match recipes stat card with $ saved this week in Sprint 4 */
+                        { emoji: '📖', value: '30', label: 'Recipes' },
+                        { emoji: '🔖', value: `${savedRecipes.length}`, label: 'Saved Recipes' },
                     ].map(stat => (
                         <View key={stat.label} style={[styles.statCard, themed.card]}>
                             <ThemedText style={styles.statIcon}>{stat.emoji}</ThemedText>
@@ -199,28 +207,53 @@ const Home = () => {
                     <ThemedText style={{ fontSize: 18 }} subtitle>›</ThemedText>
                 </Pressable>
 
-                {/* Saved Recipes (placeholder until Sprint 3) */}
+                {/* Saved Recipes section */}
                 <View style={styles.sectionHeader}>
                     <ThemedText style={styles.sectionTitle} serif>Saved Recipes</ThemedText>
-                    <ThemedText style={[styles.sectionAction, { color: c.green }]}>See All</ThemedText>
+                    <Pressable onPress={() => router.push('/(dashboard)/recipes')}>
+                        <ThemedText style={[styles.sectionAction, { color: c.green }]}>See All</ThemedText>
+                    </Pressable>
                 </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.hScroll}>
-                    {SAVED_RECIPES.map(recipe => (
-                        <Pressable
-                            key={recipe.name}
-                            style={({ pressed }) => [styles.recipeCardMini, themed.card, pressed && styles.pressed]}
-                            onPress={() => router.push('/recipes')}>
-                            <View style={[styles.recipeCardImg, { backgroundColor: recipe.bg }]}>
-                                <ThemedText style={{ fontSize: 36 }}>{recipe.emoji}</ThemedText>
-                            </View>
-                            <View style={{ padding: 10 }}>
-                                <ThemedText style={styles.recipeCardName}>{recipe.name}</ThemedText>
-                                <ThemedText style={styles.recipeCardMeta} subtitle>⏱ {recipe.meta}</ThemedText>
-                            </View>
-                        </Pressable>
-                    ))}
-                </ScrollView>
+
+                {savedRecipes.length === 0 ? (
+                    /* Empty state */
+                    <Pressable
+                        style={({ pressed }) => [styles.savedEmptyCard, themed.card, pressed && styles.pressed]}
+                        onPress={() => router.push('/(dashboard)/recipes')}>
+                        <ThemedText style={styles.savedEmptyEmoji}>🔖</ThemedText>
+                        <ThemedText style={styles.savedEmptyText} subtitle>
+                            Save recipes to see them here!
+                        </ThemedText>
+                        <ThemedText style={[styles.savedEmptyCta, { color: c.green }]}>
+                            Browse Recipes →
+                        </ThemedText>
+                    </Pressable>
+                ) : (
+                    /* Saved Recipes list */
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.hScroll}>
+                        {savedRecipes.map(recipe => {
+                            const bgKey = CUISINE_BG_KEYS[recipe.cuisine] || 'greenLight'
+                            const emoji = CUISINE_EMOJIS[recipe.cuisine] || '🍽️'
+                            const cookInfo = recipe.cookTimeMins ? `${recipe.cookTimeMins} min` : null
+                            const meta = [recipe.cuisine, cookInfo].filter(Boolean).join(' · ')
+                            return (
+                                <Pressable
+                                    key={recipe.id}
+                                    style={({ pressed }) => [styles.recipeCardMini, themed.card, pressed && styles.pressed]}
+                                    onPress={() => router.push({ pathname: '/recipe-detail', params: { id: recipe.id } })}>
+                                    <View style={[styles.recipeCardImg, { backgroundColor: c[bgKey] }]}>
+                                        <ThemedText style={{ fontSize: 36 }}>{emoji}</ThemedText>
+                                    </View>
+                                    <View style={{ padding: 10 }}>
+                                        <ThemedText style={styles.recipeCardName}>{recipe.name}</ThemedText>
+                                        <ThemedText style={styles.recipeCardMeta} subtitle>⏱ {meta}</ThemedText>
+                                    </View>
+                                </Pressable>
+                            )
+                        })}
+                    </ScrollView>
+                )}
 
                 <Spacer height={16} />
             </ScrollView>
@@ -292,6 +325,14 @@ const styles = StyleSheet.create({
     sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
     sectionTitle: { fontSize: 18 },
     sectionAction: { fontFamily: 'DMSans_600SemiBold', fontSize: 12 },
+
+    savedEmptyCard: {
+        borderWidth: 1.5, borderStyle: 'dashed', borderRadius: radius.small,
+        padding: 24, alignItems: 'center', gap: 8,
+    },
+    savedEmptyEmoji: { fontSize: 32 },
+    savedEmptyText: { fontSize: 13, textAlign: 'center' },
+    savedEmptyCta: { fontFamily: 'DMSans_600SemiBold', fontSize: 13, marginTop: 4 },
 
     hScroll: { gap: 16, paddingVertical: 4 },
     recipeCardMini: { width: 140, borderRadius: radius.small, borderWidth: 1, overflow: 'hidden' },
