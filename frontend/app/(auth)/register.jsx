@@ -1,38 +1,45 @@
 // This file represents the Register page component inside the route group 'auth'
 import { useState, useMemo } from "react"
 import { StyleSheet, View, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
-import { Link, router } from 'expo-router' // Expo router component to link to other pages
+import { Link, router } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
 import { useOnboarding } from "../../context/OnboardingContext"
+import { updatePreferences } from "../../api/preferencesApi"
 import { radius, useAppColors } from "../../constants/colors"
-
 // Themed components
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
 import Spacer from "../../components/Spacer"
 
-const Register = () => {
+// Maps display label to backend DietaryTag enum value
+const CHIP_TO_TAG = {
+    '🥦 Vegetarian': 'VEGETARIAN',
+    '🌱 Vegan': 'VEGAN',
+    '🐟 Pescatarian': 'PESCATARIAN',
+    '🌾 Gluten-free': 'GLUTEN_FREE',
+    '🥛 Dairy-free': 'DAIRY_FREE',
+    '🥜 Nut-free': 'NUT_FREE',
+}
 
+const CHIPS = Object.keys(CHIP_TO_TAG)
+
+const Register = () => {
     const { register } = useAuth()
     const { triggerOnboarding } = useOnboarding()
 
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [loading, setLoading] = useState(false) // signals register function is rnning
-    const [selected, setSelected] = useState([]) // chips
+    const [loading, setLoading] = useState(false)   // loading state for register function
+    const [selected, setSelected] = useState([])    // indicates selected diet tags
 
     const c = useAppColors()
-    // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({
-        card: {
-            backgroundColor: c.uiBackground,
-            borderColor: c.border,
-        },
+        card: { backgroundColor: c.uiBackground, borderColor: c.border },
     }), [c])
 
-    // Business logic for register function
+    // Register function
     const handleRegister = async () => {
         if (!name || !email || !password) {
             Alert.alert('Error', 'Please fill in all fields')
@@ -45,7 +52,20 @@ const Register = () => {
         setLoading(true)
         try {
             await register(name, email, password) // _layout.jsx handles navigation on success
-            await triggerOnboarding()            // trigger onboarding messages
+            console.log('Registered user+email: ', name, email)
+            // Write dietary preferences immediately after account creation, if any chips selected
+            if (selected.length > 0) {
+                const dietTags = selected.map(chip => CHIP_TO_TAG[chip]).filter(Boolean)
+                try {
+                    await updatePreferences({ dietTags })
+                    console.log('Set user preferences: ', dietTags)
+                } catch (e) {
+                    // Non-fatal error — user can update prefs later in settings
+                    console.warn('Failed to save initial dietary preferences:', e)
+                }
+            }
+
+            await triggerOnboarding()
         } catch (error) {
             const message = error.response?.data?.message || 'Registration failed'
             Alert.alert('Error', message)
@@ -53,13 +73,12 @@ const Register = () => {
             setLoading(false)
         }
     }
-
-    // Toggle chips for dietary preferences
+    // Toggle chips for dietary tags
     const toggle = (chip) => {
         setSelected(prev =>
             prev.includes(chip)
-                ? prev.filter(c => c !== chip) // remove if already selected
-                : [...prev, chip]              // add if not selected
+                ? prev.filter(c => c !== chip) // deselect
+                : [...prev, chip]              // select
         )
     }
 
@@ -123,9 +142,7 @@ const Register = () => {
                 </ThemedText>
 
                 <View style={styles.chipsRow}>
-                    {[
-                        '🥦 Vegetarian', '🌱 Vegan', '🐟 Pescatarian', '🌾 Gluten-free', '🥛 Dairy-free', '🥜 Nut-free'
-                    ].map(chip => (
+                    {CHIPS.map(chip => (
                         <Pressable
                             key={chip}
                             style={[styles.chip, { backgroundColor: c.creamDark, borderColor: c.border },
@@ -142,7 +159,9 @@ const Register = () => {
                 <View style={styles.bottom}>
                     <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
                         onPress={handleRegister} disabled={loading}>
-                        <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>{loading ? 'Creating account...' : 'Create Account'}</ThemedText>
+                        <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
+                            {loading ? 'Creating account...' : 'Create Account'}
+                        </ThemedText>
                     </Pressable>
 
                     <ThemedText style={{ textAlign: 'center' }}>
@@ -157,60 +176,33 @@ const Register = () => {
     )
 }
 export default Register
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: 36,
-        paddingTop: 68,
-    },
-    header: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'left',
-    },
+    container: { flex: 1, paddingHorizontal: 36, paddingTop: 68 },
+    header: { flex: 1, justifyContent: 'center', alignItems: 'left' },
     btnOutline: {
         borderWidth: 0.6, borderRadius: radius.medium,
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
-    title: {
-        fontSize: 28,
-        marginVertical: 12,
-    },
-    tagline: {
-        fontSize: 14,
-    },
-    subHeader: {
-        fontSize: 12,
-        fontFamily: 'DMSans_600SemiBold',
-        marginBottom: 6
-    },
+    title: { fontSize: 28, marginVertical: 12 },
+    tagline: { fontSize: 14 },
+    subHeader: { fontSize: 12, fontFamily: 'DMSans_600SemiBold', marginBottom: 6 },
     input: {
-        borderWidth: 0.6,
-        borderRadius: radius.medium,
-        padding: 16,
-        marginBottom: 12,
-        fontSize: 14,
-        fontFamily: 'DMSans_400Regular',
+        borderWidth: 0.6, borderRadius: radius.medium,
+        padding: 16, marginBottom: 12,
+        fontSize: 14, fontFamily: 'DMSans_400Regular',
     },
-    chipsRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
+    chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     chip: {
-        paddingBottom: 6, paddingTop: 4, // paddingVertical doesn't work for some reason
+        paddingBottom: 6, paddingTop: 4,
         paddingHorizontal: 14,
         borderRadius: radius.full,
         borderWidth: 1,
         alignItems: 'center', justifyContent: 'center',
     },
-    chipText: {
-        fontSize: 12,
-    },
-    bottom: {
-        marginTop: 8,
-    },
+    chipText: { fontSize: 12 },
+    bottom: { marginTop: 8 },
     btn: {
         borderRadius: radius.medium,
         padding: 16,
