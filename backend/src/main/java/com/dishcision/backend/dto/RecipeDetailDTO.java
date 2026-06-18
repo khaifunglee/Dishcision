@@ -32,4 +32,6 @@ public class RecipeDetailDTO {
     private int matchedCount;
     private int totalRequired;
     private List<MissingIngredientDTO> missingIngredients;
+    // Note Whether the current user has saved this recipe
+    private boolean saved;
 }

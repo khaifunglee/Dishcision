@@ -29,4 +29,6 @@ public class RecipeSummaryDTO {
     private int matchedCount;
     private int totalRequired;
     private List<MissingIngredientDTO> missingIngredients;
+    // Note whether the current user has saved this recipe
+    private boolean saved;
 }
