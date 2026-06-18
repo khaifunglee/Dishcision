@@ -5,7 +5,7 @@ import { palette, radius, useAppColors } from "../../constants/colors"
 import { useMemo, useState, useCallback } from "react"
 import { useOnboarding } from "../../context/OnboardingContext"
 import { useToast } from "../../hooks/useToast"
-import { getRecipes } from "../../api/recipeApi"
+import { getRecipes, getSavedRecipes, saveRecipe, unsaveRecipe } from "../../api/recipeApi"
 // Themed components
 import OnboardingOverlay from "../../components/OnboardingOverlay"
 import ThemedView from "../../components/ThemedView"
@@ -17,7 +17,6 @@ import Toast from "../../components/Toast"
 const CUISINE_EMOJIS = {
     Italian: '🍝', Asian: '🍛', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
 }
-
 // Chips for each filterable category, value=null means no filters
 const CUISINE_CHIPS = [
     { key: 'All cuisines', label: null },
@@ -43,7 +42,6 @@ const DIETARY_CHIPS = [
 
 const Recipes = () => {
     const c = useAppColors()
-    // Onboarding overlay constants
     const { shouldOnboard, completeOnboarding } = useOnboarding()
     const [showOverlay, setShowOverlay] = useState(false)
     const { toast, showToast } = useToast()
@@ -53,7 +51,8 @@ const Recipes = () => {
     const [searchQuery, setSearchQuery] = useState('')          // search bar string
     const [cuisineFilter, setCuisineFilter] = useState(null)    // cuisine filter value
     const [timeFilter, setTimeFilter] = useState(null)          // cook time filter value
-    const [dietaryFilter, setDietaryFilter] = useState(null)    // dietary filter value
+    const [dietaryFilter, setDietaryFilter] = useState(null)    // diet tags filter value
+    const [showSavedOnly, setShowSavedOnly] = useState(false)   // saved filter
 
     // Map a bg colour for each cuisine
     const CUISINE_BG = {
@@ -63,6 +62,7 @@ const Recipes = () => {
         card: { backgroundColor: c.uiBackground, borderColor: c.border },
         signatureColor: { color: c.green },
         activeChip: { backgroundColor: c.green, borderColor: c.green },
+        savedChip: { backgroundColor: c.amber, borderColor: c.amber },
     }), [c])
 
     // Show onboarding overlay on first use
@@ -70,12 +70,13 @@ const Recipes = () => {
         if (shouldOnboard) setShowOverlay(true)
     }, [shouldOnboard]))
 
-    // Function to fetch all recipes on focus, filtering done client-side
+    // Fetch all recipes on focus, filtering done client-side
     useFocusEffect(useCallback(() => {
         const load = async () => {
             try {
                 setLoading(true)
-                const data = await getRecipes()
+                // Fetch from /recipes/saved instead of /recipes if showSavedOnly = true
+                const data = showSavedOnly ? await getSavedRecipes() : await getRecipes()
                 setRecipes(Array.isArray(data) ? data : [])
             } catch (e) {
                 console.error('Failed to load recipes:', e)
@@ -85,7 +86,7 @@ const Recipes = () => {
             }
         }
         load()
-    }, []))
+    }, [showSavedOnly]))
     // Functions to skip or finish onboarding
     const handleFinish = async () => {
         setShowOverlay(false)
@@ -97,7 +98,37 @@ const Recipes = () => {
         await completeOnboarding()
     }
 
-    // Build the display object SwipeableRecipeItem expects
+    // Function to toggle save/unsave recipe
+    const handleToggleSaved = async (recipe) => {
+        const wasSaved = recipe.saved
+        // Optimistic update in list
+        setRecipes(prev => prev.map(r =>
+            r.id === recipe.id ? { ...r, saved: !wasSaved } : r
+        ))
+        try {
+            // If saved recipe = toggle unsave recipe
+            if (wasSaved) {
+                await unsaveRecipe(recipe.id)
+                showToast('Recipe unsaved! 🗑️')
+                // If in saved-only view, remove from list
+                if (showSavedOnly) {
+                    setRecipes(prev => prev.filter(r => r.id !== recipe.id))
+                }
+            // Otherwise toggle save recipe
+            } else {
+                await saveRecipe(recipe.id)
+                showToast('Recipe saved! 🔖')
+            }
+        } catch (e) {
+            // Revert optimistic update if error
+            setRecipes(prev => prev.map(r =>
+                r.id === recipe.id ? { ...r, saved: wasSaved } : r
+            ))
+            showToast('Something went wrong')
+        }
+    }
+
+    // Build the display object for SwipeableRecipeItem
     // Meta: cuisine, time to cook, $ per serve
     const toDisplayRecipe = useCallback((r) => {
         const isFullMatch = r.totalRequired === 0 || r.matchedCount === r.totalRequired
@@ -112,10 +143,11 @@ const Recipes = () => {
                   .filter(Boolean).join(' · '),
             match: isFullMatch ? '100%' : `+${missing} item${missing === 1 ? '' : 's'}`,
             matchType: isFullMatch ? 'full' : 'partial',
+            saved: r.saved,
         }
     }, [c])
 
-    // Client-side filter + sort by match percentage function
+    // Client-side filter + sort by match % function
     const sorted = useMemo(() => {
         let filtered = recipes
         // 1. Match by text on search query
@@ -125,20 +157,32 @@ const Recipes = () => {
                 r.name.toLowerCase().includes(q) ||
                 (r.cuisine && r.cuisine.toLowerCase().includes(q)))
         }
-        // 2. Match by cuisine, time, dietary filters next if chips are active
-        if (cuisineFilter) filtered = filtered.filter(r => r.cuisine === cuisineFilter)
-        if (timeFilter)    filtered = filtered.filter(r => r.cookTimeMins <= timeFilter)
-        if (dietaryFilter) filtered = filtered.filter(r =>
-            r.dietaryTags && r.dietaryTags.includes(dietaryFilter))
-
-            // Returns recipes sorted by match %, then by ascending cook time 
+        // 2. Match by cuisine, time, dietary filters if chips are active
+        // Cuisine / time / dietary filters only apply when not in saved-only view
+        if (!showSavedOnly) {
+            if (cuisineFilter) filtered = filtered.filter(r => r.cuisine === cuisineFilter)
+            if (timeFilter)    filtered = filtered.filter(r => r.cookTimeMins <= timeFilter)
+            if (dietaryFilter) filtered = filtered.filter(r =>
+                r.dietaryTags && r.dietaryTags.includes(dietaryFilter))
+        }
         return [...filtered].sort((a, b) => {
             const pctA = a.totalRequired > 0 ? a.matchedCount / a.totalRequired : 1
             const pctB = b.totalRequired > 0 ? b.matchedCount / b.totalRequired : 1
             if (pctB !== pctA) return pctB - pctA
             return (a.cookTimeMins || 0) - (b.cookTimeMins || 0)
         })
-    }, [recipes, searchQuery, cuisineFilter, timeFilter, dietaryFilter])
+    }, [recipes, searchQuery, cuisineFilter, timeFilter, dietaryFilter, showSavedOnly])
+
+    const handleSavedChipPress = () => {
+        setShowSavedOnly(prev => !prev)
+        // Reset other filters when switching to saved view
+        // Design choice: saved filter disables all other filters
+        if (!showSavedOnly) {
+            setCuisineFilter(null)
+            setTimeFilter(null)
+            setDietaryFilter(null)
+        }
+    }
 
     return (
         <ThemedView style={styles.container} safe>
@@ -168,59 +212,65 @@ const Recipes = () => {
                     />
                 </View>
 
-                {/* Cuisine filter chips */}
+                {/* Cuisine filter chips + Saved chip */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.filterRow}>
-                    {CUISINE_CHIPS.map(chip => {
-                        /* const active = cuisineFilter === chip.value */
-                        return (
-                            <Pressable key={chip.label}
-                                style={[styles.filterChip, themed.card, cuisineFilter === chip.label && themed.activeChip]}
-                                onPress={() => setCuisineFilter(chip.label)}>
-                                <ThemedText style={[styles.filterChipText, cuisineFilter === chip.label && styles.filterChipTextActive]}
-                                    subtitle>{chip.key}</ThemedText>
-                            </Pressable>
-                        )
-                    })}
+                    {/* Saved chip */}
+                    <Pressable
+                        style={[styles.filterChip, themed.card, showSavedOnly && themed.savedChip]}
+                        onPress={handleSavedChipPress}>
+                        <ThemedText
+                            style={[styles.filterChipText, showSavedOnly && styles.filterChipTextActive]}
+                            subtitle>
+                            🔖 Saved
+                        </ThemedText>
+                    </Pressable>
+                    {/* Cuisine chips */}
+                    {!showSavedOnly && CUISINE_CHIPS.map(chip => (
+                        <Pressable key={chip.key}
+                            style={[styles.filterChip, themed.card, cuisineFilter === chip.label && themed.activeChip]}
+                            onPress={() => setCuisineFilter(chip.label)}>
+                            <ThemedText style={[styles.filterChipText, cuisineFilter === chip.label && styles.filterChipTextActive]}
+                                subtitle>{chip.key}</ThemedText>
+                        </Pressable>
+                    ))}
                 </ScrollView>
 
                 {/* Time + Dietary chips */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={[styles.filterRow, { paddingTop: 0, paddingBottom: 8 }]}>
-                    {TIME_CHIPS.map(chip => {
-                        /* const active = timeFilter === chip.value */
-                        return (
-                            <Pressable key={chip.label}
+                {!showSavedOnly && (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={[styles.filterRow, { paddingTop: 0, paddingBottom: 8 }]}>
+                        {TIME_CHIPS.map(chip => (
+                            <Pressable key={chip.key}
                                 style={[styles.filterChip, themed.card, timeFilter === chip.label && themed.activeChip]}
                                 onPress={() => setTimeFilter(chip.label)}>
                                 <ThemedText style={[styles.filterChipText, timeFilter === chip.label && styles.filterChipTextActive]}
                                     subtitle>{chip.key}</ThemedText>
                             </Pressable>
-                        )
-                    })}
-                    <View style={styles.filterDivider} />
-                    {DIETARY_CHIPS.map(chip => {
-                        /* const active = dietaryFilter === chip.value */
-                        return (
-                            <Pressable key={chip.label}
+                        ))}
+                        <View style={styles.filterDivider} />
+                        {DIETARY_CHIPS.map(chip => (
+                            <Pressable key={chip.key}
                                 style={[styles.filterChip, themed.card, dietaryFilter === chip.label && themed.activeChip]}
                                 onPress={() => setDietaryFilter(chip.label)}>
                                 <ThemedText style={[styles.filterChipText, dietaryFilter === chip.label && styles.filterChipTextActive]}
                                     subtitle>{chip.key}</ThemedText>
                             </Pressable>
-                        )
-                    })}
-                </ScrollView>
+                        ))}
+                    </ScrollView>
+                )}
 
                 {/* Sort label */}
                 <View style={styles.sortRow}>
-                    <ThemedText style={styles.sortLabel} subtitle>Sorted by: </ThemedText>
+                    <ThemedText style={styles.sortLabel} subtitle>
+                        {showSavedOnly ? 'Showing: ' : 'Sorted by: '}
+                    </ThemedText>
                     <ThemedText style={[styles.sortValue, themed.signatureColor]}>
-                        Best Match to Pantry
+                        {showSavedOnly ? 'Saved recipes' : 'Best Match to Pantry'}
                     </ThemedText>
                     {!loading && (
                         <ThemedText style={[styles.sortLabel, { marginLeft: 8 }]} subtitle>
-                            · {sorted.length} recipes
+                            · {sorted.length} recipe{sorted.length === 1 ? '' : 's'}
                         </ThemedText>
                     )}
                 </View>
@@ -230,8 +280,14 @@ const Recipes = () => {
                     <ActivityIndicator style={{ marginTop: 40 }} color={c.green} />
                 ) : sorted.length === 0 ? (
                     <View style={styles.emptyState}>
-                        <ThemedText style={styles.emptyEmoji}>🔍</ThemedText>
-                        <ThemedText style={styles.emptyText} subtitle>No recipes match your filters</ThemedText>
+                        <ThemedText style={styles.emptyEmoji}>
+                            {showSavedOnly ? '🔖' : '🔍'}
+                        </ThemedText>
+                        <ThemedText style={styles.emptyText} subtitle>
+                            {showSavedOnly
+                                ? 'No saved recipes yet — tap 🔖 on any recipe to save it'
+                                : 'No recipes match your filters'}
+                        </ThemedText>
                     </View>
                 ) : (
                     <View style={styles.list}>
@@ -240,17 +296,17 @@ const Recipes = () => {
                                 key={recipe.id}
                                 recipe={toDisplayRecipe(recipe)}
                                 onPress={() => router.push({ pathname: '/recipe-detail', params: { id: recipe.id } })}
-                                onSave={() => showToast('🔖 Saved recipes coming in Sprint 3!')}
+                                onSave={() => handleToggleSaved(recipe)}
                             />
                         ))}
                     </View>
                 )}
             </ScrollView>
-            {/* Onboarding Overlay */}
+
             <OnboardingOverlay
                 visible={showOverlay}
                 step={3} total={3}
-                body='Browse recipes sorted by your best pantry match. The app tells you exactly what you can cook now!'
+                body='Browse recipes sorted by your best pantry match. Tap 🔖 to save favourites!'
                 onNext={handleFinish}
                 onSkip={handleSkip}
             />
@@ -297,9 +353,9 @@ const styles = StyleSheet.create({
 
     list: { paddingHorizontal: 24, gap: 12 },
 
-    emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
+    emptyState: { alignItems: 'center', paddingTop: 60, gap: 8, paddingHorizontal: 40 },
     emptyEmoji: { fontSize: 40 },
-    emptyText: { fontSize: 14 },
+    emptyText: { fontSize: 14, textAlign: 'center' },
 
     pressed: { opacity: 0.7 },
 })

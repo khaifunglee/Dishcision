@@ -4,12 +4,13 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { useCallback, useState } from 'react'
 import { Feather } from '@expo/vector-icons'
 import { palette, radius, useAppColors } from "../constants/colors"
-import { getRecipeDetail } from '../api/recipeApi'
+import { getRecipeDetail, saveRecipe, unsaveRecipe } from '../api/recipeApi'
 import { useToast } from '../hooks/useToast'
 // Themed components
 import ThemedText from "../components/ThemedText"
 import ThemedView from "../components/ThemedView"
 import Toast from '../components/Toast'
+
 // Map emojis to cuisine as thumbnail
 const CUISINE_EMOJIS = {
     Italian: '🍝', Asian: '🍛', Western: '🍳', Comfort: '🫕', Breakfast: '🥞',
@@ -17,7 +18,7 @@ const CUISINE_EMOJIS = {
 
 const DIETARY_LABELS = {
     VEGETARIAN: 'Vegetarian', VEGAN: 'Vegan', GLUTEN_FREE: 'Gluten-Free',
-    DAIRY_FREE: 'Dairy-Free', NUT_FREE: 'Nut-Free',
+    DAIRY_FREE: 'Dairy-Free', NUT_FREE: 'Nut-Free', PESCATARIAN: 'Pescatarian',
     HIGH_PROTEIN: 'High Protein', LOW_CARB: 'Low Carb',
 }
 
@@ -34,12 +35,15 @@ const RecipeDetails = () => {
     const { toast, showToast } = useToast()
     const [recipe, setRecipe] = useState(null)      // recipe to be loaded
     const [loading, setLoading] = useState(true)    // loading state for recipe
+    // Optimistic saved state — initialised from API response, then toggled locally
+    const [isSaved, setIsSaved] = useState(false)
 
     // Map a bg colour for each cuisine
     const CUISINE_BG = {
         Italian: c.green, Asian: c.amber, Western: c.warmGray, Comfort: c.green, Breakfast: c.terracotta
     }
 
+    // Load recipe details and saved flag
     useFocusEffect(useCallback(() => {
         if (!id) return
         const load = async () => {
@@ -47,6 +51,7 @@ const RecipeDetails = () => {
                 setLoading(true)
                 const data = await getRecipeDetail(id)
                 setRecipe(data)
+                setIsSaved(data.saved ?? false)
             } catch (e) {
                 console.error('Failed to load recipe:', e)
             } finally {
@@ -55,6 +60,24 @@ const RecipeDetails = () => {
         }
         load()
     }, [id]))
+    // Toggle save function
+    const handleToggleSave = async () => {
+        // Optimistic update — flip immediately, revert on error
+        const wasSaved = isSaved
+        setIsSaved(!wasSaved)
+        try {
+            if (wasSaved) {
+                await unsaveRecipe(id)
+                showToast('Recipe unsaved! 🗑️')
+            } else {
+                await saveRecipe(id)
+                showToast('Recipe saved! 🔖')
+            }
+        } catch (e) {
+            setIsSaved(wasSaved) // revert if error
+            showToast('Something went wrong')
+        }
+    }
     // Loading state
     if (loading) {
         return (
@@ -103,9 +126,13 @@ const RecipeDetails = () => {
                     </Pressable>
                     <ThemedText style={{ fontSize: 96 }} serif>{emoji}</ThemedText>
                     <Pressable
-                        style={({ pressed }) => [styles.saveBtn, pressed && styles.pressed]}
-                        onPress={() => showToast('🔖 Saved recipes coming in Sprint 3!')}>
-                        <ThemedText style={{ fontSize: 18 }}>🔖</ThemedText>
+                        style={({ pressed }) => [
+                            styles.saveBtn,
+                            isSaved && styles.saveBtnActive,
+                            pressed && styles.pressed,
+                        ]}
+                        onPress={handleToggleSave}>
+                        <ThemedText style={{ fontSize: 18 }}>{isSaved ? '🔖' : '🔖'}</ThemedText>
                     </Pressable>
                 </View>
 
@@ -241,6 +268,10 @@ const styles = StyleSheet.create({
         borderRadius: radius.medium,
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
+    },
+    saveBtnActive: {
+        backgroundColor: 'rgba(255,255,255,0.30)',
+        borderColor: 'rgba(255,255,255,0.5)',
     },
 
     body: { padding: 24, gap: 12 },
