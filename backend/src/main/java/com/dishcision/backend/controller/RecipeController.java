@@ -21,20 +21,24 @@ public class RecipeController {
     private final RecipeService recipeService;
 
     // GET (200) recipe list with optional filters
-    // e.g: /recipes?cuisine=Italian&maxCookTime=30&dietaryTag=VEGETARIAN
     @GetMapping
     public ResponseEntity<List<RecipeSummaryDTO>> getRecipes(
             @RequestParam(required = false) String cuisine,
             @RequestParam(required = false) Integer maxCookTime,
             @RequestParam(required = false) String dietaryTag) {
-
         return ResponseEntity.ok(recipeService.getRecipes(getCurrentUserId(), cuisine, maxCookTime, dietaryTag));
     }
 
-    // GET (200) suggestions request
+    // GET (200) recipe suggestions filtered by user diet_tags
     @GetMapping("/suggestions")
     public ResponseEntity<SuggestionsResponse> getSuggestions() {
         return ResponseEntity.ok(recipeService.getSuggestions(getCurrentUserId()));
+    }
+
+    // GET (200) all recipes saved by the current user
+    @GetMapping("/saved")
+    public ResponseEntity<List<RecipeSummaryDTO>> getSavedRecipes() {
+        return ResponseEntity.ok(recipeService.getSavedRecipes(getCurrentUserId()));
     }
 
     // GET (200) recipe details
@@ -43,14 +47,28 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.getRecipeDetail(getCurrentUserId(), id));
     }
 
-    // POST (201) new recipe request
+    // POST (200) save a recipe — idempotent, returns 200 even if already saved
+    @PostMapping("/{id}/save")
+    public ResponseEntity<Void> saveRecipe(@PathVariable Long id) {
+        recipeService.saveRecipe(getCurrentUserId(), id);
+        return ResponseEntity.ok().build();
+    }
+
+    // DELETE (204) unsave a recipe
+    @DeleteMapping("/{id}/save")
+    public ResponseEntity<Void> unsaveRecipe(@PathVariable Long id) {
+        recipeService.unsaveRecipe(getCurrentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // POST (201) new recipe
     @PostMapping
     public ResponseEntity<RecipeDetailDTO> createRecipe(@RequestBody RecipeRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(recipeService.createRecipe(getCurrentUserId(), request));
     }
 
-    // Extract authenticated user's ID from JWT-backed SecurityContext.
+    // Extract authenticated user's ID from JWT-backed SecurityContext
     private Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl principal = (UserDetailsImpl) auth.getPrincipal();

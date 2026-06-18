@@ -22,10 +22,10 @@ public class RecipeService {
     private final IngredientRepository ingredientRepository;
     private final UserRepository userRepository;
     private final IngredientService ingredientService;
+    private final UserSavedRecipeRepository userSavedRecipeRepository;
+    private final UserPreferencesRepository userPreferencesRepository;
 
     // Hard-coded COUNT unit conversions: key="fromUnit:toUnit", value=multiplier.
-    // Handled here (service layer) rather than DB first
-    // Only garlic heads↔cloves is a meaningful seeded-data case; extend as needed.
     private static final Map<String, BigDecimal> COUNT_CONVERSIONS = Map.of(
             "heads:cloves", new BigDecimal("10"),
             "head:cloves", new BigDecimal("10"),
@@ -37,44 +37,56 @@ public class RecipeService {
             "clove:head", new BigDecimal("0.1"));
 
     // -------------------------------------------------------------------------
-    // Public API
+    // Public APIs
     // -------------------------------------------------------------------------
-    // Retrieve recipe list for user
+    // Fetch recipe list for user
     @Transactional(readOnly = true)
     public List<RecipeSummaryDTO> getRecipes(
             Long userId, String cuisine, Integer maxCookTime, String dietaryTagStr) {
 
         DietaryTag dietaryTag = parseDietaryTag(dietaryTagStr);
         Map<Long, List<PantryItem>> pantryByCanonical = buildPantryMap(userId);
+        // Fetch list of saved recipes for user
+        Set<Long> savedIds = buildSavedIds(userId);
+
         return recipeRepository.findWithFilters(cuisine, maxCookTime, dietaryTag)
                 .stream()
-                .map(r -> toSummary(r, pantryByCanonical))
+                .map(r -> toSummary(r, pantryByCanonical, savedIds))
                 .collect(Collectors.toList());
     }
 
-    // Function to get a single recipe's details
+    // Fetch a single recipe's details
     @Transactional(readOnly = true)
     public RecipeDetailDTO getRecipeDetail(Long userId, Long recipeId) {
         Recipe recipe = recipeRepository.findByIdWithIngredients(recipeId)
                 .orElseThrow(() -> new EntityNotFoundException("Recipe not found: " + recipeId));
         Map<Long, List<PantryItem>> pantryByCanonical = buildPantryMap(userId);
-        return toDetail(recipe, pantryByCanonical);
+        Set<Long> savedIds = buildSavedIds(userId);
+        return toDetail(recipe, pantryByCanonical, savedIds);
     }
 
-    // Function to get recipe suggestions (match with pantry items)
+    // Fetch recipe suggestions (matched with recipe items)
+    // Filtered by the user's diet_tags if present
     @Transactional(readOnly = true)
     public SuggestionsResponse getSuggestions(Long userId) {
         Map<Long, List<PantryItem>> pantryByCanonical = buildPantryMap(userId);
+        Set<Long> savedIds = buildSavedIds(userId);
+        Set<DietaryTag> userDietTags = getUserDietTags(userId);
         int pantryCount = pantryItemRepository.findByUserIdOrderByExpiryDateAsc(userId).size();
-
+        // List of full or near matched recipes
         List<RecipeSummaryDTO> fullMatch = new ArrayList<>();
         List<RecipeSummaryDTO> nearMatch = new ArrayList<>();
+
         // Load all recipes with ingredients, iterate through them with matching
         // algorithm
         for (Recipe recipe : recipeRepository.findAllWithIngredients()) {
-            RecipeSummaryDTO summary = toSummary(recipe, pantryByCanonical);
+            // Skip recipes that don't satisfy the user's dietary requirements
+            if (!userDietTags.isEmpty() && !recipe.getDietaryTags().containsAll(userDietTags)) {
+                continue;
+            }
+            RecipeSummaryDTO summary = toSummary(recipe, pantryByCanonical, savedIds);
             int missing = summary.getMissingIngredients().size();
-            // Sort each recipe into full match or near match recipes
+            // Sort each recipe into full or near match recipes
             if (missing == 0)
                 fullMatch.add(summary);
             else if (missing <= 2)
@@ -88,8 +100,44 @@ public class RecipeService {
                 .build();
     }
 
-    // Create a recipe function by converting recipe detail DTO into recipe entity +
-    // recipe ingredient child entities
+    // Save a recipe for the current user — idempotent (return without error if
+    // saving multiple times)
+    @Transactional
+    public void saveRecipe(Long userId, Long recipeId) {
+        if (!recipeRepository.existsById(recipeId)) {
+            throw new EntityNotFoundException("Recipe not found: " + recipeId);
+        }
+        if (!userSavedRecipeRepository.existsByUserIdAndRecipeId(userId, recipeId)) {
+            userSavedRecipeRepository.save(
+                    UserSavedRecipe.builder()
+                            .userId(userId)
+                            .recipeId(recipeId)
+                            .build());
+        }
+    }
+
+    // Unsave a recipe — 204 whether or not it was saved
+    @Transactional
+    public void unsaveRecipe(Long userId, Long recipeId) {
+        userSavedRecipeRepository.deleteByUserIdAndRecipeId(userId, recipeId);
+    }
+
+    // Fetch a list of saved recipes
+    @Transactional(readOnly = true)
+    public List<RecipeSummaryDTO> getSavedRecipes(Long userId) {
+        Set<Long> savedIds = buildSavedIds(userId);
+        if (savedIds.isEmpty())
+            return Collections.emptyList();
+
+        Map<Long, List<PantryItem>> pantryByCanonical = buildPantryMap(userId);
+        return recipeRepository.findAllById(savedIds)
+                .stream()
+                .map(r -> toSummary(r, pantryByCanonical, savedIds))
+                .collect(Collectors.toList());
+    }
+
+    // Create a recipe - converts DTO into Recipe entity + Recipe Ingredient child
+    // entities
     @Transactional
     public RecipeDetailDTO createRecipe(Long userId, RecipeRequest request) {
         userRepository.findById(userId)
@@ -136,14 +184,16 @@ public class RecipeService {
         // Save recipe to DB
         Recipe saved = recipeRepository.save(recipe);
         Map<Long, List<PantryItem>> pantryByCanonical = buildPantryMap(userId);
-        return toDetail(saved, pantryByCanonical);
+        Set<Long> savedIds = buildSavedIds(userId);
+        return toDetail(saved, pantryByCanonical, savedIds);
     }
 
     // -------------------------------------------------------------------------
     // DTO mapping
     // -------------------------------------------------------------------------
     // Map recipe entities to recipe summary DTO (serializable objects)
-    private RecipeSummaryDTO toSummary(Recipe recipe, Map<Long, List<PantryItem>> pantryByCanonical) {
+    private RecipeSummaryDTO toSummary(Recipe recipe,
+            Map<Long, List<PantryItem>> pantryByCanonical, Set<Long> savedIds) {
         // Build required ingredients for the recipe
         List<RecipeIngredient> required = recipe.getIngredients().stream()
                 .filter(ri -> !ri.isOptional())
@@ -164,11 +214,13 @@ public class RecipeService {
                 .matchedCount(required.size() - missing.size())
                 .totalRequired(required.size())
                 .missingIngredients(missing)
+                .saved(savedIds.contains(recipe.getId())) // checks whether recipe is saved
                 .build();
     }
 
-    // Map recipe entites to recipe detail DTO
-    private RecipeDetailDTO toDetail(Recipe recipe, Map<Long, List<PantryItem>> pantryByCanonical) {
+    // Map recipe entities to recipe detail DTO
+    private RecipeDetailDTO toDetail(Recipe recipe,
+            Map<Long, List<PantryItem>> pantryByCanonical, Set<Long> savedIds) {
         List<RecipeIngredient> required = recipe.getIngredients().stream()
                 .filter(ri -> !ri.isOptional())
                 .collect(Collectors.toList());
@@ -206,6 +258,7 @@ public class RecipeService {
                 .matchedCount(required.size() - missing.size())
                 .totalRequired(required.size())
                 .missingIngredients(missing)
+                .saved(savedIds.contains(recipe.getId())) // checks whether recipe is saved
                 .build();
     }
 
@@ -218,7 +271,7 @@ public class RecipeService {
             Map<Long, List<PantryItem>> pantryByCanonical) {
 
         return required.stream()
-                .filter(ri -> !isAvailable(ri, pantryByCanonical))
+                .filter(ri -> !isAvailable(ri, pantryByCanonical)) // find ingredients that aren't in pantry
                 .map(ri -> MissingIngredientDTO.builder()
                         .ingredientName(ri.getIngredientName())
                         .quantity(ri.getQuantity())
@@ -227,14 +280,15 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    // Function to check if an ingredient is present in a user's pantry (due to
-    // potential unit/name mismatches between recipe vs pantry ingredients)
+    // Function to check if an ingredient is present in pantry
+    // Handles potential unit/name mismatches between recipe vs pantry ingredients
     private boolean isAvailable(RecipeIngredient ri,
             Map<Long, List<PantryItem>> pantryByCanonical) {
+        // Look for similar ingredients in pantry vs recipe
         List<PantryItem> candidates = findCandidates(ri, pantryByCanonical);
         if (candidates == null || candidates.isEmpty())
             return false;
-        // If recipe ingredient is present in pantry, check if each has enough qty
+        // If recipe ingredient is present, check if each has enough qty
         for (PantryItem candidate : candidates) {
             if (hasSufficientQuantity(ri.getQuantity(), ri.getUnit(),
                     candidate.getQuantity(), candidate.getUnit())) {
@@ -258,14 +312,14 @@ public class RecipeService {
                 .orElse(null);
     }
 
-    // Returns true if the available ingredient qty is sufficient, accounting for
-    // unit conversion within the same measurement group
+    // Returns true if available ingredient qty is sufficient, accounting for unit
+    // conversion within same measurement group
     private boolean hasSufficientQuantity(BigDecimal needed, String neededUnit,
             BigDecimal available, String availableUnit) {
         // Either req or avail qty is null = assume present (no qty restriction)
         if (needed == null || available == null)
             return true;
-        // Either req or avail unit is null = assume present (can't compare)
+        // Either req or avail unit is null - assume resent (can't compare)
         if (neededUnit == null || availableUnit == null)
             return true;
 
@@ -279,12 +333,12 @@ public class RecipeService {
         UnitGroup ag = getUnitGroup(au);
 
         if (ng == null || ag == null)
-            return true; // unrecognised unit = assume available
+            return true; // unrecognized unit = assume available
         if (ng != ag)
-            return true; // if cross-type (e.g: g vs pieces) = assume available
-        // If req & avail units are under same group, convert to base unit
-        // If req & avail units are under diff group, assume present (cross-type like
-        // 200ml can't be compared)
+            return true; // cross-type (e.g g vs pieces) = assume available
+
+        // Same unit group: convert to base unit
+        // Diff unit group: assume present (can't compare 200g vs 200ml)
         return switch (ng) {
             case WEIGHT -> {
                 BigDecimal nG = toGrams(needed, nu);
@@ -297,9 +351,9 @@ public class RecipeService {
                 yield (nMl == null || aMl == null) || aMl.compareTo(nMl) >= 0;
             }
             case COUNT -> {
-                // Known conversion: apply multipler (e.g 1 head * 10 = 10 cloves)
+                // Known conversion: apply multiplier (e.g: 1 head * 10 = 10 cloves)
                 BigDecimal factor = COUNT_CONVERSIONS.get(au + ":" + nu);
-                // No known conversion → assume available rather than incorrectly failing
+                // Unknown conversion: assume available over incorrectly failing
                 yield factor == null || available.multiply(factor).compareTo(needed) >= 0;
             }
         };
@@ -313,7 +367,7 @@ public class RecipeService {
         WEIGHT, VOLUME, COUNT
     }
 
-    // Hardcodes allocation of unit names to unit group
+    // Hardcodes allocaiton of unit names to unit group
     private UnitGroup getUnitGroup(String unit) {
         return switch (unit) {
             case "g", "kg", "oz", "lb" -> UnitGroup.WEIGHT;
@@ -353,10 +407,10 @@ public class RecipeService {
     // -------------------------------------------------------------------------
 
     // Groups pantry items by canonical ingredient ID during matching
-    // Required for easy lookups for recipe matching info in RecipeSummaryDTO
+    // Required for easy lookups for recipe matching info in toSummary/toDetail
     private Map<Long, List<PantryItem>> buildPantryMap(Long userId) {
         Map<Long, List<PantryItem>> map = new HashMap<>();
-        // Get user's pantry items ordered by expiry date
+        // Get user's pantry items ordered by expiring date
         for (PantryItem item : pantryItemRepository.findByUserIdOrderByExpiryDateAsc(userId)) {
             if (item.getCanonicalIngredient() != null) {
                 map.computeIfAbsent(item.getCanonicalIngredient().getId(), k -> new ArrayList<>())
@@ -364,6 +418,23 @@ public class RecipeService {
             }
         }
         return map;
+    }
+
+    // Build set of saved recipe IDs for user
+    // Required for easy lookups to check for saved in toSummary/toDetail
+    private Set<Long> buildSavedIds(Long userId) {
+        return userSavedRecipeRepository.findByUserId(userId)
+                .stream()
+                .map(UserSavedRecipe::getRecipeId)
+                .collect(Collectors.toSet());
+    }
+
+    // Retrieve user's diet tags for suggestion filtering
+    // Empty set = no filter
+    private Set<DietaryTag> getUserDietTags(Long userId) {
+        return userPreferencesRepository.findByUserId(userId)
+                .map(UserPreferences::getDietTags)
+                .orElse(Collections.emptySet());
     }
 
     private DietaryTag parseDietaryTag(String str) {
