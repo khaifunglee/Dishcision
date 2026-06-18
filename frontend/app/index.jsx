@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     logoEmoji: { fontSize: 32 },
     title: {
         color: '#fff',
-        fontSize: 52,
+        fontSize: 47,
         marginBottom: 16,
         letterSpacing: -1,
     },

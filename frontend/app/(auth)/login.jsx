@@ -111,7 +111,7 @@ const Login = () => {
                     </Link>
                 </View>
 
-                <Spacer height={216} />
+                <Spacer height={204} />
 
                 <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
                     onPress={handleLogin} disabled={loading}>
@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
-    title: { fontSize: 28 },
-    tagline: { fontSize: 14 },
+    title: { fontSize: 26 },
+    tagline: { fontSize: 12 },
 
     subHeader: {
         fontSize: 12,

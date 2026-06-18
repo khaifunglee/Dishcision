@@ -217,7 +217,7 @@ const Recipes = () => {
                     contentContainerStyle={styles.filterRow}>
                     {/* Saved chip */}
                     <Pressable
-                        style={[styles.filterChip, themed.card, showSavedOnly && themed.savedChip]}
+                        style={[styles.filterChip, themed.card, showSavedOnly && themed.activeChip]}
                         onPress={handleSavedChipPress}>
                         <ThemedText
                             style={[styles.filterChipText, showSavedOnly && styles.filterChipTextActive]}

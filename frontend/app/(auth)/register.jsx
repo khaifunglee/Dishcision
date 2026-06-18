@@ -185,8 +185,8 @@ const styles = StyleSheet.create({
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
-    title: { fontSize: 28, marginVertical: 12 },
-    tagline: { fontSize: 14 },
+    title: { fontSize: 24, marginVertical: 12 },
+    tagline: { fontSize: 12 },
     subHeader: { fontSize: 12, fontFamily: 'DMSans_600SemiBold', marginBottom: 6 },
     input: {
         borderWidth: 0.6, borderRadius: radius.medium,

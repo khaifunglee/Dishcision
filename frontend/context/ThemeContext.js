@@ -6,9 +6,9 @@ const ThemeContext = createContext()
 
 // Font scale multipliers for text size setting
 export const TEXT_SCALE = {
-    SMALL: 0.85,
+    SMALL: 0.9,
     MEDIUM: 1.0,
-    LARGE: 1.2,
+    LARGE: 1.15,
 }
 
 export const ThemeProvider = ({ children }) => {

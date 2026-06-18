@@ -19,7 +19,7 @@ export default function OnboardingOverlay({ visible, step, total, body, onNext, 
                 style={StyleSheet.absoluteFill}
             />
             <View style={styles.container}>
-                <View style={[styles.tooltip, { backgroundColor: c.uiBackground, borderColor: c.border }]}>
+                <View style={[styles.tooltip, { backgroundColor: c.terracottaLight }]}>
                     {/* Header */}
                     <View style={styles.stepRow}>
                         <ThemedText style={[styles.stepLabel, { color: c.green }]}>

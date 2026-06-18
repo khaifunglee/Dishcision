@@ -92,6 +92,6 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     tabLabel: {
-        fontSize: 10,
+        fontSize: 9,
     },
 })

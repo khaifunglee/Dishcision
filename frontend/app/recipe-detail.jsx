@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
     tag: { paddingVertical: 3, paddingHorizontal: 10, borderWidth: 1, borderRadius: radius.full },
     tagText: { fontSize: 10 },
 
-    recipeTitle: { fontSize: 28, letterSpacing: -1, lineHeight: 36 },
+    recipeTitle: { fontSize: 24, letterSpacing: -1, lineHeight: 36 },
 
     statsRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
     statCard: { flex: 1, borderWidth: 1, borderRadius: radius.small, padding: 10, alignItems: 'center' },
-    statVal: { fontSize: 16 },
-    statLbl: { fontFamily: 'DMSans_500Medium', fontSize: 9, letterSpacing: 0.5, marginTop: 2, textAlign: 'center' },
+    statVal: { fontSize: 14 },
+    statLbl: { fontFamily: 'DMSans_500Medium', fontSize: 9, letterSpacing: -0.5, marginTop: 2, textAlign: 'center' },
 
     sectionTitle: { fontSize: 18, letterSpacing: -0.5, marginTop: 20, marginBottom: 12 },
 
