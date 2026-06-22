@@ -8,7 +8,7 @@ import { useAppColors } from '../constants/colors'
 import ThemedText from './ThemedText'
 
 // Function to register a swipe right action
-function RightAction({ drag, onSave }) {
+function RightAction({ recipe, drag, onSave }) {
     const c = useAppColors()
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -22,7 +22,7 @@ function RightAction({ drag, onSave }) {
 
     return (
         <Pressable
-            style={[styles.saveAction, { backgroundColor: c.green }]}
+            style={[styles.saveAction, { backgroundColor: recipe.saved ? c.red : c.green }]}
             onPress={() => {
                 onSave()
             }}
@@ -31,7 +31,7 @@ function RightAction({ drag, onSave }) {
                 🔖
             </Animated.Text>
             <Animated.Text style={[styles.saveActionLabel, animatedStyle]}>
-                Save
+                {recipe.saved ? 'Unsave' : 'Save'}
             </Animated.Text>
         </Pressable>
     )
@@ -52,7 +52,7 @@ export default function SwipeableRecipeItem({ recipe, onPress, onSave }) {
         <Swipeable
             ref={swipeRef}
             renderRightActions={(progress, drag) => (
-                <RightAction drag={drag} onSave={handleSave} />
+                <RightAction recipe={recipe} drag={drag} onSave={handleSave} />
             )}
             rightThreshold={40}
             overshootRight={false}
