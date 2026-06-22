@@ -47,8 +47,8 @@ public class PreferencesService {
                     .collect(Collectors.toSet());
             prefs.setAllergyTags(tags);
         }
-        // Expiry alert days, daily suggestion, budget per serve functions to be
-        // implemented in later Sprints
+        // Expiry alert days, daily suggestion, budget per serve, allergy tags functions
+        // to be implemented in later Sprints
         if (request.getExpiryAlertDays() != null) {
             prefs.setExpiryAlertDays(request.getExpiryAlertDays());
         }

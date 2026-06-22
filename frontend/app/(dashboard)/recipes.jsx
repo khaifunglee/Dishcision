@@ -62,7 +62,6 @@ const Recipes = () => {
         card: { backgroundColor: c.uiBackground, borderColor: c.border },
         signatureColor: { color: c.green },
         activeChip: { backgroundColor: c.green, borderColor: c.green },
-        savedChip: { backgroundColor: c.amber, borderColor: c.amber },
     }), [c])
 
     // Show onboarding overlay on first use

@@ -11,16 +11,17 @@ import * as SecureStore from 'expo-secure-store'
 // Themed components
 import ThemedView from "../../components/ThemedView"
 import ThemedText from "../../components/ThemedText"
+import Spacer from "../../components/Spacer"
 
 
 // Constants
-const DIET_OPTIONS = ['None', 'Vegetarian', 'Vegan', 'Pescatarian', 'Gluten-free', 'Dairy-free']
-// Map display label to backend enum value
-const DIET_LABEL_TO_TAG = {
-    Vegetarian: 'VEGETARIAN', Vegan: 'VEGAN', Pescatarian: 'PESCATARIAN',
-    'Gluten-free': 'GLUTEN_FREE', 'Dairy-free': 'DAIRY_FREE',
-}
-const DIET_TAG_TO_LABEL = Object.fromEntries(Object.entries(DIET_LABEL_TO_TAG).map(([k, v]) => [v, k]))
+const DIET_OPTIONS = [
+    { label: 'Vegetarian', tag: 'VEGETARIAN' },
+    { label: 'Vegan', tag: 'VEGAN' },
+    { label: 'Pescatarian', tag: 'PESCATARIAN' },
+    { label: 'Gluten-Free', tag: 'GLUTEN_FREE' },
+    { label: 'Dairy-Free', tag: 'DAIRY_FREE' },
+]
 
 const ALLERGY_OPTIONS = [
     { label: 'Nuts', tag: 'NUTS' },
@@ -39,7 +40,7 @@ const TEXT_SIZE_OPTIONS = ['Small', 'Medium', 'Large']
 const SIZE_TO_TAG = { Small: 'SMALL', Medium: 'MEDIUM', Large: 'LARGE' }
 const TAG_TO_SIZE = { SMALL: 'Small', MEDIUM: 'Medium', LARGE: 'Large' }
 
-// Shared SettingsItem row component
+// Shared SettingsItem row component (for expiry alerts, daily suggestions, dark mode)
 function SettingsItem({ icon, iconBg, label, value, isToggle, toggleValue, onToggle, onPress, isDanger }) {
 
     const c = useAppColors()
@@ -84,7 +85,7 @@ function PickerModal({ visible, title, options, selected, onSelect, onClose }) {
                         <Pressable
                             key={opt}
                             style={[styles.modalOption, selected === opt && { backgroundColor: c.freshLight }]}
-                            onPress={() => { onSelect(opt); onClose() }}>
+                            onPress={() => { onSelect(opt); }}>
                             <ThemedText style={[styles.modalOptionText, selected === opt && { color: c.fresh, fontFamily: 'DMSans_600SemiBold' }]}>
                                 {opt}
                             </ThemedText>
@@ -100,8 +101,8 @@ function PickerModal({ visible, title, options, selected, onSelect, onClose }) {
     )
 }
 
-// Multi-select allergy chip modal (for selecting allergies)
-function AllergyModal({ visible, selected, onDone, onClose }) {
+// Multi-select chip modal (for selecting multiple options)
+function ChipModal({ visible, title, options, selected, onDone, onClose }) {
     const c = useAppColors()
     const [localSelected, setLocalSelected] = useState(selected)
 
@@ -117,17 +118,17 @@ function AllergyModal({ visible, selected, onDone, onClose }) {
         <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
             <Pressable style={styles.modalOverlay} onPress={onClose}>
                 <View style={[styles.modalSheet, { backgroundColor: c.uiBackground }]}>
-                    <ThemedText style={styles.modalTitle} serif>Allergies</ThemedText>
+                    <ThemedText style={styles.modalTitle} serif>{title}</ThemedText>
                     <View style={styles.chipGrid}>
-                        {ALLERGY_OPTIONS.map(({ label, tag }) => {
+                        {options.map(({ label, tag }) => {
                             const active = localSelected.includes(tag)
                             return (
                                 <Pressable
                                     key={tag}
-                                    style={[styles.allergyChip,
-                                        { borderColor: active ? c.red : c.border, backgroundColor: active ? c.redLight : c.uiBackground }]}
+                                    style={[styles.chip,
+                                        { borderColor: active ? c.amber : c.border, backgroundColor: active ? c.amberLight : c.uiBackground }]}
                                     onPress={() => toggle(tag)}>
-                                    <ThemedText style={[styles.allergyChipText, active && { color: c.red, fontFamily: 'DMSans_600SemiBold' }]}>
+                                    <ThemedText style={[styles.chipText, active && { color: c.amber, fontFamily: 'DMSans_600SemiBold' }]}>
                                         {label}
                                     </ThemedText>
                                 </Pressable>
@@ -172,6 +173,7 @@ function EditProfileModal({ visible, currentName, onSave, onClose }) {
             <Pressable style={styles.modalOverlay} onPress={onClose}>
                 <View style={[styles.modalSheet, { backgroundColor: c.uiBackground }]}>
                     <ThemedText style={styles.modalTitle} serif>Edit Profile</ThemedText>
+                    <ThemedText style={styles.modalSubtitle}>CHANGE USERNAME</ThemedText>
                     <TextInput
                         style={[styles.modalInput, { borderColor: c.border, color: c.text }]}
                         value={name}
@@ -180,6 +182,7 @@ function EditProfileModal({ visible, currentName, onSave, onClose }) {
                         placeholderTextColor={c.textSoft}
                         autoCapitalize='words'
                     />
+                    <Spacer height={140}/>
                     <Pressable
                         style={[styles.modalDoneBtn, { backgroundColor: c.green, opacity: saving ? 0.6 : 1 }]}
                         onPress={handleSave}
@@ -227,7 +230,7 @@ function ChangePasswordModal({ visible, onClose }) {
         <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
             <Pressable style={styles.modalOverlay} onPress={onClose}>
                 <View style={[styles.modalSheet, { backgroundColor: c.uiBackground }]}>
-                    <ThemedText style={styles.modalTitle} serif>Change Password</ThemedText>
+                    <ThemedText style={styles.modalTitle} serif>Change Password</ThemedText>                    
                     {[
                         { label: 'Current password', value: current, set: setCurrent },
                         { label: 'New password', value: next, set: setNext },
@@ -243,6 +246,7 @@ function ChangePasswordModal({ visible, onClose }) {
                             onChangeText={field.set}
                         />
                     ))}
+                    <Spacer height={180} />
                     <Pressable
                         style={[styles.modalDoneBtn, { backgroundColor: c.green, opacity: saving ? 0.6 : 1 }]}
                         onPress={handleSave}
@@ -312,39 +316,49 @@ const Profile = () => {
         }
     }
 
-    // Helper function to get dietary tag label in picker
-    const currentDietLabel = useMemo(() => {
-        if (!prefs?.dietTags?.length) return 'No Restrictions'
-        return prefs.dietTags.map(t => DIET_TAG_TO_LABEL[t] || t).join(', ')
-    }, [prefs])
-
-    // Helper to get dietary tag enum value
-    const handleDietSelect = async (label) => {
-        const tag = DIET_LABEL_TO_TAG[label]
-        const newTags = tag ? [tag] : []
-        await savePrefs({ dietTags: newTags })
-    }
-
-    const selectedDietLabel = useMemo(() => {
+    // Diet label
+    const dietLabel = useMemo(() => {
         if (!prefs?.dietTags?.length) return 'None'
-        const label = DIET_TAG_TO_LABEL[prefs.dietTags[0]]
-        return label || 'None'
+
+        if (prefs?.dietTags?.length < 2) {
+        return (prefs.dietTags.map(t => {
+            const opt = DIET_OPTIONS.find(o => o.tag === t)
+            return opt ? opt.label : t
+        })).join(', ')
+    } else {
+        return (prefs.dietTags.map(t => {
+            const opt = DIET_OPTIONS.find(o => o.tag === t)
+            return opt ? opt.label : t
+        })).slice(0, 1).join(', ').concat(` + ${prefs?.dietTags?.length - 1} more`)
+    }
     }, [prefs])
 
-    // Allergies label picker
+    // Allergies label
     const allergyLabel = useMemo(() => {
         if (!prefs?.allergyTags?.length) return 'None'
-        return prefs.allergyTags.map(t => {
+
+        if (prefs?.allergyTags?.length < 3) {
+        return (prefs.allergyTags.map(t => {
             const opt = ALLERGY_OPTIONS.find(o => o.tag === t)
             return opt ? opt.label : t
-        }).join(', ')
+        })).join(', ')
+    } else {
+        return (prefs.allergyTags.map(t => {
+            const opt = ALLERGY_OPTIONS.find(o => o.tag === t)
+            return opt ? opt.label : t
+        })).slice(0, 2).join(', ').concat(` + ${prefs?.allergyTags?.length - 2} more`)
+    }
     }, [prefs])
+
+    const handleDietDone = async (tags) => {
+        await savePrefs({ dietTags: tags })
+    }
 
     const handleAllergyDone = async (tags) => {
         await savePrefs({ allergyTags: tags })
     }
 
-    // Expiry alert toggle — off=0, on=restore previous value (default 3)
+    // Expiry alert toggle — off= alert timing to 0, on=restore previous value (default 3)
     const expiryAlertsOn = (prefs?.expiryAlertDays ?? 3) > 0
     const handleExpiryToggle = async (val) => {
         await savePrefs({ expiryAlertDays: val ? 3 : 0 })
@@ -411,7 +425,7 @@ const Profile = () => {
                             <ThemedText style={styles.groupLabel}>DIETARY</ThemedText>
                             <SettingsItem
                                 icon="🥗" iconBg={c.freshLight} label="Diet Type"
-                                value={`${currentDietLabel} ›`}
+                                value={`${dietLabel} ›`}
                                 onPress={() => setShowDietModal(true)}
                             />
                             <SettingsItem
@@ -485,16 +499,18 @@ const Profile = () => {
             </ScrollView>
 
             {/* Modals */}
-            <PickerModal
+            <ChipModal
                 visible={showDietModal}
-                title='Diet Type'
+                title='Dietary Preferences'
                 options={DIET_OPTIONS}
-                selected={selectedDietLabel}
-                onSelect={handleDietSelect}
+                selected={prefs?.dietTags ?? []}
+                onDone={handleDietDone}
                 onClose={() => setShowDietModal(false)}
             />
-            <AllergyModal
+            <ChipModal
                 visible={showAllergyModal}
+                title='Allergy Tags'
+                options={ALLERGY_OPTIONS}
                 selected={prefs?.allergyTags ?? []}
                 onDone={handleAllergyDone}
                 onClose={() => setShowAllergyModal(false)}
@@ -584,7 +600,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40,
         gap: 4,
     },
-    modalTitle: { fontSize: 20, marginBottom: 12 },
+    modalTitle: { fontSize: 20, marginBottom: 8 },
+    modalSubtitle: {
+        fontFamily: 'DMSans_600SemiBold', fontSize: 12,
+        paddingVertical: 4,
+    },
     modalOption: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingVertical: 14, paddingHorizontal: 12,
@@ -597,7 +617,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalDoneBtn: {
-        marginTop: 16, paddingVertical: 14,
+        marginTop: 16, marginBottom: 8, paddingVertical: 14,
         borderRadius: radius.medium,
         alignItems: 'center',
     },
@@ -609,11 +629,11 @@ const styles = StyleSheet.create({
 
     // Allergy chip grid
     chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 8 },
-    allergyChip: {
+    chip: {
         paddingVertical: 8, paddingHorizontal: 16,
         borderRadius: radius.full, borderWidth: 1.5,
     },
-    allergyChipText: { fontSize: 13 },
+    chipText: { fontSize: 13 },
 
     pressed: { opacity: 0.7 },
 })
