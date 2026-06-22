@@ -1,6 +1,6 @@
 // This dashboard layout page wraps all dashboard pages with a bottom nav bar tab
 import { Tabs } from 'expo-router'
-import { View, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { useTheme } from '../../context/ThemeContext'
 import { Colors, useAppColors } from '../../constants/colors'
 import { Feather } from '@expo/vector-icons'
@@ -19,9 +19,9 @@ function TabIcon({ name, label, focused }) {
                 size={22}
                 color={focused ? theme.green : theme.textSoft}
             />
-            <ThemedText style={[styles.tabLabel, focused && { color: theme.green }]}>
+            <Text style={[styles.tabLabel, { color: theme.text }, focused && { color: theme.green }]}>
                 {label}
-            </ThemedText>
+            </Text>
         </View>
     )
 }
@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     tabLabel: {
-        fontSize: 9,
+        fontFamily: 'DMSans_400Regular',
+        fontSize: 10,
     },
 })

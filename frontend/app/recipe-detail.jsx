@@ -1,6 +1,6 @@
 // Dynamic recipe detail screen — receives `id` param from router, fetches full detail from API
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router'
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, Text } from "react-native"
 import { useCallback, useState } from 'react'
 import { Feather } from '@expo/vector-icons'
 import { palette, radius, useAppColors } from "../constants/colors"
@@ -176,8 +176,8 @@ const RecipeDetails = () => {
                         ].map(s => (
                             <View key={s.lbl}
                                 style={[styles.statCard, { backgroundColor: c.uiBackground, borderColor: c.border }]}>
-                                <ThemedText style={styles.statVal} serif>{s.val}</ThemedText>
-                                <ThemedText style={styles.statLbl} subtitle>{s.lbl}</ThemedText>
+                                <Text style={[styles.statVal, { color: c.text }]}>{s.val}</Text>
+                                <Text style={[styles.statLbl, { color: c.textSoft }]}>{s.lbl}</Text>
                             </View>
                         ))}
                     </View>
@@ -283,8 +283,8 @@ const styles = StyleSheet.create({
 
     statsRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
     statCard: { flex: 1, borderWidth: 1, borderRadius: radius.small, padding: 10, alignItems: 'center' },
-    statVal: { fontSize: 14 },
-    statLbl: { fontFamily: 'DMSans_500Medium', fontSize: 9, letterSpacing: -0.5, marginTop: 2, textAlign: 'center' },
+    statVal: { fontSize: 16, fontFamily: 'Fraunces_600SemiBold' },
+    statLbl: { fontFamily: 'DMSans_500Medium', fontSize: 9, letterSpacing: 0.5, marginTop: 2, textAlign: 'center' },
 
     sectionTitle: { fontSize: 18, letterSpacing: -0.5, marginTop: 20, marginBottom: 12 },
 

@@ -1,6 +1,6 @@
 // This file represents the Register page component inside the route group 'auth'
 import { useState, useMemo } from "react"
-import { StyleSheet, View, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
+import { StyleSheet, View, Text, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
 import { Link, router } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
@@ -92,12 +92,12 @@ const Register = () => {
                         <Feather name={'chevron-left'} size={22} color={c.text} />
                     </Pressable>
 
-                    <ThemedText style={styles.title} title={true} serif={true}>
+                    <Text style={[styles.title, { color: c.text }]}>
                         Create your account
-                    </ThemedText>
-                    <ThemedText style={styles.tagline} subtitle>
+                    </Text>
+                    <Text style={[styles.tagline, { color: c.textSoft }]}>
                         Let's get your pantry ready.
-                    </ThemedText>
+                    </Text>
                 </View>
 
                 <Spacer height={30} />
@@ -185,8 +185,9 @@ const styles = StyleSheet.create({
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
-    title: { fontSize: 24, marginVertical: 12 },
-    tagline: { fontSize: 12 },
+    title: { fontSize: 28, fontFamily: 'Fraunces_600SemiBold',
+        marginVertical: 12 },
+    tagline: { fontSize: 14, fontFamily: 'DMSans_400Regular' },
     subHeader: { fontSize: 12, fontFamily: 'DMSans_600SemiBold', marginBottom: 6 },
     input: {
         borderWidth: 0.6, borderRadius: radius.medium,

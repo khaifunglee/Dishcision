@@ -1,6 +1,6 @@
 // Home dashboard — add or check for expiring ingredients, look at suggested/saved recipes, etc.
 import { router, useFocusEffect } from 'expo-router'
-import { Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { Pressable, ScrollView, StyleSheet, View, Text } from "react-native"
 import { palette, radius, shadow, useAppColors } from "../../constants/colors"
 import { useCallback, useMemo, useState } from 'react'
 import { useOnboarding } from '../../context/OnboardingContext'
@@ -187,8 +187,8 @@ const Home = () => {
                     ].map(stat => (
                         <View key={stat.label} style={[styles.statCard, themed.card]}>
                             <ThemedText style={styles.statIcon}>{stat.emoji}</ThemedText>
-                            <ThemedText style={styles.statValue} serif>{stat.value}</ThemedText>
-                            <ThemedText style={styles.statLabel} subtitle>{stat.label}</ThemedText>
+                            <Text style={[styles.statValue, { color: c.text }]}>{stat.value}</Text>
+                            <Text style={[styles.statLabel, { color: c.textSoft }]}>{stat.label}</Text>
                         </View>
                     ))}
                 </View>
@@ -311,8 +311,8 @@ const styles = StyleSheet.create({
     statsRow: { flexDirection: 'row', gap: 12 },
     statCard: { flex: 1, borderRadius: radius.small, borderWidth: 1, borderColor: palette.beige, padding: 12 },
     statIcon: { fontSize: 22, marginBottom: 4 },
-    statValue: { fontSize: 24 },
-    statLabel: { fontSize: 10 },
+    statValue: { fontSize: 24, fontFamily: 'Fraunces_600SemiBold' },
+    statLabel: { fontSize: 10, fontFamily: 'DMSans_400Regular' },
 
     quickAdd: {
         flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6,

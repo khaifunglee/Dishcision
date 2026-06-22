@@ -1,6 +1,6 @@
 // This file represents the Login page component inside the route group 'auth'
 import { useState, useMemo } from "react"
-import { StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View } from "react-native"
+import { StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View, Text } from "react-native"
 import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { useAuth } from "../../context/AuthContext"
 import { Feather } from "@expo/vector-icons"
@@ -64,12 +64,12 @@ const Login = () => {
                         <Feather name={'chevron-left'} size={22} color={c.text} />
                     </Pressable>
 
-                    <ThemedText style={styles.title} title serif >
+                    <Text style={[styles.title, { color: c.text }]}>
                         Sign In to your Account
-                    </ThemedText>
-                    <ThemedText style={styles.tagline} subtitle>
+                    </Text>
+                    <Text style={[styles.tagline, { color: c.textSoft }]}>
                         Time to cook smarter.
-                    </ThemedText>
+                    </Text>
                 </View>
 
                 <Spacer height={16} />
@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
-    title: { fontSize: 26 },
-    tagline: { fontSize: 12 },
+    title: { fontSize: 28, fontFamily: 'Fraunces_600SemiBold' },
+    tagline: { fontSize: 14, fontFamily: 'DMSans_400Regular' },
 
     subHeader: {
         fontSize: 12,

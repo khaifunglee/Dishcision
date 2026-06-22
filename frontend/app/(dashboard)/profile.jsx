@@ -337,7 +337,7 @@ const Profile = () => {
     const allergyLabel = useMemo(() => {
         if (!prefs?.allergyTags?.length) return 'None'
 
-        if (prefs?.allergyTags?.length < 3) {
+        if (prefs?.allergyTags?.length < 2) {
         return (prefs.allergyTags.map(t => {
             const opt = ALLERGY_OPTIONS.find(o => o.tag === t)
             return opt ? opt.label : t
@@ -346,7 +346,7 @@ const Profile = () => {
         return (prefs.allergyTags.map(t => {
             const opt = ALLERGY_OPTIONS.find(o => o.tag === t)
             return opt ? opt.label : t
-        })).slice(0, 2).join(', ').concat(` + ${prefs?.allergyTags?.length - 2} more`)
+        })).slice(0, 1).join(', ').concat(` + ${prefs?.allergyTags?.length - 1} more`)
     }
     }, [prefs])
 
