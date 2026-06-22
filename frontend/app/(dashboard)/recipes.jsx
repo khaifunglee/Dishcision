@@ -1,8 +1,8 @@
 // Recipes tab — live data from /recipes, sorted by pantry match, with client-side filters
 import { View, StyleSheet, ScrollView, Pressable, TextInput, ActivityIndicator, Alert } from "react-native"
-import { router, useFocusEffect } from "expo-router"
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router"
 import { palette, radius, useAppColors } from "../../constants/colors"
-import { useMemo, useState, useCallback } from "react"
+import { useMemo, useState, useCallback, useEffect } from "react"
 import { useOnboarding } from "../../context/OnboardingContext"
 import { useToast } from "../../hooks/useToast"
 import { getRecipes, getSavedRecipes, saveRecipe, unsaveRecipe } from "../../api/recipeApi"
@@ -53,6 +53,12 @@ const Recipes = () => {
     const [timeFilter, setTimeFilter] = useState(null)          // cook time filter value
     const [dietaryFilter, setDietaryFilter] = useState(null)    // diet tags filter value
     const [showSavedOnly, setShowSavedOnly] = useState(false)   // saved filter
+
+    // Activate saved filter when navigated from home's "See All" link
+    const { saved: savedParam } = useLocalSearchParams()
+    useEffect(() => {
+        if (savedParam === '1') setShowSavedOnly(true)
+    }, [savedParam])
 
     // Map a bg colour for each cuisine
     const CUISINE_BG = {

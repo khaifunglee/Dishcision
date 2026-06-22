@@ -210,7 +210,7 @@ const Home = () => {
                 {/* Saved Recipes section */}
                 <View style={styles.sectionHeader}>
                     <ThemedText style={styles.sectionTitle} serif>Saved Recipes</ThemedText>
-                    <Pressable onPress={() => router.push('/(dashboard)/recipes')}>
+                    <Pressable onPress={() => router.push({ pathname: '/(dashboard)/recipes', params: { saved: '1' } })}>
                         <ThemedText style={[styles.sectionAction, { color: c.green }]}>See All</ThemedText>
                     </Pressable>
                 </View>
