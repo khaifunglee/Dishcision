@@ -178,3 +178,11 @@ jwt.expiration=86400000
 - Created recipe seed database and wired live recipe data to recipes and home page
 - Redesigned recipe details page to take dynamic recipe details
 - Added functions such as search & filter, recipe suggestions for suggestions page
+
+### 24/6/2026
+
+**Implemented user preferences & save recipe functions**:
+
+- Created user preferences such as dietary preferences, allergy tags, text size to allow user customization
+- Users can now add dietary preferences upon registration
+- Added functions such as save recipe, automatic filtering for suggestions based on user's diet tags
