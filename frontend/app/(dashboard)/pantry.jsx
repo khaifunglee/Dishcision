@@ -1,5 +1,5 @@
 // This page serves as the pantry page (accessible by bottom nav dashboard) for the app
-import { router } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import {
     View, Text, StyleSheet, SectionList, Alert,
     RefreshControl, ActivityIndicator, ScrollView,
@@ -11,7 +11,6 @@ import { palette, radius, useAppColors } from "../../constants/colors"
 import { useOnboarding } from "../../context/OnboardingContext"
 import { useToast } from '../../hooks/useToast'
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable'
-import { useFocusEffect } from 'expo-router'
 
 import OnboardingOverlay from "../../components/OnboardingOverlay" // Pantry page shows step 2
 // Themed components
@@ -151,9 +150,15 @@ const Pantry = () => {
     const [search, setSearch] = useState('')
     const [activeFilter, setActiveFilter] = useState('all')
     const [editingItem, setEditingItem] = useState(null)
-    const [selectedIngredient, setSelectedIngredient] = useState(null) // track which ingredient was selected for editing
+    const [selectedIngredient, setSelectedIngredient] = useState(null)
 
     const { toast, showToast } = useToast()
+
+    // Activate expiring filter when navigated from home's expiry alert banner
+    const { filter: filterParam } = useLocalSearchParams()
+    useEffect(() => {
+        if (filterParam === 'expiring') setActiveFilter('expiring')
+    }, [filterParam])
 
     // Dynamic styles that depend on theme colours
     const themed = useMemo(() => ({

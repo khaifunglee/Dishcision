@@ -1,13 +1,15 @@
 // Home dashboard — add or check for expiring ingredients, look at suggested/saved recipes, etc.
 import { router, useFocusEffect } from 'expo-router'
-import { Pressable, ScrollView, StyleSheet, View, Text } from "react-native"
+import { Pressable, ScrollView, StyleSheet, View, Text, Animated } from "react-native"
 import { palette, radius, shadow, useAppColors } from "../../constants/colors"
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react'
 import { useOnboarding } from '../../context/OnboardingContext'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../hooks/useToast'
 import { getAll } from '../../api/pantryApi'
 import { getSuggestions, getSavedRecipes } from '../../api/recipeApi'
+import { getWeeklyStats } from '../../api/historyApi'
+import { getPreferences } from '../../api/preferencesApi'
 // Themed components
 import ThemedText from "../../components/ThemedText"
 import ThemedView from "../../components/ThemedView"
@@ -30,12 +32,19 @@ const Home = () => {
     const { shouldOnboard, completeOnboarding } = useOnboarding()
     const { user } = useAuth()
     const [showOverlay, setShowOverlay] = useState(false)
-    const [items, setItems] = useState([])                          // list of pantry items
+    const [items, setItems] = useState([])                    // list of pantry items
     const [sheetVisible, setSheetVisible] = useState(false)
     const [editingItem, setEditingItem] = useState(null)
-    const [fullMatchCount, setFullMatchCount] = useState(null)      // # of full match recipes
-    const [savedRecipes, setSavedRecipes] = useState([])            // list of saved recipes
+    const [fullMatchCount, setFullMatchCount] = useState(null) // # of full match recipes
+    const [totalRecipes, setTotalRecipes] = useState(null)
+    const [savedRecipes, setSavedRecipes] = useState([])       // list of saved recipes
+    const [weeklySaved, setWeeklySaved] = useState(null)       // BigDecimal from API
+    const [expiryAlertDays, setExpiryAlertDays] = useState(3)  // from user preferences
     const { toast, showToast } = useToast()
+
+    // Animated value for the savings count-up
+    const savingsAnim = useRef(new Animated.Value(0)).current
+    const [displayedSavings, setDisplayedSavings] = useState(0)
 
     const themed = useMemo(() => ({
         card: { backgroundColor: c.uiBackground, borderColor: c.border },
@@ -51,18 +60,39 @@ const Home = () => {
         if (shouldOnboard) setShowOverlay(true)
     }, [shouldOnboard]))
 
-    // Fetch pantry, suggestions, and saved recipes on every focus
+    // Fetch all home data on focus
+    // Pantry, suggestions, saved recipe, user prefs, user stats
     useFocusEffect(useCallback(() => {
         const load = async () => {
             try {
-                const [pantryData, suggestionsData, savedData] = await Promise.all([
-                    getAll(),
-                    getSuggestions(),
-                    getSavedRecipes(),
-                ])
+                const [pantryData, suggestionsData, savedData, statsData, prefsData] =
+                    await Promise.all([
+                        getAll(),
+                        getSuggestions(),
+                        getSavedRecipes(),
+                        getWeeklyStats(),
+                        getPreferences(),
+                    ])
                 setItems(pantryData)
                 setFullMatchCount(suggestionsData.fullMatch?.length ?? 0)
+                setTotalRecipes(suggestionsData.totalRecipes ?? null)
                 setSavedRecipes(Array.isArray(savedData) ? savedData : [])
+                setExpiryAlertDays(prefsData.expiryAlertDays ?? 3)
+
+                const saved = Number(statsData.totalSaved ?? 0)
+                setWeeklySaved(saved)
+
+                // Animate savings count-up if there's a non-zero value
+                savingsAnim.setValue(0)
+                if (saved > 0) {
+                    Animated.timing(savingsAnim, {
+                        toValue: saved,
+                        duration: 600,
+                        useNativeDriver: false,
+                    }).start()
+                } else {
+                    setDisplayedSavings(0)
+                }
             } catch (e) {
                 console.error('Home load error:', e)
             }
@@ -70,26 +100,31 @@ const Home = () => {
         load()
     }, []))
 
-    // Expiry status calculate helpers
-    function getExpiryStatus(expiryDate) {
-        if (!expiryDate) return 'fresh'
+    // Update displayed savings value as animation progresses
+    useEffect(() => {
+        const listener = savingsAnim.addListener(({ value }) => {
+            setDisplayedSavings(value)
+        })
+        return () => savingsAnim.removeListener(listener)
+    }, [savingsAnim])
+
+    // Expiry helpers
+    function getExpiryDiff(expiryDate) {
+        if (!expiryDate) return Infinity
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         const expiry = new Date(expiryDate)
         expiry.setHours(0, 0, 0, 0)
-        const diff = Math.ceil((expiry - today) / 86400000)
-        if (diff <= 3) return 'expiring'
-        return 'fresh'
+        return Math.ceil((expiry - today) / 86400000)
     }
-    // Get expiring pantry items
+    // Fetch expiring pantry items (based on user prefs expiry alert)
     const expiringItems = useMemo(() => {
-        return items.filter(i => getExpiryStatus(i.expiryDate) === 'expiring')
-    }, [items])
+        return items.filter(i => getExpiryDiff(i.expiryDate) <= expiryAlertDays)
+    }, [items, expiryAlertDays])
 
     // Handle next/skip steps in onboarding overlay
     const handleNext = () => { setShowOverlay(false); router.push('/pantry') }
     const handleSkip = async () => { setShowOverlay(false); await completeOnboarding() }
-
     // Function for adding ingredient to pantry
     const handleSaved = (savedItem, wasEditing) => {
         if (wasEditing) {
@@ -101,13 +136,17 @@ const Home = () => {
     }
     // Open add ingredient sheet
     const openAdd = () => { setEditingItem(null); setSheetVisible(true) }
-
+    // Subtitle for 'Tonight's Dishcisions' card
     const dishcisionSubtitle = useMemo(() => {
         if (items.length === 0) return 'Add ingredients to see tonight\'s suggestions'
         if (fullMatchCount === null) return 'Loading...'
         if (fullMatchCount === 0) return 'Need a few more ingredients — check "Almost There"'
         return `${fullMatchCount} recipe${fullMatchCount === 1 ? '' : 's'} you can cook right now`
     }, [items.length, fullMatchCount])
+
+    const savingsDisplay = weeklySaved !== null
+        ? `$${displayedSavings.toFixed(2)}`
+        : '$0.00'
 
     return (
         <ThemedView style={styles.container} safe>
@@ -121,7 +160,6 @@ const Home = () => {
                         <ThemedText style={styles.greetingSub} subtitle>Good morning ☀️</ThemedText>
                         <ThemedText style={styles.greetingMain} serif>Make a Dishcision</ThemedText>
                     </View>
-                    {/* Avatar */}
                     <Pressable
                         style={styles.avatar}
                         onPress={() => router.push('/(dashboard)/profile')}>
@@ -129,31 +167,35 @@ const Home = () => {
                     </Pressable>
                 </View>
 
-                {/* Expiry Alert */}
-                <Pressable
-                    style={({ pressed }) => [
-                        styles.expiryAlert,
-                        expiringItems.length > 0
-                            ? { backgroundColor: c.redLight, borderColor: c.red }
-                            : { backgroundColor: c.freshLight, borderColor: c.fresh },
-                        pressed && styles.pressed
-                    ]}
-                    onPress={() => router.push('/pantry')}>
-                    <View style={[styles.expiryIcon, { backgroundColor: expiringItems.length > 0 ? c.red : c.fresh }]}>
-                        <ThemedText style={{ fontSize: 16 }}>{expiringItems.length > 0 ? '⏰' : '👌'}</ThemedText>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <ThemedText style={[styles.expiryTitle, { color: expiringItems.length > 0 ? c.red : c.fresh }]}>
-                            {expiringItems.length > 0 ? `${expiringItems.length} items expiring soon` : 'All Good'}
-                        </ThemedText>
-                        <ThemedText style={styles.expirySub} subtitle>
-                            {expiringItems.length > 0
-                                ? `${expiringItems.slice(0, 3).map(i => i.ingredientName).join(', ')} · Tap to View`
-                                : 'All pantry items are fresh · Tap to View'}
-                        </ThemedText>
-                    </View>
-                    <ThemedText style={[styles.expiryArrow, { color: expiringItems.length > 0 ? c.red : c.fresh }]}>›</ThemedText>
-                </Pressable>
+                {/* Expiry Alert — hidden when nothing is expiring */}
+                {expiringItems.length > 0 && (
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.expiryAlert,
+                            { backgroundColor: c.redLight, borderColor: c.red },
+                            pressed && styles.pressed
+                        ]}
+                        /* Direct to pantry with expiring filter on */
+                        onPress={() => router.push({
+                            pathname: '/(dashboard)/pantry',
+                            params: { filter: 'expiring' }
+                        })}>
+                        <View style={[styles.expiryIcon, { backgroundColor: c.red }]}>
+                            <ThemedText style={{ fontSize: 16 }}>⏰</ThemedText>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <ThemedText style={[styles.expiryTitle, { color: c.red }]}>
+                                {expiringItems.length} item{expiringItems.length === 1 ? '' : 's'} expiring soon
+                            </ThemedText>
+                            <ThemedText style={styles.expirySub} subtitle>
+                                {expiringItems.slice(0, 3).map(i => i.ingredientName).join(', ')}
+                                {expiringItems.length > 3 ? ` and ${expiringItems.length - 3} more` : ''}
+                                {' · Tap to View'}
+                            </ThemedText>
+                        </View>
+                        <ThemedText style={[styles.expiryArrow, { color: c.red }]}>›</ThemedText>
+                    </Pressable>
+                )}
 
                 {/* Tonight's Dishcisions Card */}
                 <Pressable
@@ -182,8 +224,8 @@ const Home = () => {
                 <View style={styles.statsRow}>
                     {[
                         { emoji: '🥦', value: `${items.length}`, label: 'Pantry items' },
-                        { emoji: '📖', value: '30', label: 'Recipes' },
-                        { emoji: '🔖', value: `${savedRecipes.length}`, label: 'Saved Recipes' },
+                        { emoji: '📖', value: totalRecipes !== null ? `${totalRecipes}` : '—', label: 'Recipes' },
+                        { emoji: '💰', value: savingsDisplay, label: 'Saved this week' },
                     ].map(stat => (
                         <View key={stat.label} style={[styles.statCard, themed.card]}>
                             <ThemedText style={styles.statIcon}>{stat.emoji}</ThemedText>
@@ -290,7 +332,7 @@ const styles = StyleSheet.create({
 
     expiryAlert: { borderWidth: 1, borderRadius: radius.small, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 16 },
     expiryIcon: { width: 36, height: 36, borderRadius: radius.small, alignItems: 'center', justifyContent: 'center' },
-    expiryTitle: { fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: palette.red },
+    expiryTitle: { fontFamily: 'DMSans_600SemiBold', fontSize: 14 },
     expirySub: { fontSize: 10, marginTop: 2 },
     expiryArrow: { fontSize: 16, opacity: 0.6 },
 
@@ -311,7 +353,7 @@ const styles = StyleSheet.create({
     statsRow: { flexDirection: 'row', gap: 12 },
     statCard: { flex: 1, borderRadius: radius.small, borderWidth: 1, borderColor: palette.beige, padding: 12 },
     statIcon: { fontSize: 22, marginBottom: 4 },
-    statValue: { fontSize: 24, fontFamily: 'Fraunces_600SemiBold' },
+    statValue: { fontSize: 22, fontFamily: 'Fraunces_600SemiBold' },
     statLabel: { fontSize: 10, fontFamily: 'DMSans_400Regular' },
 
     quickAdd: {

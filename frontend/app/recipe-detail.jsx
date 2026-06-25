@@ -10,6 +10,7 @@ import { useToast } from '../hooks/useToast'
 import ThemedText from "../components/ThemedText"
 import ThemedView from "../components/ThemedView"
 import Toast from '../components/Toast'
+import CookSheet from '../components/CookSheet'
 
 // Map emojis to cuisine as thumbnail
 const CUISINE_EMOJIS = {
@@ -35,8 +36,9 @@ const RecipeDetails = () => {
     const { toast, showToast } = useToast()
     const [recipe, setRecipe] = useState(null)      // recipe to be loaded
     const [loading, setLoading] = useState(true)    // loading state for recipe
-    // Optimistic saved state — initialised from API response, then toggled locally
-    const [isSaved, setIsSaved] = useState(false)
+    const [isSaved, setIsSaved] = useState(false)   // toggle save recipe
+    const [cookSheetVisible, setCookSheetVisible] = useState(false)
+    const [cookWarnings, setCookWarnings] = useState([])   // ingredients that couldn't be deducted
 
     // Map a bg colour for each cuisine
     const CUISINE_BG = {
@@ -60,6 +62,23 @@ const RecipeDetails = () => {
         }
         load()
     }, [id]))
+    // Handle successful cook toast message
+    const handleCookSuccess = (result) => {
+        if (!result) {
+            showToast('Something went wrong — pantry not updated')
+            return
+        }
+        // Fetch $ saved
+        const savings = Number(result.costSaved ?? 0)
+        const savingsText = savings >= 0
+            ? `you saved $${savings.toFixed(2)}`
+            : `cost $${Math.abs(savings).toFixed(2)}`
+        showToast(`🍳 Pantry updated — ${savingsText}!`)
+        if (result.warnings?.length > 0) {
+            setCookWarnings(result.warnings)
+        }
+    }
+
     // Toggle save function
     const handleToggleSave = async () => {
         // Optimistic update — flip immediately, revert on error
@@ -228,16 +247,34 @@ const RecipeDetails = () => {
                 </View>
             </ScrollView>
 
-            {/* Floating 'I cooked this' container */}
-            <View style={[styles.floatingContainer, { bottom: 52 }]}>
+            {/* Warnings banner — dismissible, shown after a cook with unmatched ingredients */}
+            {cookWarnings.length > 0 && (
+                <View style={[styles.warningBanner, { backgroundColor: c.amberLight, borderColor: c.amber }]}>
+                    <ThemedText style={[styles.warningText, { color: c.amber }]}>
+                        Couldn't deduct: {cookWarnings.join(', ')} — check your pantry
+                    </ThemedText>
+                    <Pressable onPress={() => setCookWarnings([])}>
+                        <ThemedText style={[styles.warningDismiss, { color: c.amber }]}>✕</ThemedText>
+                    </Pressable>
+                </View>
+            )}
+
+            {/* Floating 'I cooked this' button */}
+            <View style={[styles.floatingContainer, { bottom: 36 }]}>
                 <Pressable
-                    style={({ pressed }) => [styles.cookBtn, pressed && styles.pressed]}
-                    onPress={() => showToast('🍳 Cooking history coming in Sprint 4!')}>
-                    <ThemedText style={styles.cookBtnText}>I cooked this</ThemedText>
+                    style={({ pressed }) => [styles.cookBtn, { backgroundColor: c.green, shadowColor: c.green }, pressed && styles.pressed]}
+                    onPress={() => setCookSheetVisible(true)}>
+                    <ThemedText style={styles.cookBtnText}>I cooked this →</ThemedText>
                 </Pressable>
             </View>
 
             <Toast message={toast.message} visible={toast.visible} />
+            <CookSheet
+                visible={cookSheetVisible}
+                onClose={() => setCookSheetVisible(false)}
+                recipe={recipe}
+                onCookSuccess={handleCookSuccess}
+            />
         </ThemedView>
     )
 }
@@ -308,11 +345,19 @@ const styles = StyleSheet.create({
     stepNumText: { fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: '#fff' },
     stepText: { flex: 1, fontSize: 14, lineHeight: 22 },
 
+    warningBanner: {
+        position: 'absolute', left: 16, right: 16, bottom: 112,
+        borderWidth: 1, borderRadius: radius.small,
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: 14, paddingVertical: 10, gap: 10,
+    },
+    warningText: { flex: 1, fontSize: 12, fontFamily: 'DMSans_500Medium' },
+    warningDismiss: { fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+
     floatingContainer: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
     cookBtn: {
-        backgroundColor: palette.terracotta,
         borderRadius: radius.full, paddingVertical: 16, paddingHorizontal: 32,
-        shadowColor: palette.terracotta, shadowOffset: { width: 0, height: 8 },
+        shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.35, shadowRadius: 16, elevation: 8,
     },
     cookBtnText: { fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: '#fff' },
