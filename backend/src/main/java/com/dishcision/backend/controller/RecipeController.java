@@ -3,6 +3,7 @@ package com.dishcision.backend.controller;
 
 import com.dishcision.backend.dto.*;
 import com.dishcision.backend.security.UserDetailsImpl;
+import com.dishcision.backend.service.CookService;
 import com.dishcision.backend.service.RecipeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.List;
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final CookService cookService;
 
     // GET (200) recipe list with optional filters
     @GetMapping
@@ -59,6 +61,15 @@ public class RecipeController {
     public ResponseEntity<Void> unsaveRecipe(@PathVariable Long id) {
         recipeService.unsaveRecipe(getCurrentUserId(), id);
         return ResponseEntity.noContent().build();
+    }
+
+    // POST (201) cook a recipe — deducts pantry, records history, returns snapshot
+    @PostMapping("/{id}/cook")
+    public ResponseEntity<CookResponse> cookRecipe(
+            @PathVariable Long id,
+            @RequestBody CookRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(cookService.cookRecipe(getCurrentUserId(), id, request.getServings()));
     }
 
     // POST (201) new recipe
