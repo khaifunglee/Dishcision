@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SuggestionsResponse {
     private int pantryItemCount;
+    private int totalRecipes;
     // 0 missing required ingredients
     private List<RecipeSummaryDTO> fullMatch;
     // 1–2 missing required ingredients
