@@ -214,6 +214,43 @@ class IngredientMatchingServiceTest {
     }
 
     // -------------------------------------------------------------------------
+    // PARTIAL_MATCH: ingredient found but quantity insufficient
+    // -------------------------------------------------------------------------
+
+    @Test
+    void match_insufficientQty_returnsPartialMatch_withFullItemAsDeduction() {
+        // Pantry has 50g flour; recipe needs 200g → insufficient → PARTIAL_MATCH
+        PantryItem flour = pantryItem(10L, "Flour", new BigDecimal("50"), "g");
+        RecipeIngredient ri = recipeIngredient(canonicalGarlic, "flour", new BigDecimal("200"), "g");
+
+        IngredientMatchingService.MatchResult result = matchingService.match(
+                ri, new BigDecimal("200"), byCanonical(flour), byLowerName(flour));
+
+        assertEquals(IngredientMatchingService.MatchStatus.PARTIAL_MATCH, result.getStatus());
+        assertNotNull(result.getMatchedItem());
+        // deductionQty == item quantity (consume all available)
+        assertEquals(0, new BigDecimal("50").compareTo(result.getDeductionQty()));
+    }
+
+    @Test
+    void match_insufficientFirst_sufficientSecond_returnsMatched() {
+        // Two pantry entries: 50g (insufficient) + 300g (sufficient). Should pick 300g as MATCHED.
+        PantryItem small = pantryItem(10L, "Flour", new BigDecimal("50"), "g");
+        PantryItem large = pantryItem(10L, "Flour", new BigDecimal("300"), "g");
+        RecipeIngredient ri = recipeIngredient(canonicalGarlic, "flour", new BigDecimal("200"), "g");
+
+        Map<Long, List<PantryItem>> byCanonical = new java.util.HashMap<>();
+        byCanonical.put(10L, java.util.Arrays.asList(small, large));
+        Map<String, List<PantryItem>> byName = byLowerName(small, large);
+
+        IngredientMatchingService.MatchResult result = matchingService.match(
+                ri, new BigDecimal("200"), byCanonical, byName);
+
+        assertEquals(IngredientMatchingService.MatchStatus.MATCHED, result.getStatus());
+        assertEquals(large, result.getMatchedItem());
+    }
+
+    // -------------------------------------------------------------------------
     // Cross-type can→g (known conversion)
     // -------------------------------------------------------------------------
 

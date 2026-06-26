@@ -68,11 +68,12 @@ public class CookService {
                     BigDecimal deductQty = match.getDeductionQty();
                     if (deductQty != null && deductQty.compareTo(BigDecimal.ZERO) > 0) {
                         // Deduct pantry item's qty with deductedQty
-                        System.err.println("Item qty: " + item.getQuantity() + ", Deducted qty: " + deductQty);
+                        // System.err.println("Item qty: " + item.getQuantity() + ", Deducted qty: " +
+                        // deductQty);
                         BigDecimal newQty = item.getQuantity()
                                 .subtract(deductQty)
                                 .setScale(2, RoundingMode.HALF_UP);
-                        System.err.println("New qty: " + newQty);
+                        // System.err.println("New qty: " + newQty);
                         // Automatically delete pantry item if deductedQty >= item.getQuantity()
                         if (newQty.compareTo(BigDecimal.ZERO) <= 0) {
                             pantryItemRepository.delete(item);
@@ -85,6 +86,25 @@ public class CookService {
                             pantryItemRepository.save(item);
                         }
                     }
+                }
+                case PARTIAL_MATCH -> {
+                    PantryItem partialItem = match.getMatchedItem();
+                    BigDecimal partialDeduct = match.getDeductionQty();
+                    if (partialDeduct != null && partialDeduct.compareTo(BigDecimal.ZERO) > 0) {
+                        // Deduct pantry item's qty with deductedQty
+                        BigDecimal newQty = partialItem.getQuantity()
+                                .subtract(partialDeduct)
+                                .setScale(2, RoundingMode.HALF_UP);
+                        // All partial match items should result in remove pantry item
+                        if (newQty.compareTo(BigDecimal.ZERO) <= 0) {
+                            pantryItemRepository.delete(partialItem);
+                            removeFromMaps(partialItem, pantryByCanonical, pantryByLowerName);
+                        } else {
+                            partialItem.setQuantity(newQty);
+                            pantryItemRepository.save(partialItem);
+                        }
+                    }
+                    warnings.add(ri.getIngredientName() + " (used all available — may need more)");
                 }
                 case ASSUMED_AVAILABLE ->
                     warnings.add(ri.getIngredientName() + " (unit mismatch — check your pantry)");

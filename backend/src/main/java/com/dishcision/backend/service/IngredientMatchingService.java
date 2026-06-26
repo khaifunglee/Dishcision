@@ -33,8 +33,11 @@ public class IngredientMatchingService {
     // MatchResult object
     // -------------------------------------------------------------------------
     public enum MatchStatus {
-        // Ingredient found and quantity sufficient = deductionQty is valid
+        // Ingredient found and quantity sufficient — deductionQty is valid
         MATCHED,
+        // Ingredient found but quantity insufficient — deductionQty = all available
+        // (consumes the item)
+        PARTIAL_MATCH,
         /**
          * Ingredient found but units are incomparable (e.g cross-type with no known
          * conversion). Treated as present for suggestions; no deduction on ingredients
@@ -74,6 +77,10 @@ public class IngredientMatchingService {
             return new MatchResult(MatchStatus.MATCHED, item, deductQty);
         }
 
+        static MatchResult partialMatch(PantryItem item, BigDecimal deductQty) {
+            return new MatchResult(MatchStatus.PARTIAL_MATCH, item, deductQty);
+        }
+
         static MatchResult assumedAvailable() {
             return new MatchResult(MatchStatus.ASSUMED_AVAILABLE, null, null);
         }
@@ -108,6 +115,7 @@ public class IngredientMatchingService {
 
         String recipeUnit = ri.getUnit() == null ? "" : ri.getUnit().toLowerCase().trim();
         boolean anyAssumed = false;
+        PantryItem bestInsufficient = null;
 
         for (PantryItem candidate : candidates) {
             String pantryUnit = candidate.getUnit() == null ? ""
@@ -124,7 +132,7 @@ public class IngredientMatchingService {
 
             if (sufficient == null) {
                 // Returned null = cross-type, unknown conversion — continue to next candidate
-                anyAssumed = true; // flag ASSUMED_AVAILABLE
+                anyAssumed = true;
                 continue;
             }
 
@@ -133,9 +141,17 @@ public class IngredientMatchingService {
                 BigDecimal deductionQty = computeDeductionQty(scaledQty, recipeUnit, pantryUnit);
                 return MatchResult.matched(candidate, deductionQty != null ? deductionQty : scaledQty);
             }
-            // Insufficient quantity — try next candidate (e.g. a second pantry entry)
+
+            // If candidate ingredient found but insufficient qty, set as partial match item
+            if (bestInsufficient == null) {
+                bestInsufficient = candidate;
+            }
         }
 
+        // Resolution order: PARTIAL_MATCH > ASSUMED_AVAILABLE > NO_MATCH
+        if (bestInsufficient != null) {
+            return MatchResult.partialMatch(bestInsufficient, bestInsufficient.getQuantity());
+        }
         return anyAssumed ? MatchResult.assumedAvailable() : MatchResult.noMatch();
     }
 
