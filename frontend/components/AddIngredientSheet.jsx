@@ -92,7 +92,7 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
         return () => clearTimeout(timer);
     }, [ingredientName]);
 
-    // Function for choosing suggested ingredient name
+    // Autofill function for choosing suggested ingredient name
     const selectSuggestion = (suggestion) => {
         setIngredientName(suggestion.canonicalName)
         setCategory(suggestion.category || category)
@@ -180,9 +180,8 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
             }).start()
         }
     }, [visible])
-
-    // Set current units
-    const currentUnits = resolvedUnitType ? UNIT_OPTIONS[resolvedUnitType] : [...UNIT_OPTIONS.WEIGHT, ...UNIT_OPTIONS.VOLUME, ...UNIT_OPTIONS.COUNT]
+    // Choose any unit in picker
+    const currentUnits = [...UNIT_OPTIONS.WEIGHT, ...UNIT_OPTIONS.VOLUME, ...UNIT_OPTIONS.COUNT]
 
     // Format date
     const formatDate = (date) => {
