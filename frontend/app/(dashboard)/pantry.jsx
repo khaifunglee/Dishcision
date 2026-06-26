@@ -19,6 +19,7 @@ import ThemedText from "../../components/ThemedText"
 import Toast from '../../components/Toast'
 import AddIngredientSheet from '../../components/AddIngredientSheet'
 import { deleteItem, getAll } from '../../api/pantryApi'
+import { getPreferences } from '../../api/preferencesApi'
 
 const CATEGORY_EMOJIS = {
     'Protein': '🥩', 'Produce': '🥦', 'Dairy': '🧀', 'Pantry Staple': '🥫', 'Frozen': '❄️', 'Other': '🫙'
@@ -34,7 +35,7 @@ const FILTER_CHIPS = [
 ];
 
 // Expiry date calculate helpers
-function getExpiryStatus(expiryDate) {
+function getExpiryStatus(expiryDate, expiryAlertDays) {
     if (!expiryDate) return 'fresh'
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -44,7 +45,7 @@ function getExpiryStatus(expiryDate) {
 
     const diff = Math.ceil((expiry - today) / 86400000)
     if (diff <= 1) return 'urgent'
-    if (diff <= 3) return 'warn'
+    if (diff <= expiryAlertDays) return 'warn'
     return 'fresh'
 }
 function getExpiryLabel(expiryDate) {
@@ -79,7 +80,7 @@ function getIngredientEmoji(item) {
 }
 
 // Ingredient item card (swipe to remove ingredient)
-function IngredientItem({ item, onEdit, onDelete }) {
+function IngredientItem({ item, onEdit, onDelete, expiryAlertDays }) {
 
     const c = useAppColors()
     // Dynamic styles that depend on theme colours
@@ -89,7 +90,7 @@ function IngredientItem({ item, onEdit, onDelete }) {
             borderColor: c.border,
         },
     }), [c])
-    const status = getExpiryStatus(item.expiryDate)
+    const status = getExpiryStatus(item.expiryDate, expiryAlertDays)
     const label = getExpiryLabel(item.expiryDate)
 
     // Status colors (fresh, close to expiry, expiring)
@@ -145,6 +146,7 @@ const Pantry = () => {
     // Quick add, edit sheet modal and toast message constants
     const [sheetVisible, setSheetVisible] = useState(false)
     const [items, setItems] = useState([])                             // pantry items to be loaded onto page
+    const [expiryAlertDays, setExpiryAlertDays] = useState(3)
     const [loading, setLoading] = useState(true)                       // loading pantry items state
     const [refreshing, setRefreshing] = useState(false)
     const [search, setSearch] = useState('')
@@ -175,12 +177,13 @@ const Pantry = () => {
         }
     }), [c])
 
-    // Load pantry items
-    const fetchPantry = useCallback(async () => {
+    // Load pantry items and user prefs (for expiry alert days)
+    const fetchData = useCallback(async () => {
         try {
             //console.log('Retrieving pantry items...')
-            const data = await getAll()
-            setItems(data)
+            const [pantryData, userPrefs] = await Promise.all([getAll(), getPreferences()])
+            setItems(pantryData)
+            setExpiryAlertDays(userPrefs.expiryAlertDays ?? 3)
             //console.log('List: ', data)
         } catch (e) {
             Alert.alert('Error', 'Could not load your pantry. Please try again.')
@@ -192,8 +195,8 @@ const Pantry = () => {
     }, [])
 
     // Reload list everytime pantry page comes into focus
-    useFocusEffect(useCallback(() => { fetchPantry() }, [fetchPantry]))
-    const onRefresh = () => { setRefreshing(true); fetchPantry() }
+    useFocusEffect(useCallback(() => { fetchData() }, [fetchData]))
+    const onRefresh = () => { setRefreshing(true); fetchData() }
 
     // Add item function
     const handleSaved = (savedItem, wasEditing) => {
@@ -233,7 +236,7 @@ const Pantry = () => {
         }
         // Filter expiring items
         if (activeFilter === 'expiring') {
-            result = result.filter(i => ['urgent', 'warn'].includes(getExpiryStatus(i.expiryDate)))
+            result = result.filter(i => ['urgent', 'warn'].includes(getExpiryStatus(i.expiryDate, expiryAlertDays)))
             // Filter items by category
         } else if (activeFilter !== 'all') {
             result = result.filter(i => i.category === activeFilter)
@@ -245,10 +248,10 @@ const Pantry = () => {
     // Pantry item sections (expiring soon, all good)
     const sections = useMemo(() => {
         const expiring = filteredItems.filter(i =>
-            ['urgent', 'warn'].includes(getExpiryStatus(i.expiryDate))
+            ['urgent', 'warn'].includes(getExpiryStatus(i.expiryDate, expiryAlertDays))
         )
         const allGood = filteredItems.filter(i =>
-            ['fresh'].includes(getExpiryStatus(i.expiryDate))
+            ['fresh'].includes(getExpiryStatus(i.expiryDate, expiryAlertDays))
         )
 
         const result = []
@@ -338,7 +341,7 @@ const Pantry = () => {
                 )}
                 renderItem={({ item }) => (
                     <View style={styles.rowWrapper}>
-                        <IngredientItem item={item} onEdit={openEdit} onDelete={handleDelete} />
+                        <IngredientItem item={item} onEdit={openEdit} onDelete={handleDelete} expiryAlertDays={expiryAlertDays}/>
                     </View>
                 )}
                 /* Empty state list */
