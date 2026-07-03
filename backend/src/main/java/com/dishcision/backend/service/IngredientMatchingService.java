@@ -1,6 +1,7 @@
 // This file handles the matching algorithm between recipe ingredients and a user's pantry
 package com.dishcision.backend.service;
 
+import com.dishcision.backend.model.Ingredient;
 import com.dishcision.backend.model.PantryItem;
 import com.dishcision.backend.model.RecipeIngredient;
 import lombok.RequiredArgsConstructor;
@@ -117,9 +118,15 @@ public class IngredientMatchingService {
         boolean anyAssumed = false;
         PantryItem bestInsufficient = null;
 
+        // Prefer the recipe ingredient's own canonical link for ingredient-specific
+        // cross-type conversions (e.g. container size); fall back to whichever
+        // canonical ingredient the pantry candidate resolved to.
         for (PantryItem candidate : candidates) {
             String pantryUnit = candidate.getUnit() == null ? ""
                     : candidate.getUnit().toLowerCase().trim();
+            Ingredient canonical = ri.getCanonicalIngredient() != null
+                    ? ri.getCanonicalIngredient()
+                    : candidate.getCanonicalIngredient();
 
             // Null or missing quantities → assume present, no deduction needed
             if (scaledQty == null || candidate.getQuantity() == null
@@ -128,7 +135,7 @@ public class IngredientMatchingService {
             }
             // Check for sufficient quantity of candidates vs ri
             Boolean sufficient = unitConversionService.isSufficient(
-                    scaledQty, recipeUnit, candidate.getQuantity(), pantryUnit);
+                    scaledQty, recipeUnit, candidate.getQuantity(), pantryUnit, canonical);
 
             if (sufficient == null) {
                 // Returned null = cross-type, unknown conversion — continue to next candidate
@@ -138,7 +145,7 @@ public class IngredientMatchingService {
 
             if (sufficient) {
                 // Convert scaledQty to the pantry item's unit to get deduction amount
-                BigDecimal deductionQty = computeDeductionQty(scaledQty, recipeUnit, pantryUnit);
+                BigDecimal deductionQty = computeDeductionQty(scaledQty, recipeUnit, pantryUnit, canonical);
                 return MatchResult.matched(candidate, deductionQty != null ? deductionQty : scaledQty);
             }
 
@@ -188,9 +195,10 @@ public class IngredientMatchingService {
      */
     private BigDecimal computeDeductionQty(BigDecimal scaledQty,
             String recipeUnit,
-            String pantryUnit) {
+            String pantryUnit,
+            Ingredient canonical) {
         if (recipeUnit.equals(pantryUnit))
             return scaledQty;
-        return unitConversionService.convert(scaledQty, recipeUnit, pantryUnit);
+        return unitConversionService.convert(scaledQty, recipeUnit, pantryUnit, canonical);
     }
 }

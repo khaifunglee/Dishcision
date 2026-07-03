@@ -12,6 +12,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -66,7 +67,8 @@ public class IngredientDataSeeder implements CommandLineRunner {
 
                 seed("Canned Tomatoes", "g", UnitType.WEIGHT, "Pantry Staple",
                                 List.of("crushed tomatoes", "diced tomatoes", "tinned tomatoes", "tomato puree",
-                                                "passata"));
+                                                "passata"),
+                                "can", new BigDecimal("400"));
 
                 seed("Soy Sauce", "ml", UnitType.VOLUME, "Pantry Staple",
                                 List.of("light soy sauce", "dark soy sauce", "tamari", "kikkoman"));
@@ -98,18 +100,33 @@ public class IngredientDataSeeder implements CommandLineRunner {
                 seed("Lemon", null, UnitType.COUNT, "Produce",
                                 List.of("lemons", "lemon juice", "fresh lemon"));
 
+                /*
+                 * Missing ingredients:
+                 * 1. Oil types
+                 * 2.
+                 */
+
                 log.info("Seeding complete — {} ingredients loaded.", ingredientRepository.count());
         }
 
         // Helper method to create ingredient and ingredient alias names
         private void seed(String canonicalName, String defaultUnit, UnitType unitType,
                         String category, List<String> aliases) {
+                seed(canonicalName, defaultUnit, unitType, category, aliases, null, null);
+        }
+
+        // Overload for ingredients with a known container packaging (e.g. 1 can = 400g)
+        private void seed(String canonicalName, String defaultUnit, UnitType unitType,
+                        String category, List<String> aliases,
+                        String containerUnit, BigDecimal containerSize) {
                 Ingredient ingredient = ingredientRepository.save(
                                 Ingredient.builder()
                                                 .canonicalName(canonicalName)
                                                 .defaultUnit(defaultUnit)
                                                 .unitType(unitType)
                                                 .category(category)
+                                                .containerUnit(containerUnit)
+                                                .containerSize(containerSize)
                                                 .build());
 
                 aliases.forEach(alias -> aliasRepository.save(

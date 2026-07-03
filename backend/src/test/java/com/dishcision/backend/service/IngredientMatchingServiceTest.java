@@ -15,6 +15,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,10 +37,12 @@ class IngredientMatchingServiceTest {
         matchingService = new IngredientMatchingService(ingredientService, conversionService);
 
         canonicalGarlic = Ingredient.builder().id(10L).canonicalName("Garlic").build();
-        canonicalTomato = Ingredient.builder().id(20L).canonicalName("Tomato").build();
+        canonicalTomato = Ingredient.builder().id(20L).canonicalName("Tomato")
+                .defaultUnit("g").containerUnit("can").containerSize(new BigDecimal("400")).build();
 
-        // Default: alias resolution returns empty
-        when(ingredientService.resolveByName(anyString())).thenReturn(Optional.empty());
+        // Default: alias resolution returns empty (lenient — canonical ID match
+        // tests never reach this stub, since findCandidates returns early)
+        lenient().when(ingredientService.resolveByName(anyString())).thenReturn(Optional.empty());
     }
 
     // -------------------------------------------------------------------------

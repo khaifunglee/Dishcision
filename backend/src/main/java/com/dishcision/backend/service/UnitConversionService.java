@@ -3,6 +3,8 @@ package com.dishcision.backend.service;
 
 import org.springframework.stereotype.Service;
 
+import com.dishcision.backend.model.Ingredient;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
@@ -11,7 +13,8 @@ import java.util.Map;
  * Conversion priority:
  * 1. Same unit = direct comparison
  * 2. Same unit group (WEIGHT/VOLUME/COUNT) = convert to base unit then compare
- * 3. Known cross-type (e.g. can → g) → apply known conversions
+ * 3. Cross-type (e.g. can → g) → use the ingredient's own known container
+ * size, if any
  * 4. Unknown cross-type → returns null, assume available and flag warning
  */
 @Service
@@ -52,14 +55,15 @@ public class UnitConversionService {
             Map.entry("piece:bunches", BigDecimal.ONE),
             Map.entry("pieces:bunches", BigDecimal.ONE));
 
-    // Cross-type conversions: "fromUnit:toUnit"
-    // Used when pantry and recipe units are in different UnitGroups but a known
-    // real-world equivalence exists (e.g. 1 can = 400 g)
-    private static final Map<String, BigDecimal> CROSS_TYPE_TABLE = Map.of(
-            "can:g", new BigDecimal("400"),
-            "cans:g", new BigDecimal("400"),
-            "g:can", new BigDecimal("0.0025"), // 1 g = 1/400 can
-            "g:cans", new BigDecimal("0.0025"));
+    // Maps a COUNT unit's plural form to its singular, so a container lookup
+    // (e.g. Ingredient.containerUnit = "can") matches either "can" or "cans"
+    private static final Map<String, String> COUNT_UNIT_SINGULAR = Map.of(
+            "pieces", "piece",
+            "cloves", "clove",
+            "jars", "jar",
+            "heads", "head",
+            "bunches", "bunch",
+            "cans", "can");
 
     // -------------------------------------------------------------------------
     // Public helper APIs for other service layers to use
@@ -70,7 +74,7 @@ public class UnitConversionService {
         return switch (unit.toLowerCase().trim()) {
             case "g", "kg", "oz", "lb" -> UnitGroup.WEIGHT;
             case "ml", "l", "tsp", "tbsp", "cup", "cups" -> UnitGroup.VOLUME;
-            case "piece", "pieces", "clove", "cloves",
+            case "piece", "pieces", "clove", "cloves", "jar", "jars",
                     "head", "heads", "bunch", "bunches", "can", "cans" ->
                 UnitGroup.COUNT;
             default -> null;
@@ -78,12 +82,24 @@ public class UnitConversionService {
     }
 
     /**
+     * Convert {qty} from {fromUnit} to {toUnit}, with no ingredient context
+     * for cross-group conversions (see the {@link Ingredient} overload).
+     */
+    public BigDecimal convert(BigDecimal qty, String fromUnit, String toUnit) {
+        return convert(qty, fromUnit, toUnit, null);
+    }
+
+    /**
      * Convert {qty} from {fromUnit} to {toUnit}.
+     *
+     * When {fromUnit}/{toUnit} belong to different UnitGroups, {ingredient}'s
+     * own container packaging (containerUnit/containerSize/defaultUnit) is
+     * used to resolve the conversion
      *
      * Returns converted value (scale 2, HALF_UP), or {@code null} if the
      * conversion is unknown (caller should treat as ASSUMED_AVAILABLE).
      */
-    public BigDecimal convert(BigDecimal qty, String fromUnit, String toUnit) {
+    public BigDecimal convert(BigDecimal qty, String fromUnit, String toUnit, Ingredient ingredient) {
         if (qty == null)
             return null;
         String from = fromUnit.toLowerCase().trim();
@@ -117,10 +133,19 @@ public class UnitConversionService {
             };
         }
 
-        // Different unit groups — try the cross-type table
-        BigDecimal factor = CROSS_TYPE_TABLE.get(from + ":" + to);
+        // Different unit groups, try the ingredient's known container size
+        BigDecimal factor = containerFactor(ingredient, from, to);
         return factor == null ? null
                 : qty.multiply(factor).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Returns true if availableQty is sufficient for neededQty, with no
+     * ingredient context for cross-group conversions.
+     */
+    public Boolean isSufficient(BigDecimal needed, String neededUnit,
+            BigDecimal available, String availableUnit) {
+        return isSufficient(needed, neededUnit, available, availableUnit, null);
     }
 
     /**
@@ -129,7 +154,7 @@ public class UnitConversionService {
      * Returns null if the units are incomparable (ASSUMED_AVAILABLE).
      */
     public Boolean isSufficient(BigDecimal needed, String neededUnit,
-            BigDecimal available, String availableUnit) {
+            BigDecimal available, String availableUnit, Ingredient ingredient) {
         // No quantity/unit available to check = assume present
         if (needed == null || available == null
                 || neededUnit == null || availableUnit == null) {
@@ -143,11 +168,43 @@ public class UnitConversionService {
             return available.compareTo(needed) >= 0;
         }
         // Convert needed quantity into the pantry item's unit for comparison
-        BigDecimal neededInAvailUnit = convert(needed, nu, au);
+        BigDecimal neededInAvailUnit = convert(needed, nu, au, ingredient);
         if (neededInAvailUnit == null)
             return null; // incomparable → ASSUMED_AVAILABLE
 
         return available.compareTo(neededInAvailUnit) >= 0;
+    }
+
+    /**
+     * Resolves a cross-group conversion factor from {ingredient}'s own known
+     * container packaging. Returns null if the ingredient has no container info, or
+     * {from}/{to} don't match its containerUnit/defaultUnit pair.
+     */
+    private BigDecimal containerFactor(Ingredient ingredient, String from, String to) {
+        if (ingredient == null)
+            return null;
+        String containerUnit = ingredient.getContainerUnit();
+        String baseUnit = ingredient.getDefaultUnit();
+        BigDecimal size = ingredient.getContainerSize();
+        // No known container conversion = unit mismatch
+        if (containerUnit == null || baseUnit == null
+                || size == null || size.compareTo(BigDecimal.ZERO) == 0)
+            return null;
+
+        String container = toSingularCount(containerUnit.toLowerCase().trim());
+        String base = baseUnit.toLowerCase().trim();
+        // If known container size matches given unit, return canonical converted
+        // quantity
+        if (toSingularCount(from).equals(container) && to.equals(base))
+            return size;
+        if (from.equals(base) && toSingularCount(to).equals(container))
+            return BigDecimal.ONE.divide(size, 6, RoundingMode.HALF_UP);
+        return null;
+    }
+
+    // Normalizes a COUNT unit to its singular form (e.g. "cans" -> "can")
+    private String toSingularCount(String unit) {
+        return COUNT_UNIT_SINGULAR.getOrDefault(unit, unit);
     }
 
     // -------------------------------------------------------------------------

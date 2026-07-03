@@ -3,6 +3,7 @@ package com.dishcision.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,17 @@ public class Ingredient {
     private UnitType unitType;
 
     private String category;
+
+    // COUNT-style unit this ingredient is commonly packaged in, e.g. "can", "jar"
+    @Column(name = "container_unit")
+    private String containerUnit;
+
+    // How many of defaultUnit one containerUnit holds, e.g. 400 (grams per can)
+    // E.g. for canned tomatoes: containerUnit="can", containerSize=400,
+    // defaultUnit="g" means 1 can = 400 g
+    @Column(name = "container_size")
+    private BigDecimal containerSize;
+
     // Link to ingredient_aliases (e.g tomato can have aliases such as roma, cherry,
     // canned, etc.)
     @OneToMany(mappedBy = "ingredient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

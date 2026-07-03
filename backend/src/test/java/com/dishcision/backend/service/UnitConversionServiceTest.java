@@ -1,6 +1,7 @@
 // This file contains test cases for converting units of different groups
 package com.dishcision.backend.service;
 
+import com.dishcision.backend.model.Ingredient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -96,20 +97,46 @@ class UnitConversionServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // Cross-type conversions
+    // Cross-type conversions — ingredient-aware container size
     // -------------------------------------------------------------------------
 
+    private Ingredient cannedTomatoes() {
+        return Ingredient.builder()
+                .defaultUnit("g")
+                .containerUnit("can")
+                .containerSize(new BigDecimal("400"))
+                .build();
+    }
+
     @Test
-    void convert_canToGrams() {
-        BigDecimal result = svc.convert(new BigDecimal("1"), "can", "g");
+    void convert_canToGrams_withIngredientContainerSize() {
+        BigDecimal result = svc.convert(new BigDecimal("1"), "can", "g", cannedTomatoes());
         assertEquals(0, new BigDecimal("400.00").compareTo(result));
     }
 
     @Test
-    void convert_cansToGrams_twoTins() {
+    void convert_cansToGrams_twoTins_withIngredientContainerSize() {
         // 1 can = 400g
-        BigDecimal result = svc.convert(new BigDecimal("2"), "cans", "g");
+        BigDecimal result = svc.convert(new BigDecimal("2"), "cans", "g", cannedTomatoes());
         assertEquals(0, new BigDecimal("800.00").compareTo(result));
+    }
+
+    @Test
+    void convert_gramsToCan_withIngredientContainerSize() {
+        BigDecimal result = svc.convert(new BigDecimal("400"), "g", "can", cannedTomatoes());
+        assertEquals(0, new BigDecimal("1.00").compareTo(result));
+    }
+
+    @Test
+    void convert_canToGrams_noIngredient_returnsNull() {
+        // Without ingredient context, there's no universal "1 can = X g" constant
+        assertNull(svc.convert(new BigDecimal("1"), "can", "g"));
+    }
+
+    @Test
+    void convert_canToGrams_ingredientWithoutContainerInfo_returnsNull() {
+        Ingredient noContainerInfo = Ingredient.builder().defaultUnit("g").build();
+        assertNull(svc.convert(new BigDecimal("1"), "can", "g", noContainerInfo));
     }
 
     @Test
