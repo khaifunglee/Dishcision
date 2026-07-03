@@ -120,7 +120,8 @@ function IngredientItem({ item, onEdit, onDelete, expiryAlertDays }) {
 
     return (
         <Swipeable renderRightActions={renderRightActions} overShootRight={false}>
-            <Pressable style={[styles.ingredientRow, themed.card]} onPress={() => onEdit(item)} activeOpacity={0.7}>
+            <Pressable style={({ pressed }) => [styles.ingredientRow, themed.card, pressed && styles.pressed]} 
+            onPress={() => onEdit(item)}>
                 <View style={[styles.expiryBar, { backgroundColor: s.bar }]} />
                 <ThemedText style={styles.ingredientEmoji}>{getIngredientEmoji(item)}</ThemedText>
                 <View style={styles.ingredientInfo}>
@@ -167,9 +168,6 @@ const Pantry = () => {
         card: {
             backgroundColor: c.uiBackground,
             borderColor: c.border,
-        },
-        signatureColor: {
-            color: c.green,
         },
         filterChipActive: {
             backgroundColor: c.green,
@@ -305,7 +303,8 @@ const Pantry = () => {
                     value={search}
                     onChangeText={setSearch}
                     placeholder="Search ingredients..."
-                    placeholderTextColor='#D2CEC6'
+                    placeholderTextColor={c.textSoft}
+                    color={c.textSoft}
                     clearButtonMode='while-editing'
                 />
             </View>
@@ -474,5 +473,5 @@ const styles = StyleSheet.create({
     emptyTitle: { fontSize: 20, textAlign: 'center', marginBottom: 8, },
     emptySubtitle: { fontSize: 14, textAlign: 'center' },
 
-    pressed: { opactiy: 0.7 }
+    pressed: { opacity: 0.7 }
 })

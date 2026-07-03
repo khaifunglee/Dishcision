@@ -22,7 +22,7 @@ export default function OnboardingOverlay({ visible, step, total, body, onNext, 
                 <View style={[styles.tooltip, { backgroundColor: c.terracottaLight }]}>
                     {/* Header */}
                     <View style={styles.stepRow}>
-                        <ThemedText style={[styles.stepLabel, { color: c.green }]}>
+                        <ThemedText style={[styles.stepLabel, { color: c.terracotta }]}>
                             STEP {step} OF {total}
                         </ThemedText>
                     </View>
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     },
     skipText: { fontSize: 14 },
     body: {
-        fontSize: 12, lineHeight: 22,
+        fontSize: 12, lineHeight: 18,
     },
     footer: {
         flexDirection: 'row',

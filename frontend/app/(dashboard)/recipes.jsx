@@ -210,7 +210,8 @@ const Recipes = () => {
                     <ThemedText style={{ fontSize: 16 }}>🔍</ThemedText>
                     <TextInput
                         placeholder={`Search ${recipes.length} recipes...`}
-                        placeholderTextColor='#D2CEC6'
+                        placeholderTextColor={c.textSoft}
+                        color={c.textSoft}
                         style={styles.searchInput}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
