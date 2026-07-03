@@ -48,7 +48,7 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
             setIngredientName(editingItem.ingredientName || '');
             setQuantity(editingItem.quantity?.toString() || '');
             setUnit(editingItem.unit || 'g');
-            setExpiryDate(new Date(editingItem.expiryDate) ? new Date(editingItem.expiryDate) : null);
+            setExpiryDate(editingItem.expiryDate ? new Date(editingItem.expiryDate) : null);
             setCategory(editingItem.category || 'Dairy');
             setResolvedUnitType(editingItem.unitType || null);
         } else {
@@ -308,10 +308,10 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
                             {showDatePicker && (
                                 <View style={[styles.calendarWrapper, themed.inputField]}>
                                     <DateTimePicker
-                                        value={expiryDate || new Date()}
+                                        value={expiryDate || null}
                                         mode='date'
                                         display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                                        minimumDate={new Date()}
+                                        minimumDate={null}
                                         themeVariant='light'
                                         accentColor={c.green}
                                         onChange={(event, date) => {

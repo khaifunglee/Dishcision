@@ -58,10 +58,10 @@ export default function SwipeableRecipeItem({ recipe, onPress, onSave }) {
             overshootRight={false}
         >
             <Pressable
-                style={[styles.recipeItem, {
+                style={({ pressed }) => [styles.recipeItem, {
                     backgroundColor: c.uiBackground,
                     borderColor: c.border,
-                }]}
+                }, pressed && styles.pressed]}
                 onPress={onPress}
             >
                 <View style={[styles.recipeThumb, { backgroundColor: recipe.bg }]}>
@@ -115,4 +115,6 @@ const styles = StyleSheet.create({
     saveActionLabel: {
         fontFamily: 'DMSans_600SemiBold', fontSize: 11, color: '#fff',
     },
+
+    pressed: { opacity: 0.7 }
 })
