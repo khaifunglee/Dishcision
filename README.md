@@ -186,3 +186,4 @@ jwt.expiration=86400000
 - Created user preferences such as dietary preferences, allergy tags, text size to allow user customization
 - Users can now add dietary preferences upon registration
 - Added functions such as save recipe, automatic filtering for suggestions based on user's diet tags
+- Design choice: cook recipe deducts soonest expiring recipe ingredients, (also deduct ingredients with insufficient quantity with warning)
