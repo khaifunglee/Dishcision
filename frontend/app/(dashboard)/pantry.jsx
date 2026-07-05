@@ -22,16 +22,19 @@ import { deleteItem, getAll } from '../../api/pantryApi'
 import { getPreferences } from '../../api/preferencesApi'
 
 const CATEGORY_EMOJIS = {
-    'Protein': '🥩', 'Produce': '🥦', 'Dairy': '🧀', 'Pantry Staple': '🥫', 'Frozen': '❄️', 'Other': '🫙'
+    'Protein': '🥩', 'Fruits': '🍎', 'Vegetables': '🥦', 'Gluten': '🍞', 'Dairy & Eggs': '🧀', 'Pantry Staple': '🥫', 'Sauces': '🥫', 'Frozen': '❄️', 'Other': '🫙'
 }
 
 const FILTER_CHIPS = [
     { key: 'all', label: 'All' },
-    { key: 'expiring', label: '🔴 Expiring' },
+    { key: 'Expiring', label: '🔴 Expiring' },
     { key: 'Protein', label: '🥩 Protein' },
-    { key: 'Produce', label: '🥦 Produce' },
-    { key: 'Pantry Staple', label: '🥫 Pantry' },
-    { key: 'Dairy', label: '🧀 Dairy' },
+    { key: 'Fruits', label: '🍎 Fruits' },
+    { key: 'Vegetables', label: '🥦 Vegetables' },
+    { key: 'Gluten', label: '🍞 Gluten' },
+    { key: 'Dairy & Eggs', label: '🧀 Dairy & Eggs' },
+    { key: 'Pantry Staple', label: '🧈 Pantry Staples' },
+    { key: 'Sauces', label: '🥫 Sauces' },
 ];
 
 // Expiry date calculate helpers
@@ -160,7 +163,7 @@ const Pantry = () => {
     // Activate expiring filter when navigated from home's expiry alert banner
     const { filter: filterParam } = useLocalSearchParams()
     useEffect(() => {
-        if (filterParam === 'expiring') setActiveFilter('expiring')
+        if (filterParam === 'Expiring') setActiveFilter('Expiring')
     }, [filterParam])
 
     // Dynamic styles that depend on theme colours
@@ -233,7 +236,7 @@ const Pantry = () => {
             result = result.filter(i => i.ingredientName.toLowerCase().includes(q))
         }
         // Filter expiring items
-        if (activeFilter === 'expiring') {
+        if (activeFilter === 'Expiring') {
             result = result.filter(i => ['urgent', 'warn'].includes(getExpiryStatus(i.expiryDate, expiryAlertDays)))
             // Filter items by category
         } else if (activeFilter !== 'all') {

@@ -21,7 +21,7 @@ const UNIT_OPTIONS = {
     COUNT: ['pieces', 'cloves', 'heads', 'bunches', 'cans', 'jars'],
 }
 const DEFAULT_UNITS = { WEIGHT: 'g', VOLUME: 'ml', COUNT: 'pieces' }
-const CATEGORIES = ['Produce', 'Protein', 'Dairy', 'Pantry Staple', 'Frozen', 'Other']
+const CATEGORIES = ['Protein', 'Fruits', 'Vegetables', 'Gluten', 'Dairy & Eggs', 'Pantry Staple', 'Sauces']
 
 export default function AddIngredientSheet({ visible, onClose, onSaved, editingItem }) {
 
@@ -308,7 +308,7 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
                             {showDatePicker && (
                                 <View style={[styles.calendarWrapper, themed.inputField]}>
                                     <DateTimePicker
-                                        value={expiryDate || null}
+                                        value={expiryDate || new Date()}
                                         mode='date'
                                         display={Platform.OS === 'ios' ? 'inline' : 'default'}
                                         minimumDate={null}
