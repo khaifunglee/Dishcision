@@ -1,6 +1,6 @@
 // This file uses React Context to determine global auth state for the whole app
 import { createContext, useContext, useEffect, useState } from "react"
-import { login, register, logout, getToken, getStoredUser } from '../api/authApi'
+import { login, register, logout, getToken, getStoredUser, verifyEmail, resendVerificationCode } from '../api/authApi'
 import { setAuthFailureHandler } from '../api/client'
 
 const AuthContext = createContext()
@@ -38,13 +38,22 @@ export const AuthProvider = ({ children }) => {
         setUser({ name: result.name, email: result.email })
     }
 
+    // Register does NOT log the user in — account is unverified until the
+    // emailed code is confirmed via handleVerifyEmail
     const handleRegister = async (name, email, password) => {
         const result = await register(name, email, password)
         console.log('Register results: ', result)
+        return result
+    }
+
+    const handleVerifyEmail = async (email, code) => {
+        const result = await verifyEmail(email, code)
+        console.log('Verify email results: ', result)
         setToken(result.token)
         setUser({ name: result.name, email: result.email })
+        return result
     }
-    
+
     const handleLogout = async () => {
         await logout()
         setToken(null) // remove token after logout
@@ -65,6 +74,8 @@ export const AuthProvider = ({ children }) => {
             isLoggedIn: !!token,    // true = token exists, false = no token
             login: handleLogin,
             register: handleRegister,
+            verifyEmail: handleVerifyEmail,
+            resendVerificationCode,
             logout: handleLogout,
             updateUser,
         }}>

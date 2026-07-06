@@ -2,19 +2,34 @@
 import client from "./client"
 import * as SecureStore from 'expo-secure-store'
 
-// Register POST API — returns { token, name, email }
+// Register POST API — creates an unverified account and emails a 6-digit code.
+// Returns { name, email } with no token — account isn't usable until verified.
 export const register = async (name, email, password) => {
     console.log('calling register API')
     const response = await client.post('/auth/register', { name, email, password })
     console.log('register response: ', response.data)
-    const { token, name: userName, email: userEmail } = response.data
+    const { name: userName, email: userEmail } = response.data
+    return { name: userName, email: userEmail }
+}
 
-    // Store JWT token, remember me, and user data on device
+// Verify-email POST API — confirms the 6-digit code, returns { token, name, email }
+export const verifyEmail = async (email, code) => {
+    console.log('calling verify-email API')
+    const response = await client.post('/auth/verify-email', { email, code })
+    const { token, name, email: userEmail } = response.data
+    //console.log('verify email response: ', response.data) // remove after testing
+
     await SecureStore.setItemAsync('jwt_token', token)
     await SecureStore.setItemAsync('remember_me', 'true')
-    await SecureStore.setItemAsync('user_name', userName)
+    await SecureStore.setItemAsync('user_name', name)
     await SecureStore.setItemAsync('user_email', userEmail)
-    return { token, name: userName, email: userEmail }
+    return { token, name, email: userEmail }
+}
+
+// Resend-verification POST API — no response body
+export const resendVerificationCode = async (email) => {
+    console.log('calling resend-verification API')
+    await client.post('/auth/resend-verification', { email })
 }
 
 // Login POST API — returns { token, name, email }
