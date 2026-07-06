@@ -113,14 +113,14 @@ class IngredientMatchingServiceTest {
     }
 
     @Test
-    void match_canonicalIdMatch_sameUnit_insufficient_returnsNoMatch() {
+    void match_canonicalIdMatch_sameUnit_insufficient_returnsPartialMatch() {
         PantryItem garlic = pantryItem(10L, "Garlic", new BigDecimal("2"), "cloves");
         RecipeIngredient ri = recipeIngredient(canonicalGarlic, "garlic", new BigDecimal("5"), "cloves");
 
         IngredientMatchingService.MatchResult result = matchingService.match(
                 ri, new BigDecimal("5"), byCanonical(garlic), byLowerName(garlic));
 
-        assertEquals(IngredientMatchingService.MatchStatus.NO_MATCH, result.getStatus());
+        assertEquals(IngredientMatchingService.MatchStatus.PARTIAL_MATCH, result.getStatus());
     }
 
     @Test
@@ -237,7 +237,8 @@ class IngredientMatchingServiceTest {
 
     @Test
     void match_insufficientFirst_sufficientSecond_returnsMatched() {
-        // Two pantry entries: 50g (insufficient) + 300g (sufficient). Should pick 300g as MATCHED.
+        // Two pantry entries: 50g (insufficient) + 300g (sufficient). Should pick 300g
+        // as MATCHED.
         PantryItem small = pantryItem(10L, "Flour", new BigDecimal("50"), "g");
         PantryItem large = pantryItem(10L, "Flour", new BigDecimal("300"), "g");
         RecipeIngredient ri = recipeIngredient(canonicalGarlic, "flour", new BigDecimal("200"), "g");
