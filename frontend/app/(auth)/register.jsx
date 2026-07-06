@@ -4,8 +4,6 @@ import { StyleSheet, View, Text, TextInput, Keyboard, Alert, TouchableWithoutFee
 import { Link, router } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
-import { useOnboarding } from "../../context/OnboardingContext"
-import { updatePreferences } from "../../api/preferencesApi"
 import { radius, useAppColors } from "../../constants/colors"
 // Themed components
 import ThemedView from "../../components/ThemedView"
@@ -26,7 +24,6 @@ const CHIPS = Object.keys(CHIP_TO_TAG)
 
 const Register = () => {
     const { register } = useAuth()
-    const { triggerOnboarding } = useOnboarding()
 
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -39,10 +36,16 @@ const Register = () => {
         card: { backgroundColor: c.uiBackground, borderColor: c.border },
     }), [c])
 
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
     // Register function
     const handleRegister = async () => {
         if (!name || !email || !password) {
             Alert.alert('Error', 'Please fill in all fields')
+            return
+        }
+        if (!EMAIL_REGEX.test(email)) {
+            Alert.alert('Error', 'Please enter a valid email address')
             return
         }
         if (password.length < 8) {
@@ -51,21 +54,17 @@ const Register = () => {
         }
         setLoading(true)
         try {
-            await register(name, email, password) // _layout.jsx handles navigation on success
-            console.log('Registered user+email: ', name, email)
-            // Write dietary preferences immediately after account creation, if any chips selected
-            if (selected.length > 0) {
-                const dietTags = selected.map(chip => CHIP_TO_TAG[chip]).filter(Boolean)
-                try {
-                    await updatePreferences({ dietTags })
-                    console.log('Set user preferences: ', dietTags)
-                } catch (e) {
-                    // Non-fatal error — user can update prefs later in settings
-                    console.warn('Failed to save initial dietary preferences:', e)
-                }
-            }
+            await register(name, email, password)
+            console.log('Registered user+email (unverified): ', name, email)
 
-            await triggerOnboarding()
+            // Account isn't usable until the emailed code is confirmed — carry
+            // any selected dietary tags through so verify-email can apply them
+            // once a valid token exists.
+            const dietTags = selected.map(chip => CHIP_TO_TAG[chip]).filter(Boolean)
+            router.push({
+                pathname: '/verify-email',
+                params: { email, dietTags: JSON.stringify(dietTags) }
+            })
         } catch (error) {
             const message = error.response?.data?.message || 'Registration failed'
             Alert.alert('Error', message)

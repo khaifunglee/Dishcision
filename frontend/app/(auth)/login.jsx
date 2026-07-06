@@ -29,10 +29,16 @@ const Login = () => {
         }
     }), [c])
 
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
     // Business logic for login function
     const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert('Error', 'Please fill in all fields')
+            return
+        }
+        if (!EMAIL_REGEX.test(email)) {
+            Alert.alert('Error', 'Please enter a valid email address')
             return
         }
         setLoading(true)
@@ -41,8 +47,19 @@ const Login = () => {
             await login(email, password, rememberMe) // _layout.jsx handles navigation on success
             console.log('3. login succeeded')
         } catch (error) {
-            console.log('error found')
-            Alert.alert('Login failed', 'Invalid email or password')
+            if (error.response?.data?.error === 'EMAIL_NOT_VERIFIED') {
+                Alert.alert(
+                    'Email not verified',
+                    'Please verify your email before logging in.',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Verify now', onPress: () => router.push({ pathname: '/verify-email', params: { email, sendCode: '1' } }) },
+                    ]
+                )
+            } else {
+                console.log('error found')
+                Alert.alert('Login failed', 'Invalid email or password')
+            }
         } finally {
             setLoading(false)
         }
