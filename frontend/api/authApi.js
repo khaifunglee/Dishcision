@@ -7,7 +7,7 @@ import * as SecureStore from 'expo-secure-store'
 export const register = async (name, email, password) => {
     console.log('calling register API')
     const response = await client.post('/auth/register', { name, email, password })
-    console.log('register response: ', response.data)
+    //console.log('register response: ', response.data)
     const { name: userName, email: userEmail } = response.data
     return { name: userName, email: userEmail }
 }
@@ -36,7 +36,7 @@ export const resendVerificationCode = async (email) => {
 export const login = async (email, password, rememberMe = true) => {
     console.log('calling login API')
     const response = await client.post('/auth/login', { email, password })
-    console.log('login response: ', response.data)
+    //console.log('login response: ', response.data)
     const { token, name, email: userEmail } = response.data
 
     // Always store token so the current session's requests can attach it.
