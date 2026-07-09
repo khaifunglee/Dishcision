@@ -179,7 +179,7 @@ jwt.expiration=86400000
 - Redesigned recipe details page to take dynamic recipe details
 - Added functions such as search & filter, recipe suggestions for suggestions page
 
-### 24/6/2026
+### 25/6/2026
 
 **Implemented user preferences & save recipe functions**:
 
@@ -187,3 +187,13 @@ jwt.expiration=86400000
 - Users can now add dietary preferences upon registration
 - Added functions such as save recipe, automatic filtering for suggestions based on user's diet tags
 - Design choice: cook recipe deducts soonest expiring recipe ingredients, (also deduct ingredients with insufficient quantity with warning)
+
+# 9/7/2026
+
+**Last update before deploying to production**:
+
+- Added simple email authentication via Gmail SMTP
+- Improved UX across multiple features, e.g expiry alert days, colour changes
+- Added partial match case to deduct insufficient quantity ingredients with warning after cook recipe
+- Restructured cross-unit conversion to now resolve through ingredient-specific known conversions
+- Increased ingredient & recipe database in seeders
