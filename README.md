@@ -163,7 +163,7 @@ jwt.expiration=86400000
 - Added more complex frontend features such as bottom sheet add/edit ingredient sheet modal and swipeable recipe item components
 - Fixed numerous minor visual bugs, polished UI/UX of the application
 
-### 11/6/2026
+### 11-06-2026
 
 **Implemented Pantry-related functions**:
 
@@ -171,7 +171,7 @@ jwt.expiration=86400000
 - Wired live pantry data to pantry and home page
 - Added functions such as add/edit pantry items with autofill, search & filter, expiry status tracker
 
-### 16/6/2026
+### 16-06-2026
 
 **Implemented Recipe-related functions**:
 
@@ -179,7 +179,7 @@ jwt.expiration=86400000
 - Redesigned recipe details page to take dynamic recipe details
 - Added functions such as search & filter, recipe suggestions for suggestions page
 
-### 25/6/2026
+### 25-06-2026
 
 **Implemented user preferences & save recipe functions**:
 
@@ -188,7 +188,7 @@ jwt.expiration=86400000
 - Added functions such as save recipe, automatic filtering for suggestions based on user's diet tags
 - Design choice: cook recipe deducts soonest expiring recipe ingredients, (also deduct ingredients with insufficient quantity with warning)
 
-# 9/7/2026
+# 9-07-2026
 
 **Last update before deploying to production**:
 
