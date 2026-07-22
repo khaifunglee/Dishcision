@@ -39,5 +39,3 @@ yarn-error.*
 # generated native folders
 /ios
 /android
-backend/src/main/resources/application.properties
-backend/src/main/resources/application.properties
