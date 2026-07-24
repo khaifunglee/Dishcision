@@ -2,8 +2,8 @@
 import axios from 'axios' // used to create HTTP client
 import * as SecureStore from 'expo-secure-store' // stores JWT token securely on device
 
-// Address to reach Spring Boot server
-const BASE_URL = 'http://192.168.1.20:8080' // hide JIC
+// Address to reach Spring Boot server (env-driven, fall back to LAN IP for local dev)
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.1.20:8080'
 // Create API client
 const client = axios.create({
     baseURL: BASE_URL,
