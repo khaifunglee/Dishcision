@@ -2,6 +2,8 @@
 package com.dishcision.backend.service;
 
 import com.dishcision.backend.dto.*;
+import com.dishcision.backend.exception.ApiException;
+import com.dishcision.backend.exception.ErrorCode;
 import com.dishcision.backend.model.User;
 import com.dishcision.backend.model.UserPreferences;
 import com.dishcision.backend.repository.UserPreferencesRepository;
@@ -34,14 +36,13 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.getEmail());
         if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email is already in use");
+            throw new ApiException(ErrorCode.EMAIL_IN_USE, "Email is already in use");
         }
         User user = new User();
         user.setName(request.getName());
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         // Email verification code to verify user
-        System.err.println("Sending verification code to user: " + user);
         issueVerificationCode(user);
         userRepository.save(user);
 
@@ -65,13 +66,13 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(normalizeEmail(request.getEmail()))
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new ApiException(ErrorCode.INVALID_CREDENTIALS, "Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new ApiException(ErrorCode.INCORRECT_PASSWORD, "Incorrect Password");
         }
         if (!user.isEmailVerified()) {
-            throw new EmailNotVerifiedException("Please verify your email before logging in.");
+            throw new ApiException(ErrorCode.EMAIL_NOT_VERIFIED, "Please verify your email before logging in.");
         }
 
         String token = jwtUtil.generateToken(user.getEmail());
@@ -90,20 +91,20 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Invalid email or code"));
 
         if (user.isEmailVerified()) {
-            throw new RuntimeException("Email is already verified");
+            throw new ApiException(ErrorCode.EMAIL_ALREADY_VERIFIED, "Email is already verified");
         }
         if (user.getVerificationAttempts() >= MAX_VERIFICATION_ATTEMPTS) {
-            throw new RuntimeException("Too many attempts. Please request a new code.");
+            throw new ApiException(ErrorCode.TOO_MANY_ATTEMPTS, "Too many attempts. Please request a new code.");
         }
         if (user.getVerificationCode() == null
                 || user.getVerificationCodeExpiresAt() == null
                 || user.getVerificationCodeExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Code has expired. Please request a new one.");
+            throw new ApiException(ErrorCode.INVALID_CODE, "Code has expired. Please request a new one.");
         }
         if (!user.getVerificationCode().equals(request.getCode())) {
             user.setVerificationAttempts(user.getVerificationAttempts() + 1);
             userRepository.save(user);
-            throw new RuntimeException("Incorrect code");
+            throw new ApiException(ErrorCode.INVALID_CODE, "Incorrect code");
         }
         // Verify email by setting emailVerified=true, clearing verificationCode &
         // expiresAt & attempts
@@ -128,7 +129,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("No account found for that email"));
 
         if (user.isEmailVerified()) {
-            throw new RuntimeException("Email is already verified");
+            throw new ApiException(ErrorCode.EMAIL_ALREADY_VERIFIED, "Email is already verified");
         }
         issueVerificationCode(user);
         userRepository.save(user);
@@ -143,7 +144,7 @@ public class AuthService {
 
         // Verifies current password before changing to new password
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new RuntimeException("Current password is incorrect");
+            throw new ApiException(ErrorCode.INCORRECT_PASSWORD, "Current password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));

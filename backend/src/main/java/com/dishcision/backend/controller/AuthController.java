@@ -4,10 +4,8 @@ package com.dishcision.backend.controller;
 import com.dishcision.backend.dto.*;
 import com.dishcision.backend.security.UserDetailsImpl;
 import com.dishcision.backend.service.AuthService;
-import com.dishcision.backend.service.EmailNotVerifiedException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,12 +31,7 @@ public class AuthController {
     // structured error if the account's email hasn't been verified yet.
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            return ResponseEntity.ok(authService.login(request));
-        } catch (EmailNotVerifiedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "EMAIL_NOT_VERIFIED", "message", e.getMessage()));
-        }
+        return ResponseEntity.ok(authService.login(request));
     }
 
     // POST (200) verify-email — confirms the 6-digit code and returns a real token
