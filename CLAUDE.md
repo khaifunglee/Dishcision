@@ -99,7 +99,7 @@ Dishcision/
 
 ### Backend
 
-- **Java 17** + **Spring Boot 3**
+- **Java 21** + **Spring Boot 4** (4.0.5 — uses **Jackson 3**, package `tools.jackson.*`)
 - **Spring Security** with stateless JWT auth (BCrypt password hashing)
 - **PostgreSQL** via Spring Data JPA / Hibernate
 - **Maven** for dependency management
@@ -137,7 +137,12 @@ Dishcision/
 - **`BigDecimal`** for all quantities — never `float` or `double`.
 - **Date serialisation**: Always include in `application.properties`:
   ```properties
-  spring.jackson.serialization.write-dates-as-timestamps=false
+  spring.jackson.datatype.datetime.write-dates-as-timestamps=false
+  ```
+  ⚠️ Jackson 3 moved `WRITE_DATES_AS_TIMESTAMPS` from `SerializationFeature` to `DateTimeFeature`. The old Jackson 2 form `spring.jackson.serialization.write-dates-as-timestamps` **fails startup** on Spring Boot 4. For any Jackson property, the authority is the jar, not this doc:
+  ```bash
+  unzip -p ~/.m2/repository/org/springframework/boot/spring-boot-jackson/4.0.5/spring-boot-jackson-4.0.5.jar \
+    META-INF/spring-configuration-metadata.json | grep -i datetime
   ```
 
 ### Frontend

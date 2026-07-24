@@ -4,12 +4,12 @@
     "experiments": {
       "typedRoutes": true
     },
-    "name": "src",
-    "slug": "src",
+    "name": "Dishcision",
+    "slug": "dishcision",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -17,9 +17,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "bundleIdentifier": "com.dishcision.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.dishcision.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
