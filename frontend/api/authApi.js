@@ -17,7 +17,6 @@ export const verifyEmail = async (email, code) => {
     console.log('calling verify-email API')
     const response = await client.post('/auth/verify-email', { email, code })
     const { token, name, email: userEmail } = response.data
-    //console.log('verify email response: ', response.data) // remove after testing
 
     await SecureStore.setItemAsync('jwt_token', token)
     await SecureStore.setItemAsync('remember_me', 'true')
@@ -36,7 +35,6 @@ export const resendVerificationCode = async (email) => {
 export const login = async (email, password, rememberMe = true) => {
     console.log('calling login API')
     const response = await client.post('/auth/login', { email, password })
-    //console.log('login response: ', response.data)
     const { token, name, email: userEmail } = response.data
 
     // Always store token so the current session's requests can attach it.

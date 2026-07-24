@@ -27,7 +27,6 @@ export default function CookSheet({ visible, onClose, recipe, onCookSuccess }) {
         try {
             console.log('Calling cook recipe API...')
             const result = await cookRecipe(recipe.id, servings)
-            //console.log('Updated pantry, $ saved, warnings: ', result)
             onClose()
             onCookSuccess(result)
         } catch (e) {

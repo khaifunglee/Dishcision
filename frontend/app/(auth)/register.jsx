@@ -55,7 +55,6 @@ const Register = () => {
         setLoading(true)
         try {
             await register(name, email, password)
-            console.log('Registered user+email (unverified): ', name, email)
 
             // Account isn't usable until the emailed code is confirmed — carry
             // any selected dietary tags through so verify-email can apply them

@@ -181,11 +181,9 @@ const Pantry = () => {
     // Load pantry items and user prefs (for expiry alert days)
     const fetchData = useCallback(async () => {
         try {
-            //console.log('Retrieving pantry items...')
             const [pantryData, userPrefs] = await Promise.all([getAll(), getPreferences()])
             setItems(pantryData)
             setExpiryAlertDays(userPrefs.expiryAlertDays ?? 3)
-            //console.log('List: ', data)
         } catch (e) {
             Alert.alert('Error', 'Could not load your pantry. Please try again.')
             console.log('Error: ', e)
@@ -201,7 +199,6 @@ const Pantry = () => {
 
     // Add item function
     const handleSaved = (savedItem, wasEditing) => {
-        //console.log('handleAdded received:', JSON.stringify(savedItem))
         if (wasEditing) {
             setItems(prev => prev.map(i => i.id === savedItem.id ? savedItem : i))
             showToast('✓ Ingredient updated!')

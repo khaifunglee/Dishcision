@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }) => {
 
     const handleLogin = async (email, password, rememberMe) => {
         const result = await login(email, password, rememberMe)
-        console.log('Login results: ', result)
         setToken(result.token)
         setUser({ name: result.name, email: result.email })
     }
@@ -42,13 +41,11 @@ export const AuthProvider = ({ children }) => {
     // emailed code is confirmed via handleVerifyEmail
     const handleRegister = async (name, email, password) => {
         const result = await register(name, email, password)
-        console.log('Register results: ', result)
         return result
     }
 
     const handleVerifyEmail = async (email, code) => {
         const result = await verifyEmail(email, code)
-        console.log('Verify email results: ', result)
         setToken(result.token)
         setUser({ name: result.name, email: result.email })
         return result

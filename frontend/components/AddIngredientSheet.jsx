@@ -43,7 +43,6 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
 
     // Pre-fill when adding
     useEffect(() => {
-        console.log('editingItem received: ', JSON.stringify(editingItem))
         if (editingItem) {
             setIngredientName(editingItem.ingredientName || '');
             setQuantity(editingItem.quantity?.toString() || '');
@@ -77,9 +76,7 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
         const timer = setTimeout(async () => {
             setSearchLoading(true);
             try {
-                console.log('Searching for: ', ingredientName)
                 const results = await searchIngredients(ingredientName);
-                console.log('Results: ', results)
                 setSuggestions(results);
             } catch (e) {
                 setSuggestions([]);
@@ -128,7 +125,6 @@ export default function AddIngredientSheet({ visible, onClose, onSaved, editingI
             expiryDate: expiryDate ? expiryDate.toISOString().split('T')[0] : null,
             category
         }
-        console.log('Sending payload to POST API: ', payload)
 
         // Send POST API
         try {
