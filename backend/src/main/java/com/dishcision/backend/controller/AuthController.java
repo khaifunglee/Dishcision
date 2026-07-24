@@ -6,6 +6,8 @@ import com.dishcision.backend.security.UserDetailsImpl;
 import com.dishcision.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,10 +26,10 @@ public class AuthController {
     // Returned AuthResponse has no token yet (client must verify before login).
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
-    // POST (201) login — returns token + user info. Returns 403 with a
+    // POST (200) login — returns token + user info. Returns 403 with a
     // structured error if the account's email hasn't been verified yet.
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
@@ -47,7 +49,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    // PUT (201) change password — requires current password for verification
+    // PUT (200) change password — requires current password for verification
     @PutMapping("/password")
     public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request) {
         authService.changePassword(getCurrentUserId(), request);
