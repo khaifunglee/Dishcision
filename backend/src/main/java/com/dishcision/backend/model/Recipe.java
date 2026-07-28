@@ -51,7 +51,7 @@ public class Recipe {
     private LocalDateTime createdAt;
 
     // Maps to recipe_dietary_tags(recipe_id, tag) — no separate entity needed
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "recipe_dietary_tags", joinColumns = @JoinColumn(name = "recipe_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "tag")
@@ -60,7 +60,7 @@ public class Recipe {
 
     // Maps to recipe_steps(recipe_id, step_order, step_text) — preserves insertion
     // order
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "recipe_steps", joinColumns = @JoinColumn(name = "recipe_id"))
     @Column(name = "step_text", length = 1000)
     @OrderColumn(name = "step_order")
