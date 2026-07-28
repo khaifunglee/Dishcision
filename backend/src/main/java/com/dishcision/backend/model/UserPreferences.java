@@ -25,7 +25,7 @@ public class UserPreferences {
 
     // Uses DietaryTag to describe
     // e.g: VEGETARIAN, VEGAN — filters applied to suggestions
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_diet_tags", joinColumns = @JoinColumn(name = "user_preferences_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "tag")
@@ -34,7 +34,7 @@ public class UserPreferences {
 
     // Uses AllergyTag to describe
     // e.g. NUTS, SHELLFISH — informational, not yet used for filtering
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_allergy_tags", joinColumns = @JoinColumn(name = "user_preferences_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "tag")
