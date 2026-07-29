@@ -5,7 +5,7 @@
       "typedRoutes": true
     },
     "name": "Dishcision",
-    "slug": "dishcision",
+    "slug": "dishcision-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -37,6 +37,13 @@
       "expo-secure-store",
       "expo-font",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "93496a2c-3a0a-4210-9ec4-a61b465b7c5a"
+      }
+    },
+    "owner": "khaifungl"
   }
 }
