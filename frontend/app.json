@@ -18,7 +18,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.dishcision.app",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.dishcision.app",
