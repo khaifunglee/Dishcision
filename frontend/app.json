@@ -4,7 +4,7 @@
     "experiments": {
       "typedRoutes": true
     },
-    "name": "Dishcision",
+    "name": "Make a Dishcision",
     "slug": "dishcision-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,7 +17,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "com.dishcision.app",
+      "bundleIdentifier": "com.makeadishcision.app",
       "supportsTablet": false,
       "config": { "usesNonExemptEncryption": false },
       "infoPlist": {
