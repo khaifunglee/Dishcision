@@ -18,7 +18,8 @@
     },
     "ios": {
       "bundleIdentifier": "com.dishcision.app",
-      "supportsTablet": true,
+      "supportsTablet": false,
+      "config": { "usesNonExemptEncryption": false },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
