@@ -17,4 +17,6 @@ public interface PantryItemRepository extends JpaRepository<PantryItem, Long> {
     // Find by pantry item id AND userId to ensure users can only update their own
     // items
     Optional<PantryItem> findByIdAndUserId(Long id, Long userId);
+
+    void deleteByUserId(Long userId);
 }

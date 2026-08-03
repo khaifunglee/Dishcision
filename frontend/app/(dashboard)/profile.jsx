@@ -395,6 +395,25 @@ const Profile = () => {
     // Logout function
     const handleLogout = async () => { await logout() }
 
+    // Delete account function
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            'Delete Account',
+            'This permanently deletes your account and all your data. This cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', style: 'destructive', onPress: async () => {
+                    try {
+                        await client.delete('/auth/delete')
+                        await logout()
+                    } catch (e) {
+                        Alert.alert('Error', e.response?.data?.message || 'Could not delete account')
+                    }
+                }}
+            ]
+        )
+    }
+
     // User initial
     const userInitial = useMemo(() => {
         if (!user?.name) return '?'
@@ -490,6 +509,18 @@ const Profile = () => {
                                     </View>
                                     <ThemedText style={[styles.settingsLabel, { fontFamily: 'DMSans_600SemiBold', color: c.red }]}>
                                         Log Out
+                                    </ThemedText>
+                                </View>
+                            </Pressable>
+                            <Pressable
+                                style={({ pressed }) => [styles.settingsItem, { backgroundColor: c.uiBackground, borderColor: c.border, borderTopColor: c.border }, pressed && styles.pressed]}
+                                onPress={handleDeleteAccount}>
+                                <View style={styles.settingsLeft}>
+                                    <View style={[styles.settingsIcon, { backgroundColor: c.redLight }]}>
+                                        <Text style={{ fontSize: 16 }}>🗑️</Text>
+                                    </View>
+                                    <ThemedText style={[styles.settingsLabel, { fontFamily: 'DMSans_600SemiBold', color: c.red }]}>
+                                        Remove Account
                                     </ThemedText>
                                 </View>
                             </Pressable>

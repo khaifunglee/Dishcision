@@ -6,8 +6,11 @@ import com.dishcision.backend.exception.ApiException;
 import com.dishcision.backend.exception.ErrorCode;
 import com.dishcision.backend.model.User;
 import com.dishcision.backend.model.UserPreferences;
+import com.dishcision.backend.repository.CookingHistoryRepository;
+import com.dishcision.backend.repository.PantryItemRepository;
 import com.dishcision.backend.repository.UserPreferencesRepository;
 import com.dishcision.backend.repository.UserRepository;
+import com.dishcision.backend.repository.UserSavedRecipeRepository;
 import com.dishcision.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +29,9 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final UserPreferencesRepository userPreferencesRepository;
+    private final PantryItemRepository pantryItemRepository;
+    private final CookingHistoryRepository cookingHistoryRepository;
+    private final UserSavedRecipeRepository userSavedRecipeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
@@ -164,6 +170,21 @@ public class AuthService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .build();
+    }
+
+    // Remove user (remove children rows first like pantry items, cooking history,
+    // saved recipes)
+    @Transactional
+    public void deleteAccount(Long userId) {
+        pantryItemRepository.deleteByUserId(userId);
+        cookingHistoryRepository.deleteByUserId(userId);
+        userSavedRecipeRepository.deleteByUserId(userId);
+
+        // Delete entity before removing from DB so Hibernate clears @ElementCollection
+        // rows like diet_tags & allergy_tags
+        userPreferencesRepository.findByUserId(userId).ifPresent(userPreferencesRepository::delete);
+
+        userRepository.deleteById(userId);
     }
 
     // Normalizes email for storage/lookup so case differences don't create

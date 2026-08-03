@@ -28,4 +28,6 @@ public interface CookingHistoryRepository extends JpaRepository<CookingHistory, 
                      "WHERE h.userId = :userId AND h.cookedAt >= :since " +
                      "GROUP BY h.recipeId ORDER BY COUNT(h) DESC")
        List<Object[]> findTopRecipesSince(@Param("userId") Long userId, @Param("since") LocalDateTime since);
+
+       void deleteByUserId(Long userId);
 }

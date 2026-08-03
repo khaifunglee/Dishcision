@@ -63,6 +63,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.updateName(getCurrentUserId(), body.get("name")));
     }
 
+    // DEL (204) user request - remove user (return nothing)
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteAccount() {
+        authService.deleteAccount(getCurrentUserId());
+        return ResponseEntity.noContent().build();
+    }
+
     private Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl principal = (UserDetailsImpl) auth.getPrincipal();
