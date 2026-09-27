@@ -4,6 +4,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import { useTheme } from '../../context/ThemeContext'
 import { Colors, useAppColors } from '../../constants/colors'
 import { Feather } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // Themed components
 import ThemedText from '../../components/ThemedText'
@@ -29,6 +30,7 @@ function TabIcon({ name, label, focused }) {
 const DashboardLayout = () => {
     // Select light/dark colour theme from colors.js based on settings toggle
     const theme = useAppColors()
+    const insets = useSafeAreaInsets()
 
     return (
         <Tabs
@@ -40,8 +42,10 @@ const DashboardLayout = () => {
                     backgroundColor: theme.background,
                     borderTopColor: theme.border,
                     borderTopWidth: 1,
-                    paddingTop: 14, height: 66,
-                    marginTop: 0,
+                    height: 64 + insets.bottom,   // icon area + home-indicator space
+                    paddingTop: 10,
+                    paddingBottom: insets.bottom, // lifts icons above the home indicator
+                    marginTop: -32,
                 },
                 tabBarActiveTintColor: theme.iconColorFocused,
                 tabBarInactiveTintColor: theme.iconColor,
