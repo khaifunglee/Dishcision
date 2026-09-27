@@ -1,6 +1,6 @@
 // This file represents the Login page component inside the route group 'auth'
 import { useState, useMemo } from "react"
-import { StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View, Text } from "react-native"
+import { StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard, Pressable, View, Text, KeyboardAvoidingView, ScrollView, Platform } from "react-native"
 import { Link, router } from 'expo-router' // Expo router component to link to other pages
 import { useAuth } from "../../context/AuthContext"
 import { Feather } from "@expo/vector-icons"
@@ -73,74 +73,81 @@ const Login = () => {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ThemedView style={styles.container} safe={true}>
+            <ThemedView style={styles.container} safe>
+                <KeyboardAvoidingView style={{ flex: 1 }}
+                  behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1 }}
+                      keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-                <View style={styles.header}>
-                    <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
-                        onPress={() => router.back()}>
-                        <Feather name={'chevron-left'} size={22} color={c.text} />
-                    </Pressable>
+                        <View style={styles.header}>
+                            <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
+                                onPress={() => router.back()}>
+                                <Feather name={'chevron-left'} size={22} color={c.text} />
+                            </Pressable>
 
-                    <Text style={[styles.title, { color: c.text }]}>
-                        Sign In to your Account
-                    </Text>
-                    <Text style={[styles.tagline, { color: c.textSoft }]}>
-                        Time to cook smarter.
-                    </Text>
-                </View>
+                            <Text style={[styles.title, { color: c.text }]}>
+                                Sign In to your Account
+                            </Text>
+                            <Text style={[styles.tagline, { color: c.textSoft }]}>
+                                Time to cook smarter.
+                            </Text>
+                        </View>
 
-                <Spacer height={16} />
+                        {/* <Spacer height={16} /> */}
 
-                <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
-                <TextInput
-                    style={[styles.input, themed.card]}
-                    color={c.textSoft}
-                    placeholder="Email"
-                    placeholderTextColor={c.textSoft}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                />
-                <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
-                <TextInput
-                    style={[styles.input, themed.card]}
-                    color={c.textSoft}
-                    placeholder="Password"
-                    placeholderTextColor={c.textSoft}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
-                <Spacer height={8} />
-                <View style={styles.inputRow}>
-                    <View style={styles.rmbMe}>
-                        <Checkbox
-                            status={rememberMe ? 'checked' : 'unchecked'}
-                            onPress={toggleCheckbox}
-                            color={c.green}
-                            uncheckedColor={c.green}
+                        <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
+                        <TextInput
+                            style={[styles.input, themed.card]}
+                            color={c.textSoft}
+                            placeholder="Email"
+                            placeholderTextColor={c.textSoft}
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
                         />
-                        <ThemedText subtitle>Remember me</ThemedText>
-                    </View>
-                    <Link href="/" asChild>
-                        <ThemedText style={{ textDecorationLine: 'underline', color: c.green }}>Forgot Password?</ThemedText>
-                    </Link>
-                </View>
+                        <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
+                        <TextInput
+                            style={[styles.input, themed.card]}
+                            color={c.textSoft}
+                            placeholder="Password"
+                            placeholderTextColor={c.textSoft}
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                        />
+                        {/* <Spacer height={8} /> */}
+                        <View style={styles.inputRow}>
+                            <View style={styles.rmbMe}>
+                                <Checkbox
+                                    status={rememberMe ? 'checked' : 'unchecked'}
+                                    onPress={toggleCheckbox}
+                                    color={c.green}
+                                    uncheckedColor={c.green}
+                                />
+                                <ThemedText subtitle>Remember me</ThemedText>
+                            </View>
+                            <Link href="/" asChild>
+                                <ThemedText style={{ textDecorationLine: 'underline', color: c.green }}>Forgot Password?</ThemedText>
+                            </Link>
+                        </View>
 
-                <Spacer height={204} />
+                        <View style={{ flex: 1 }} />
 
-                <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
-                    onPress={handleLogin} disabled={loading}>
-                    <ThemedText style={{ color: '#fff' }}>{loading ? 'Logging In...' : 'Log In'}</ThemedText>
-                </Pressable>
+                        <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
+                            onPress={handleLogin} disabled={loading}>
+                            <ThemedText style={{ color: '#fff' }}>{loading ? 'Logging In...' : 'Log In'}</ThemedText>
+                        </Pressable>
 
-                <ThemedText style={{ textAlign: 'center' }}>
-                    Don't have an account?
-                    <Link href="/register" asChild>
-                        <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: c.green }}> Register</ThemedText>
-                    </Link>
-                </ThemedText>
+                        <ThemedText style={{ textAlign: 'center', marginBottom: 16 }}>
+                            Don't have an account?
+                            <Link href="/register" asChild>
+                                <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: c.green }}> Register</ThemedText>
+                            </Link>
+                        </ThemedText>
+
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </ThemedView>
         </TouchableWithoutFeedback>
     )
@@ -152,9 +159,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 36,
-        paddingTop: 56,
+        //paddingTop: 24,
+        //paddingBottom: 24,
     },
-    header: { gap: 16 },
+    header: { 
+        marginVertical: 16,
+        gap: 12,
+    },
     btnOutline: {
         borderWidth: 0.6,
         borderRadius: radius.medium,
@@ -191,7 +202,7 @@ const styles = StyleSheet.create({
     btn: {
         borderRadius: radius.medium,
         padding: 16,
-        marginVertical: 16,
+        marginBottom: 16,
         alignItems: 'center',
     },
     pressed: { opacity: 0.7 },

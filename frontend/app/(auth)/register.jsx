@@ -1,6 +1,6 @@
 // This file represents the Register page component inside the route group 'auth'
 import { useState, useMemo } from "react"
-import { StyleSheet, View, Text, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
+import { StyleSheet, View, Text, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable, KeyboardAvoidingView, Platform, ScrollView } from "react-native"
 import { Link, router } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
@@ -83,92 +83,99 @@ const Register = () => {
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ThemedView style={styles.container} safe>
+                <KeyboardAvoidingView style={{ flex: 1 }}
+                  behavior={Platform.OS === 'ios' ? 'padding': undefined}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1 }} 
+                        keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-                <View style={styles.header}>
-                    <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
-                        onPress={() => router.back()}>
-                        <Feather name={'chevron-left'} size={22} color={c.text} />
-                    </Pressable>
+                        <View style={styles.header}>
+                            <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
+                                onPress={() => router.back()}>
+                                <Feather name={'chevron-left'} size={22} color={c.text} />
+                            </Pressable>
 
-                    <Text style={[styles.title, { color: c.text }]}>
-                        Create your account
-                    </Text>
-                    <Text style={[styles.tagline, { color: c.textSoft }]}>
-                        Let's get your pantry ready.
-                    </Text>
-                </View>
+                            <Text style={[styles.title, { color: c.text }]}>
+                                Create your account
+                            </Text>
+                            <Text style={[styles.tagline, { color: c.textSoft }]}>
+                                Let's get your pantry ready.
+                            </Text>
+                        </View>
 
-                <Spacer height={30} />
+                        <ThemedText style={styles.subHeader} title>YOUR NAME</ThemedText>
+                        <TextInput
+                            style={[styles.input, themed.card]}
+                            placeholder="Name"
+                            placeholderTextColor={c.textSoft}
+                            color={c.textSoft}
+                            value={name}
+                            onChangeText={setName}
+                            autoCapitalize="words"
+                        />
+                        <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
+                        <TextInput
+                            style={[styles.input, themed.card]}
+                            placeholder="Email"
+                            placeholderTextColor={c.textSoft}
+                            color={c.textSoft}
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                        <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
+                        <TextInput
+                            style={[styles.input, themed.card]}
+                            placeholder="Min. 8 characters"
+                            placeholderTextColor={c.textSoft}
+                            color={c.textSoft}
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                        />
 
-                <ThemedText style={styles.subHeader} title>YOUR NAME</ThemedText>
-                <TextInput
-                    style={[styles.input, themed.card]}
-                    placeholder="Name"
-                    placeholderTextColor={c.textSoft}
-                    color={c.textSoft}
-                    value={name}
-                    onChangeText={setName}
-                    autoCapitalize="words"
-                />
-                <ThemedText style={styles.subHeader} title>EMAIL</ThemedText>
-                <TextInput
-                    style={[styles.input, themed.card]}
-                    placeholder="Email"
-                    placeholderTextColor={c.textSoft}
-                    color={c.textSoft}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                />
-                <ThemedText style={styles.subHeader} title>PASSWORD</ThemedText>
-                <TextInput
-                    style={[styles.input, themed.card]}
-                    placeholder="Min. 8 characters"
-                    placeholderTextColor={c.textSoft}
-                    color={c.textSoft}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
+                        {/* <Spacer height={10} /> */}
 
-                <Spacer height={10} />
-
-                {/* Dietary preferences chips */}
-                <ThemedText style={styles.subHeader} title>
-                    DIETARY PREFERENCES <ThemedText subtitle>(optional)</ThemedText>
-                </ThemedText>
-
-                <View style={styles.chipsRow}>
-                    {CHIPS.map(chip => (
-                        <Pressable
-                            key={chip}
-                            style={[styles.chip, { backgroundColor: c.creamDark, borderColor: c.border },
-                            selected.includes(chip) && { backgroundColor: c.freshLight, borderColor: c.fresh }]}
-                            onPress={() => toggle(chip)}
-                        >
-                            <ThemedText style={[styles.chipText, selected.includes(chip) && { color: c.fresh }]} subtitle>
-                                {chip}
-                            </ThemedText>
-                        </Pressable>
-                    ))}
-                </View>
-
-                <View style={styles.bottom}>
-                    <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
-                        onPress={handleRegister} disabled={loading}>
-                        <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
-                            {loading ? 'Creating account...' : 'Create Account'}
+                        {/* Dietary preferences chips */}
+                        <ThemedText style={styles.subHeader} title>
+                            DIETARY PREFERENCES <ThemedText subtitle>(optional)</ThemedText>
                         </ThemedText>
-                    </Pressable>
 
-                    <ThemedText style={{ textAlign: 'center' }}>
-                        Already have an account?
-                        <Link href="/login" asChild>
-                            <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: c.green }}> Log in</ThemedText>
-                        </Link>
-                    </ThemedText>
-                </View>
+                        <View style={styles.chipsRow}>
+                            {CHIPS.map(chip => (
+                                <Pressable
+                                    key={chip}
+                                    style={[styles.chip, { backgroundColor: c.creamDark, borderColor: c.border },
+                                    selected.includes(chip) && { backgroundColor: c.freshLight, borderColor: c.fresh }]}
+                                    onPress={() => toggle(chip)}
+                                >
+                                    <ThemedText style={[styles.chipText, selected.includes(chip) && { color: c.fresh }]} subtitle>
+                                        {chip}
+                                    </ThemedText>
+                                </Pressable>
+                            ))}
+                        </View>
+
+                        <View style={{ flex: 1 }} />
+
+                        <View style={styles.bottom}>
+                            <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
+                                onPress={handleRegister} disabled={loading}>
+                                <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
+                                    {loading ? 'Creating account...' : 'Create Account'}
+                                </ThemedText>
+                            </Pressable>
+
+                            <ThemedText style={{ textAlign: 'center', marginBottom: 16 }}>
+                                Already have an account?
+                                <Link href="/login" asChild>
+                                    <ThemedText style={{ fontFamily: 'DMSans_600SemiBold', fontWeight: 'bold', color: c.green }}> Log in</ThemedText>
+                                </Link>
+                            </ThemedText>
+                        </View>
+
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </ThemedView>
         </TouchableWithoutFeedback>
     )
@@ -176,15 +183,14 @@ const Register = () => {
 export default Register
 
 const styles = StyleSheet.create({
-    container: { flex: 1, paddingHorizontal: 36, paddingTop: 68 },
-    header: { flex: 1, justifyContent: 'center', alignItems: 'left' },
+    container: { flex: 1, paddingHorizontal: 36 },
+    header: { justifyContent: 'center', alignItems: 'left', marginVertical: 16, gap: 12 },
     btnOutline: {
         borderWidth: 0.6, borderRadius: radius.medium,
         height: 44, width: 44,
         justifyContent: 'center', alignItems: 'center',
     },
-    title: { fontSize: 28, fontFamily: 'Fraunces_600SemiBold',
-        marginVertical: 12 },
+    title: { fontSize: 28, fontFamily: 'Fraunces_600SemiBold' },
     tagline: { fontSize: 14, fontFamily: 'DMSans_400Regular' },
     subHeader: { fontSize: 12, fontFamily: 'DMSans_600SemiBold', marginBottom: 6 },
     input: {
@@ -201,11 +207,11 @@ const styles = StyleSheet.create({
         alignItems: 'center', justifyContent: 'center',
     },
     chipText: { fontSize: 12 },
-    bottom: { marginTop: 8 },
+    bottom: { marginTop: 16 },
     btn: {
         borderRadius: radius.medium,
         padding: 16,
-        marginVertical: 16,
+        marginBottom: 16,
         alignItems: 'center',
     },
     pressed: { opacity: 0.7 },

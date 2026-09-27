@@ -1,7 +1,9 @@
 // This file represents the Verify Email page component inside the route group 'auth'
 // Unverified accounts like newly registered users are redirected here
 import { useState, useMemo, useEffect } from "react"
-import { StyleSheet, View, Text, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
+import { StyleSheet, View, Text, TextInput, Keyboard, Alert, TouchableWithoutFeedback, Pressable,
+    KeyboardAvoidingView, Platform, ScrollView
+ } from "react-native"
 import { router, useLocalSearchParams } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { useAuth } from "../../context/AuthContext"
@@ -91,51 +93,56 @@ const VerifyEmail = () => {
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ThemedView style={styles.container} safe>
+                <KeyboardAvoidingView style={{ flex: 1 }}
+                  behavior={Platform.OS === 'ios' ? 'padding': undefined}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1 }} 
+                        keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-                <View style={styles.header}>
-                    <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
-                        onPress={() => router.back()}>
-                        <Feather name={'chevron-left'} size={22} color={c.text} />
-                    </Pressable>
+                        <View style={styles.header}>
+                            <Pressable style={({ pressed }) => [styles.btnOutline, themed.card, pressed && styles.pressed]}
+                                onPress={() => router.back()}>
+                                <Feather name={'chevron-left'} size={22} color={c.text} />
+                            </Pressable>
 
-                    <Text style={[styles.title, { color: c.text }]}>
-                        Verify your email
-                    </Text>
-                    <Text style={[styles.tagline, { color: c.textSoft }]}>
-                        We've sent a 6-digit code to {email}.
-                    </Text>
-                </View>
+                            <Text style={[styles.title, { color: c.text }]}>
+                                Verify your email
+                            </Text>
+                            <Text style={[styles.tagline, { color: c.textSoft }]}>
+                                We've sent a 6-digit code to {email}.
+                            </Text>
+                        </View>
 
-                <Spacer height={20}/>
+                        <ThemedText style={styles.subHeader} title>VERIFICATION CODE</ThemedText>
+                        <TextInput
+                            style={[styles.input, themed.card]}
+                            placeholder="E.g: 123456"
+                            placeholderTextColor={c.textSoft}
+                            color={c.textSoft}
+                            value={code}
+                            onChangeText={setCode}
+                            keyboardType="number-pad"
+                            maxLength={6}
+                        />
 
-                <ThemedText style={styles.subHeader} title>VERIFICATION CODE</ThemedText>
-                <TextInput
-                    style={[styles.input, themed.card]}
-                    placeholder="E.g: 123456"
-                    placeholderTextColor={c.textSoft}
-                    color={c.textSoft}
-                    value={code}
-                    onChangeText={setCode}
-                    keyboardType="number-pad"
-                    maxLength={6}
-                />
+                        <View style={{ flex: 1 }} />
 
-                <Spacer height={360}/>
+                        <View style={styles.bottom}>
+                            <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
+                                onPress={handleVerify} disabled={loading}>
+                                <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
+                                    {loading ? 'Verifying...' : 'Verify Email'}
+                                </ThemedText>
+                            </Pressable>
 
-                <View style={styles.bottom}>
-                    <Pressable style={({ pressed }) => [styles.btn, { backgroundColor: c.green }, pressed && styles.pressed]}
-                        onPress={handleVerify} disabled={loading}>
-                        <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
-                            {loading ? 'Verifying...' : 'Verify Email'}
-                        </ThemedText>
-                    </Pressable>
+                            <Pressable onPress={handleResend} disabled={resending}>
+                                <ThemedText style={{ textAlign: 'center', marginBottom: 16 }} subtitle>
+                                    {resending ? 'Sending...' : "Didn't get a code? Resend"}
+                                </ThemedText>
+                            </Pressable>
+                        </View>
 
-                    <Pressable onPress={handleResend} disabled={resending}>
-                        <ThemedText style={{ textAlign: 'center' }} subtitle>
-                            {resending ? 'Sending...' : "Didn't get a code? Resend"}
-                        </ThemedText>
-                    </Pressable>
-                </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </ThemedView>
         </TouchableWithoutFeedback>
     )
@@ -145,7 +152,7 @@ export default VerifyEmail
 const styles = StyleSheet.create({
     container: { flex: 1, paddingHorizontal: 36, },
     header: { justifyContent: 'center', alignItems: 'left', 
-                marginTop: 12,
+                marginVertical: 16, gap: 12
      },
     btnOutline: {
         borderWidth: 0.6, borderRadius: radius.medium,
@@ -154,7 +161,6 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 28, fontFamily: 'Fraunces_600SemiBold',
-        marginVertical: 12
     },
     tagline: { fontSize: 14, fontFamily: 'DMSans_400Regular' },
     subHeader: { fontSize: 12, fontFamily: 'DMSans_600SemiBold', marginBottom: 6 },
@@ -163,11 +169,10 @@ const styles = StyleSheet.create({
         padding: 16, marginBottom: 12,
         fontSize: 14, fontFamily: 'DMSans_400Regular',
     },
-    bottom: { marginTop: 8 },
     btn: {
         borderRadius: radius.medium,
         padding: 16,
-        marginVertical: 16,
+        marginBottom: 16,
         alignItems: 'center',
     },
     pressed: { opacity: 0.7 },

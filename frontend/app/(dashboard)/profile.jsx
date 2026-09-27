@@ -1,5 +1,5 @@
 // Profile / Settings screen — reads from and writes to GET/PUT /api/preferences
-import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Modal, Alert, TextInput, ActivityIndicator } from "react-native"
+import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Modal, Alert, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { useFocusEffect } from "expo-router"
 import { radius, palette, useAppColors } from "../../constants/colors"
@@ -170,32 +170,43 @@ function EditProfileModal({ visible, currentName, onSave, onClose }) {
 
     return (
         <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
-            <Pressable style={styles.modalOverlay} onPress={onClose}>
-                <View style={[styles.modalSheet, { backgroundColor: c.uiBackground }]}>
-                    <ThemedText style={styles.modalTitle} serif>Edit Profile</ThemedText>
-                    <ThemedText style={styles.modalSubtitle}>CHANGE USERNAME</ThemedText>
-                    <TextInput
-                        style={[styles.modalInput, { borderColor: c.border, color: c.text }]}
-                        value={name}
-                        onChangeText={setName}
-                        placeholder='Display name'
-                        placeholderTextColor={c.textSoft}
-                        autoCapitalize='words'
-                    />
-                    <Spacer height={140}/>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <Pressable style={styles.modalOverlay} onPress={onClose}>
                     <Pressable
-                        style={[styles.modalDoneBtn, { backgroundColor: c.green, opacity: saving ? 0.6 : 1 }]}
-                        onPress={handleSave}
-                        disabled={saving}>
-                        <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
-                            {saving ? 'Saving…' : 'Save'}
-                        </ThemedText>
+                        style={[styles.modalSheet, { backgroundColor: c.uiBackground, maxHeight: '90%' }]}
+                        onPress={() => { }}>
+                        <ScrollView
+                            keyboardShouldPersistTaps='handled'
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ gap: 4 }}>
+                            <ThemedText style={styles.modalTitle} serif>Edit Profile</ThemedText>
+                            <ThemedText style={styles.modalSubtitle}>CHANGE USERNAME</ThemedText>
+                            <TextInput
+                                style={[styles.modalInput, { borderColor: c.border, color: c.text }]}
+                                value={name}
+                                onChangeText={setName}
+                                placeholder='Display name'
+                                placeholderTextColor={c.textSoft}
+                                autoCapitalize='words'
+                            />
+
+                            <Pressable
+                                style={[styles.modalDoneBtn, { backgroundColor: c.green, opacity: saving ? 0.6 : 1 }]}
+                                onPress={handleSave}
+                                disabled={saving}>
+                                <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
+                                    {saving ? 'Saving…' : 'Save'}
+                                </ThemedText>
+                            </Pressable>
+                            <Pressable style={[styles.modalCancel, { borderTopColor: c.border }]} onPress={onClose}>
+                                <ThemedText style={{ color: c.textSoft }}>Cancel</ThemedText>
+                            </Pressable>
+                        </ScrollView>
                     </Pressable>
-                    <Pressable style={[styles.modalCancel, { borderTopColor: c.border }]} onPress={onClose}>
-                        <ThemedText style={{ color: c.textSoft }}>Cancel</ThemedText>
-                    </Pressable>
-                </View>
-            </Pressable>
+                </Pressable>
+            </KeyboardAvoidingView>
         </Modal>
     )
 }
@@ -215,7 +226,7 @@ function ChangePasswordModal({ visible, onClose }) {
         if (next !== confirm) { Alert.alert('Error', 'Passwords do not match'); return }
         setSaving(true)
         try {
-            await client.put('/auth/password', { currentPassword: current, newPassword: next })            
+            await client.put('/auth/password', { currentPassword: current, newPassword: next })
             setCurrent(''); setNext(''); setConfirm('')
             Alert.alert('Success', 'Password updated')
             onClose()
@@ -228,38 +239,48 @@ function ChangePasswordModal({ visible, onClose }) {
 
     return (
         <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
-            <Pressable style={styles.modalOverlay} onPress={onClose}>
-                <View style={[styles.modalSheet, { backgroundColor: c.uiBackground }]}>
-                    <ThemedText style={styles.modalTitle} serif>Change Password</ThemedText>                    
-                    {[
-                        { label: 'Current password', value: current, set: setCurrent },
-                        { label: 'New password', value: next, set: setNext },
-                        { label: 'Confirm new password', value: confirm, set: setConfirm },
-                    ].map(field => (
-                        <TextInput
-                            key={field.label}
-                            style={[styles.modalInput, { borderColor: c.border, color: c.text }]}
-                            placeholder={field.label}
-                            placeholderTextColor={c.textSoft}
-                            secureTextEntry
-                            value={field.value}
-                            onChangeText={field.set}
-                        />
-                    ))}
-                    <Spacer height={180} />
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <Pressable style={styles.modalOverlay} onPress={onClose}>
                     <Pressable
-                        style={[styles.modalDoneBtn, { backgroundColor: c.green, opacity: saving ? 0.6 : 1 }]}
-                        onPress={handleSave}
-                        disabled={saving}>
-                        <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
-                            {saving ? 'Saving…' : 'Update Password'}
-                        </ThemedText>
+                        style={[styles.modalSheet, { backgroundColor: c.uiBackground, maxHeight: '90%' }]}
+                        onPress={() => { }}>
+                        <ScrollView
+                            keyboardShouldPersistTaps='handled'
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ gap: 4 }}>
+                            <ThemedText style={styles.modalTitle} serif>Change Password</ThemedText>
+                            {[
+                                { label: 'Current password', value: current, set: setCurrent },
+                                { label: 'New password', value: next, set: setNext },
+                                { label: 'Confirm new password', value: confirm, set: setConfirm },
+                            ].map(field => (
+                                <TextInput
+                                    key={field.label}
+                                    style={[styles.modalInput, { borderColor: c.border, color: c.text }]}
+                                    placeholder={field.label}
+                                    placeholderTextColor={c.textSoft}
+                                    secureTextEntry
+                                    value={field.value}
+                                    onChangeText={field.set}
+                                />
+                            ))}
+                            <Pressable
+                                style={[styles.modalDoneBtn, { backgroundColor: c.green, opacity: saving ? 0.6 : 1, marginTop: 16 }]}
+                                onPress={handleSave}
+                                disabled={saving}>
+                                <ThemedText style={{ color: '#fff', fontFamily: 'DMSans_600SemiBold' }}>
+                                    {saving ? 'Saving…' : 'Update Password'}
+                                </ThemedText>
+                            </Pressable>
+                            <Pressable style={[styles.modalCancel, { borderTopColor: c.border }]} onPress={onClose}>
+                                <ThemedText style={{ color: c.textSoft }}>Cancel</ThemedText>
+                            </Pressable>
+                        </ScrollView>
                     </Pressable>
-                    <Pressable style={[styles.modalCancel, { borderTopColor: c.border }]} onPress={onClose}>
-                        <ThemedText style={{ color: c.textSoft }}>Cancel</ThemedText>
-                    </Pressable>
-                </View>
-            </Pressable>
+                </Pressable>
+            </KeyboardAvoidingView>
         </Modal>
     )
 }
@@ -648,7 +669,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalDoneBtn: {
-        marginTop: 16, marginBottom: 8, paddingVertical: 14,
+        marginTop: 120, marginBottom: 8, paddingVertical: 14,
         borderRadius: radius.medium,
         alignItems: 'center',
     },
