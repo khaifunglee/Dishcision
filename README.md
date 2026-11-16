@@ -7,7 +7,11 @@ A pantry-aware recipe app for people who can never decide what to eat: log what'
 ## Demo
 
 - App Store: https://apps.apple.com/us/app/make-a-dishcision/id6796202066
-- Screenshots / GIF: <!-- TODO: add screenshots or a short screen recording -->
+- Screenshots / GIF:
+
+https://github.com/user-attachments/assets/ea5ce996-ff94-4eba-9923-333a2e23ecbd
+
+https://github.com/user-attachments/assets/24724df3-60f3-4395-b8e8-8d9c8715e650
 
 ## Features
 
