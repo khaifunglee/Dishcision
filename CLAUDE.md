@@ -4,12 +4,16 @@
 
 Pantry-aware recipe suggestion mobile app. Users log ingredients, get recipe suggestions ranked by pantry match, and track expiry dates to reduce food waste. iOS-first, built for budget-conscious users.
 
-**Sprint status:**
+**Status: shipped.** The app is live on the App Store ([Make a Dishcision](https://apps.apple.com/us/app/make-a-dishcision/id6796202066)). The backend is hosted on Railway (Docker, `backend/Dockerfile`) against a Supabase PostgreSQL database. Production traffic must stay HTTPS.
 
-- Sprint 1 (Pantry CRUD) ✅ complete
-- Sprint 2 (Recipes + suggestions) ✅ complete
-- Sprint 3 (SavedRecipes + UserPreferences) — next
-- Sprint 4 (CookingHistory + matching engine)
+Completed: pantry CRUD, recipes + suggestions, saved recipes, user preferences, cooking history + canonical ingredient matching engine, email-verified auth (Resend). New features may be added over time; the project is in maintenance + incremental feature mode, not a sprint plan.
+
+**Because real users exist, treat every change as a production change:**
+
+- Schema changes go through a new Flyway migration (`backend/src/main/resources/db/migration/V<n>__*.sql`). Never edit an applied migration (`V1__init.sql`). Hibernate runs with `ddl-auto=validate`, so entity changes without a matching migration fail startup.
+- Keep API changes backward compatible: older app versions stay installed on user devices until they update. Add fields or endpoints rather than renaming or removing them.
+- Backend deploys from Railway; mobile releases go through EAS Build (`frontend/eas.json`) and App Store review.
+- Open security work is tracked in `docs/security/threat-model-auth-flow.md`. History of changes is in `CHANGELOG.md`.
 
 ---
 
@@ -101,14 +105,17 @@ Dishcision/
 
 - **Java 21** + **Spring Boot 4** (4.0.5 — uses **Jackson 3**, package `tools.jackson.*`)
 - **Spring Security** with stateless JWT auth (BCrypt password hashing)
-- **PostgreSQL** via Spring Data JPA / Hibernate
+- **PostgreSQL** (Supabase in production, local Postgres for dev) via Spring Data JPA / Hibernate; schema owned by **Flyway** migrations
+- **Resend** HTTP API for verification emails (`EmailService`); the Gmail SMTP block in `application.properties` is legacy and unused
+- **Railway** hosts the backend (Docker); activate the `prod` Spring profile there
 - **Maven** for dependency management
 - **Lombok** (`@Data`, `@Builder`, `@RequiredArgsConstructor`) — always use it, never write manual getters/setters
 
 ### Frontend
 
 - **React Native** + **Expo SDK** (Expo Router for file-based navigation)
-- **axios** for HTTP (via `services/client.js` which auto-attaches JWT)
+- **axios** for HTTP (via `api/client.js` which auto-attaches JWT)
+- **EAS Build / Submit** for App Store releases (`eas.json`; production API URL set per build profile)
 - **expo-secure-store** for token persistence
 - **React Context** for global state (auth, theme)
 - **react-native-gesture-handler** for swipe interactions
@@ -181,24 +188,7 @@ Dishcision/
 
 ## Database Schema (Current)
 
-```
-users                  — id, email, password, name
-ingredients            — id, canonical_name, default_unit, unit_type, category
-ingredient_aliases     — id, ingredient_id (FK), alias
-pantry_items           — id, user_id (FK), ingredient_name, canonical_ingredient_id (FK nullable),
-                         quantity, unit, expiry_date, category, created_at, updated_at
-```
-
-**Upcoming (Sprint 2+):**
-
-```
-recipes                — id, name, cuisine, cook_time_minutes, servings, cost_per_serve, calories
-recipe_ingredients     — id, recipe_id (FK), canonical_ingredient_id (FK), quantity, unit
-recipe_dietary_tags    — id, recipe_id (FK), tag
-user_saved_recipes     — id, user_id (FK), recipe_id (FK)
-cooking_history        — id, user_id (FK), recipe_id (FK), cooked_at
-user_preferences       — id, user_id (FK), diet_type, allergies, budget
-```
+The source of truth is `backend/src/main/resources/db/migration/` (Flyway). Tables in `V1__init.sql`: `users` (includes email-verification columns), `ingredients`, `ingredient_aliases`, `pantry_items`, `recipes`, `recipe_ingredients`, `recipe_steps`, `recipe_dietary_tags`, `user_saved_recipes`, `cooking_history`, `user_preferences`, `user_diet_tags`, `user_allergy_tags`. Read the migration or the entities in `model/` for exact columns rather than trusting a copy here.
 
 ---
 
@@ -227,9 +217,14 @@ cd backend && ./mvnw spring-boot:run
 # Build JAR
 ./mvnw clean package -DskipTests
 
-# Run tests
+# Run unit tests (no database needed)
+./mvnw test -Dtest='UnitConversionServiceTest,IngredientMatchingServiceTest'
+
+# Run full suite (BackendApplicationTests needs a reachable database + env vars)
 ./mvnw test
 ```
+
+Required env vars: `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `RESEND_API_KEY`, `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD` (legacy placeholder), optional `DB_URL`, `PORT`, `SPRING_PROFILES_ACTIVE`. Never commit values; see README "Environment variables".
 
 ### Frontend
 
@@ -254,10 +249,12 @@ npx expo start --android
 
 ```bash
 # Connect to local DB
-psql -U dishcision_user -d dishcision
+psql -U dishcision_user -d dishcision_db
 
-# If app user can't create tables (newer Postgres versions)
-GRANT CREATE ON SCHEMA public TO dishcision_user;
+# Flyway creates tables on first start; the app user needs schema rights (newer Postgres versions)
+GRANT ALL ON SCHEMA public TO dishcision_user;
+
+# Production is Supabase: never run ad-hoc destructive SQL against it; use a Flyway migration
 ```
 
 ---
@@ -276,7 +273,7 @@ frontend/dist/                   # Expo build output
 Do not modify these files without explicit instruction:
 
 - `frontend/app/_layout.jsx` — root layout, font loading, auth redirect logic
-- `frontend/services/client.js` — JWT interceptor, base URL config
+- `frontend/api/client.js` — JWT interceptor, base URL config
 - `backend/src/main/resources/application.properties` — DB credentials, JWT secret
 
 ---
@@ -286,9 +283,10 @@ Do not modify these files without explicit instruction:
 - **Never expose entity objects in API responses** — always map to a DTO first
 - **Never accept `userId` from the request body or path** — always read from `SecurityContextHolder`
 - **Never use `float`/`double` for ingredient quantities** — use `BigDecimal`
-- **Never modify `DataSeeder.java` seed data** mid-sprint — if changes are needed, drop and recreate the ingredients table
+- **Never edit `IngredientDataSeeder` / `RecipeDataSeeder` data expecting existing databases to update**: seeders skip when the table is non-empty, so production (Supabase) will not pick up changes. Ship data changes as a Flyway migration
+- **Never commit secrets**: `.env*` files are git-ignored; anything `EXPO_PUBLIC_*` is bundled into the app and is public
 - **Never use `StyleSheet.create()` for colour values** that depend on theme — use the `useAppColors` hook
-- **Recipe data licensing**: do not scrape or hardcode recipes from external sites without confirming the licensing approach (Spoonacular API vs manual seed is still TBD for Sprint 2)
+- **Recipe data licensing**: do not scrape or hardcode recipes from external sites without confirming the licensing approach (recipes are currently a manual seed)
 - **Keep project path clean**: Metro bundler hangs when the project path contains spaces — keep codebase in `~/Developer/Dishcision` or equivalent
 
 ---
@@ -299,5 +297,7 @@ Do not modify these files without explicit instruction:
 - Tab `animation: 'none'` prevents blank screen flashes on navigation
 - `@react-native-picker/picker` is invisible on iOS when clipped by `overflow: 'hidden'` — always use the `PickerField` component which uses tap-to-reveal
 - `ReanimatedSwipeable` requires `useAnimatedStyle`/`interpolate` from `react-native-reanimated` — do not mix with the old `Animated` API
-- PostgreSQL newer versions require `GRANT CREATE ON SCHEMA public` for the app user before Hibernate can create tables
-- `DataSeeder` guard is `ingredientRepository.count() > 0` — if seeding silently skips on a fresh DB, check that the `ingredients` table actually exists and is empty
+- PostgreSQL newer versions require `GRANT ALL ON SCHEMA public` for the app user before Flyway can create tables
+- Seeder guard is `ingredientRepository.count() > 0` — if seeding silently skips on a fresh DB, check that the `ingredients` table actually exists and is empty
+- Prod needs `spring.flyway.baseline-on-migrate=true` (in `application-prod.properties`) because the database already had data when Flyway was introduced
+- Property `resend.api.key` in `application.properties` vs `@Value("${resend.api-key}")` in `EmailService`: it works because the value arrives via the `RESEND_API_KEY` env var; don't rely on the properties key
