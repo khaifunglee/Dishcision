@@ -179,3 +179,4 @@ The two unit-test classes were run and pass. The full suite and the mobile app w
 ## Changelog
 
 See [CHANGELOG.md](docs/CHANGELOG.md).
+
