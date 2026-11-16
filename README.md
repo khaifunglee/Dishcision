@@ -23,14 +23,14 @@ A pantry-aware recipe app for people who can never decide what to eat: log what'
 
 ## Tech stack
 
-| Layer | Tech |
-|---|---|
-| Mobile app | React Native 0.81, Expo SDK 54, Expo Router, React Context, axios, expo-secure-store |
-| Backend | Java 21, Spring Boot 4.0.5, Spring Security (stateless JWT, BCrypt), Spring Data JPA, Bean Validation, Lombok |
-| Database | PostgreSQL, schema managed by Flyway migrations (hosted on Supabase) |
-| Email | Resend HTTP API (verification codes) |
-| Hosting / delivery | Railway (backend, Docker), EAS Build and the App Store (mobile) |
-| Testing | JUnit 5, Mockito (Spring Boot test starters) |
+| Layer              | Tech                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Mobile app         | React Native 0.81, Expo SDK 54, Expo Router, React Context, axios, expo-secure-store                          |
+| Backend            | Java 21, Spring Boot 4.0.5, Spring Security (stateless JWT, BCrypt), Spring Data JPA, Bean Validation, Lombok |
+| Database           | PostgreSQL, schema managed by Flyway migrations (hosted on Supabase)                                          |
+| Email              | Resend HTTP API (verification codes)                                                                          |
+| Hosting / delivery | Railway (backend, Docker), EAS Build and the App Store (mobile)                                               |
+| Testing            | JUnit 5, Mockito (Spring Boot test starters)                                                                  |
 
 ## Architecture
 
@@ -67,20 +67,20 @@ flowchart LR
 
 **Backend** (set in your shell, an untracked `backend/.env`, or your host's dashboard; never commit these):
 
-| Variable | Purpose |
-|---|---|
-| `DB_URL` | JDBC URL, e.g. `jdbc:postgresql://localhost:5432/dishcision_db`. Defaults to that local URL if unset |
-| `DB_USERNAME` / `DB_PASSWORD` | Database credentials |
-| `JWT_SECRET` | HMAC signing secret, at least 32 bytes. Generate with `openssl rand -base64 48` |
-| `RESEND_API_KEY` | Resend API key used to send verification emails |
+| Variable                                | Purpose                                                                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `DB_URL`                                | JDBC URL, e.g. `jdbc:postgresql://localhost:5432/dishcision_db`. Defaults to that local URL if unset                                    |
+| `DB_USERNAME` / `DB_PASSWORD`           | Database credentials                                                                                                                    |
+| `JWT_SECRET`                            | HMAC signing secret, at least 32 bytes. Generate with `openssl rand -base64 48`                                                         |
+| `RESEND_API_KEY`                        | Resend API key used to send verification emails                                                                                         |
 | `GMAIL_USERNAME` / `GMAIL_APP_PASSWORD` | Referenced by a legacy Gmail SMTP block in `application.properties`; email is now sent through Resend, so any placeholder value is fine |
-| `PORT` | Optional, defaults to `8080` (Railway sets this automatically) |
-| `SPRING_PROFILES_ACTIVE` | Set to `prod` in production (disables SQL logging, enables Flyway baseline on an existing DB) |
+| `PORT`                                  | Optional, defaults to `8080` (Railway sets this automatically)                                                                          |
+| `SPRING_PROFILES_ACTIVE`                | Set to `prod` in production (disables SQL logging, enables Flyway baseline on an existing DB)                                           |
 
 **Frontend** (`frontend/.env`):
 
-| Variable | Purpose |
-|---|---|
+| Variable              | Purpose                                                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EXPO_PUBLIC_API_URL` | Base URL of the backend, e.g. `http://<your-LAN-IP>:8080` for local development. Anything prefixed `EXPO_PUBLIC_` is bundled into the app, so never put secrets here |
 
 ### Resend email setup
@@ -174,4 +174,4 @@ The two unit-test classes were run and pass. The full suite and the mobile app w
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md).
+See [CHANGELOG.md](docs/CHANGELOG.md).
